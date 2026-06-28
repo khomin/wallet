@@ -1,0 +1,32 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: whale_tracker_db
+    environment:
+      POSTGRES_USER: tracker_admin
+      POSTGRES_PASSWORD: super_secure_password
+      POSTGRES_DB: whale_tracker
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+  redis:
+    image: redis:7-alpine
+    container_name: whale_tracker_cache
+    ports:
+      - "6379:6379"
+
+  gorush:
+    image: appleboy/gorush
+    container_name: whale_tracker_push
+    ports:
+      - "8088:8088"
+    environment:
+      - GORUSH_CORE_PORT=8088
+      - GORUSH_IOS_ENABLED=true
+
+volumes:
+  pgdata:

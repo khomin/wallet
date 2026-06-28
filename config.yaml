@@ -1,0 +1,14 @@
+server:
+  port: 8080
+  environment: "development"
+  log_path: "/var/log/tracker/app.log"
+
+database:
+  host: "localhost" # Becomes "postgres" inside Docker later
+  port: 5432
+  user: "tracker_admin"
+  password: "super_secure_password"
+  name: "whale_tracker"
+
+alchemy:
+  api_key: ""
