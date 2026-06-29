@@ -50,7 +50,7 @@ func main() {
 	)
 
 	coingeckoClient := client.NewCoinGeckoClient("")
-	alchemyClient := client.NewPriceClient(app.Cfg.Alchemy.APIKey)
+	alchemyClient := client.NewAlchemyClient(app.Cfg.Alchemy.APIKey)
 
 	priceRepo := repositories.NewPriceRepository(db)
 	priceService := core.NewPriceService(alchemyClient, redisClient)

@@ -13,21 +13,21 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-type PriceClient struct {
+type AlchemyClient struct {
 	httpClient *http.Client
 	apiKey     string
 	baseURL    string
 }
 
-func NewPriceClient(apiKey string) *PriceClient {
-	return &PriceClient{
+func NewAlchemyClient(apiKey string) *AlchemyClient {
+	return &AlchemyClient{
 		httpClient: &http.Client{Timeout: 10 * time.Second},
 		apiKey:     apiKey,
 		baseURL:    "https://api.g.alchemy.com/prices/v1",
 	}
 }
 
-func (c *PriceClient) GetPrices(ctx context.Context, symbols []string) ([]PriceData, error) {
+func (c *AlchemyClient) GetPrices(ctx context.Context, symbols []string) ([]PriceData, error) {
 	if len(symbols) > 25 {
 		return nil, fmt.Errorf("maximum 25 symbols per request")
 	}

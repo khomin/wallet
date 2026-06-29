@@ -41,7 +41,8 @@ type CoinGeckoCoin struct {
 type CoinGeckoClient struct {
 	httpClient *http.Client
 	baseURL    string
-	apiKey     string // Optional
+	apiKey     string
+	coinLimit  int
 }
 
 func NewCoinGeckoClient(apiKey string) *CoinGeckoClient {
@@ -49,15 +50,12 @@ func NewCoinGeckoClient(apiKey string) *CoinGeckoClient {
 		httpClient: &http.Client{Timeout: 10 * time.Second},
 		baseURL:    "https://api.coingecko.com/api/v3",
 		apiKey:     apiKey,
+		coinLimit:  250,
 	}
 }
 
-// func (c *PriceClient) GetCoins() {
-// 	http.Get("https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&order=market_cap_desc&per_page=250&page=1")
-// }
-
 func (c *CoinGeckoClient) GetCoins(ctx context.Context) ([]CoinGeckoCoin, error) {
-	reqURL := fmt.Sprintf("%s/coins/markets?vs_currency=usd&order=market_cap_desc&per_page=250&page=1&sparkline=false&locale=en", c.baseURL)
+	reqURL := fmt.Sprintf("%s/coins/markets?vs_currency=usd&order=market_cap_desc&per_page=%d&page=1&sparkline=false&locale=en", c.baseURL, c.coinLimit)
 	if c.apiKey != "" {
 		reqURL += "&x_cg_pro_api_key=" + c.apiKey
 	}
