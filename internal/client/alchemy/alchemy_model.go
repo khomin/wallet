@@ -1,4 +1,4 @@
-package client
+package alchemy
 
 import (
 	"time"
@@ -17,11 +17,5 @@ type TokenPriceData struct {
 type PriceEntry struct {
 	Currency    string    `json:"currency"`
 	Value       string    `json:"value"`
-	LastUpdated time.Time `json:"last_updated"`
-}
-
-type PriceData struct {
-	Symbol      string    `json:"symbol"`
-	PriceUSD    float64   `json:"price_usd"`
 	LastUpdated time.Time `json:"last_updated"`
 }

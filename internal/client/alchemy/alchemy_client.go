@@ -1,4 +1,4 @@
-package client
+package alchemy
 
 import (
 	"context"
@@ -9,6 +9,7 @@ import (
 	"strconv"
 	"strings"
 	"time"
+	"tracker/internal/core/entity"
 
 	"github.com/sirupsen/logrus"
 )
@@ -27,7 +28,7 @@ func NewAlchemyClient(apiKey string) *AlchemyClient {
 	}
 }
 
-func (c *AlchemyClient) GetPrices(ctx context.Context, symbols []string) ([]PriceData, error) {
+func (c *AlchemyClient) GetPrices(ctx context.Context, symbols []string) ([]entity.Price, error) {
 	if len(symbols) > 25 {
 		return nil, fmt.Errorf("maximum 25 symbols per request")
 	}
@@ -37,6 +38,7 @@ func (c *AlchemyClient) GetPrices(ctx context.Context, symbols []string) ([]Pric
 	if err != nil {
 		return nil, err
 	}
+	var prices []entity.Price
 	if resp.StatusCode == http.StatusOK {
 		body, err := io.ReadAll(resp.Body)
 		if err != nil {
@@ -47,7 +49,6 @@ func (c *AlchemyClient) GetPrices(ctx context.Context, symbols []string) ([]Pric
 			logrus.Errorf("Can't decode price: %s [%s]", string(body), err.Error())
 		}
 		// Transform to our internal format
-		var prices []PriceData
 		for _, token := range result.Data {
 			if token.Error != nil {
 				continue
@@ -56,7 +57,7 @@ func (c *AlchemyClient) GetPrices(ctx context.Context, symbols []string) ([]Pric
 				if strings.ToLower(p.Currency) == "usd" {
 					price, error := strconv.ParseFloat(p.Value, 2)
 					if error == nil {
-						prices = append(prices, PriceData{
+						prices = append(prices, entity.Price{
 							Symbol:      token.Symbol,
 							PriceUSD:    price,
 							LastUpdated: p.LastUpdated,
@@ -67,5 +68,5 @@ func (c *AlchemyClient) GetPrices(ctx context.Context, symbols []string) ([]Pric
 		}
 		return prices, nil
 	}
-	return []PriceData{}, nil
+	return prices, nil
 }

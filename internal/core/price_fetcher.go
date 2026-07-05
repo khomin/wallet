@@ -4,25 +4,28 @@ import (
 	"context"
 	"time"
 	"tracker/internal/cache"
-	"tracker/internal/client"
+	"tracker/internal/client/alchemy"
+	"tracker/internal/client/coingecko"
+	"tracker/internal/core/entity"
 	"tracker/internal/db/models"
 	repositories "tracker/internal/db/repo"
 
 	"github.com/google/uuid"
+	"github.com/samber/lo"
 	"github.com/sirupsen/logrus"
 )
 
 type PriceFetcher struct {
-	coingeckoClient *client.CoinGeckoClient
-	alchemyClient   *client.AlchemyClient
+	coingeckoClient *coingecko.CoinGeckoClient
+	alchemyClient   *alchemy.AlchemyClient
 	cache           *cache.RedisClient
 	repo            *repositories.PriceRepository
 	interval        time.Duration
 }
 
 func NewPriceFetcher(
-	coingeckoClient *client.CoinGeckoClient,
-	alchemyClient *client.AlchemyClient,
+	coingeckoClient *coingecko.CoinGeckoClient,
+	alchemyClient *alchemy.AlchemyClient,
 	cache *cache.RedisClient,
 	repo *repositories.PriceRepository,
 	interval time.Duration,
@@ -39,7 +42,7 @@ func NewPriceFetcher(
 func (f *PriceFetcher) Start(ctx context.Context) {
 	logrus.Info("Starting price fetcher background worker...")
 
-	f.fetchAndStore(ctx)
+	f.pefrom(ctx)
 
 	// Then run every interval
 	ticker := time.NewTicker(f.interval)
@@ -51,80 +54,87 @@ func (f *PriceFetcher) Start(ctx context.Context) {
 			logrus.Info("Price fetcher stopped")
 			return
 		case <-ticker.C:
-			f.fetchAndStore(ctx)
+			f.pefrom(ctx)
 		}
 	}
 }
 
-func (f *PriceFetcher) fetchAndStore(ctx context.Context) {
-	logrus.Info("Fetching latest prices...")
-	startTime := time.Now()
+// Solana: github.com/gagliardetto/solana-go (This is the most popular, active, and rock-solid Go library for Solana, maintained much better than the foundation's old one).
 
-	// Fetch all 250 coins from CoinGecko
+// Ethereum / EVM Chains (BNB, Arbitrum, Base, Polygon): github.com/ethereum/go-ethereum (The official go-ethereum / Geth client. This handles ETH and every single EVM-compatible chain using the exact same code layout).
+
+// Bitcoin: github.com/btcsuite/btcd/rpcclient (The legendary, rock-solid Go implementation for Bitcoin RPC).
+
+// TRON: github.com/fbsobreira/gotron-sdk (The standard Go client package for TRON).
+
+// rubblelabs/ripple
+// blinklabs-io/gouroboros
+
+func (f *PriceFetcher) pefrom(ctx context.Context) {
 	coins, err := f.coingeckoClient.GetCoins(ctx)
 	if err != nil {
-		logrus.WithError(err).Error("Failed to fetch coins from CoinGecko")
+		logrus.WithError(err).Error("Failed to fetch coins")
 		return
 	}
-
-	// Extract symbols for Alchemy
-	var symbols []string
+	symbols := []string{}
 	for _, coin := range coins {
 		symbols = append(symbols, coin.Symbol)
 	}
-
-	// Store in Redis cache
-	if err := f.cache.SetJSON(ctx, "prices:all", coins, 60); err != nil {
-		logrus.WithError(err).Error("Failed to cache prices in Redis")
-	} else {
-		logrus.WithField("count", len(coins)).Debug("Stored prices in Redis cache")
+	prices := []entity.Price{}
+	chunks := lo.Chunk(symbols, 25)
+	for i := range chunks {
+		chunk := chunks[i]
+		prices, err = f.alchemyClient.GetPrices(ctx, chunk)
+		if err != nil {
+			logrus.WithError(err).WithField("chunk", chunk).Warn("Failed to fetch price chunk")
+			continue
+		}
 	}
-
-	// Store in db (async, don't block)
-	go f.storeSnapshots(context.Background(), coins)
-
-	elapsed := time.Since(startTime)
-	logrus.WithField("elapsed_ms", elapsed.Milliseconds()).Info("Price fetch completed")
+	f.storeCoinSnapshot(ctx, coins)
+	f.storePriceSnapshot(ctx, prices)
 }
 
-func (f *PriceFetcher) storeSnapshots(ctx context.Context, coins []client.CoinGeckoCoin) {
-	logrus.WithField("count", len(coins)).Debug("Storing snapshots in Postgres...")
+func (f *PriceFetcher) storeCoinSnapshot(ctx context.Context, coins []coingecko.CoinGeckoCoin) {
+	logrus.WithField("count", len(coins)).Debug("Storing snapshots...")
 
-	// Batch insert for performance
 	var snapshots []models.CoinSnapshot
 	for _, coin := range coins {
 		snapshot := models.CoinSnapshot{
-			ID:                        uuid.New(),
-			CoinID:                    coin.ID,
-			Symbol:                    coin.Symbol,
-			Name:                      coin.Name,
-			PriceUSD:                  coin.CurrentPrice,
-			MarketCapUSD:              coin.MarketCap,
-			MarketCapRank:             coin.MarketCapRank,
-			TotalVolumeUSD:            coin.TotalVolume,
-			PriceChange24h:            coin.PriceChange24h,
-			PriceChangePercent24h:     coin.PriceChangePercent24h,
-			MarketCapChange24h:        coin.MarketCapChange24h,
-			MarketCapChangePercent24h: coin.MarketCapChangePercent24h,
-			CirculatingSupply:         coin.CirculatingSupply,
-			TotalSupply:               coin.TotalSupply,
-			MaxSupply:                 coin.MaxSupply,
-			ATH:                       coin.ATH,
-			ATHChangePercent:          coin.ATHChangePercent,
-			ATHDate:                   coin.ATHDate,
-			ATL:                       coin.ATL,
-			ATLChangePercent:          coin.ATLChangePercent,
-			ATLDate:                   coin.ATLDate,
-			ImageURL:                  coin.Image,
-			LastUpdated:               coin.LastUpdated,
-			SnapshotAt:                time.Now(),
+			ID:          uuid.New(),
+			CoinID:      coin.ID,
+			Symbol:      coin.Symbol,
+			Name:        coin.Name,
+			ImageURL:    coin.Image,
+			LastUpdated: coin.LastUpdated,
+			SnapshotAt:  time.Now(),
 		}
 		snapshots = append(snapshots, snapshot)
 	}
 
+	// Store in Redis cache
+	if err := f.cache.SetJSON(ctx, "coins:all", snapshots, 60); err != nil {
+		logrus.WithError(err).Error("Failed to cache in Redis")
+	}
 	if err := f.repo.SetCoinSnapshot(ctx, snapshots); err != nil {
-		logrus.WithError(err).Error("Failed to store snapshots in Postgres")
-	} else {
-		logrus.WithField("count", len(snapshots)).Debug("Stored snapshots in Postgres")
+		logrus.WithError(err).Error("Failed to store snapshots")
+	}
+}
+
+func (f *PriceFetcher) storePriceSnapshot(ctx context.Context, prices []entity.Price) {
+	var snapshots []models.PriceSnapshot
+	for _, v := range prices {
+		snapshots = append(snapshots, models.PriceSnapshot{
+			ID:          uuid.New(),
+			Symbol:      v.Symbol,
+			PriceUSD:    v.PriceUSD,
+			LastUpdated: v.LastUpdated,
+		})
+	}
+	// Store in Redis cache
+	if err := f.cache.SetJSON(ctx, "prices:all", snapshots, 60); err != nil {
+		logrus.WithError(err).Error("Failed to cache in Redis")
+	}
+	if err := f.repo.SetPriceSnapshot(ctx, snapshots); err != nil {
+		logrus.WithError(err).Error("Failed to store snapshots")
 	}
 }

@@ -11,7 +11,8 @@ import (
 	"tracker/bootstrap"
 	handlers "tracker/internal/api/handles"
 	"tracker/internal/cache"
-	"tracker/internal/client"
+	"tracker/internal/client/alchemy"
+	"tracker/internal/client/coingecko"
 	"tracker/internal/core"
 	"tracker/internal/db"
 	repositories "tracker/internal/db/repo"
@@ -49,11 +50,11 @@ func main() {
 		app.Cfg.Redis.DB,
 	)
 
-	coingeckoClient := client.NewCoinGeckoClient("")
-	alchemyClient := client.NewAlchemyClient(app.Cfg.Alchemy.APIKey)
+	coingeckoClient := coingecko.NewCoinGeckoClient(app.Cfg.CoinGecko.APIKey)
+	alchemyClient := alchemy.NewAlchemyClient(app.Cfg.Alchemy.APIKey)
 
 	priceRepo := repositories.NewPriceRepository(db)
-	priceService := core.NewPriceService(alchemyClient, redisClient)
+	priceService := core.NewPriceService(alchemyClient, coingeckoClient, redisClient, priceRepo)
 	priceHandler := handlers.NewPriceHandler(priceService)
 
 	// Create a context that can be cancelled for graceful shutdown
@@ -75,17 +76,20 @@ func main() {
 
 	r := gin.Default()
 
-	r.GET("/health", func(c *gin.Context) {
-		c.JSON(http.StatusOK, gin.H{
-			"status":    "ok",
-			"timestamp": time.Now().UTC().Format(time.RFC3339),
-		})
-	})
+	// r.GET("/health", func(c *gin.Context) {
+	// 	c.JSON(http.StatusOK, gin.H{
+	// 		"status":    "ok",
+	// 		"timestamp": time.Now().UTC().Format(time.RFC3339),
+	// 	})
+	// })
 
 	// API v1 routes
 	v1 := r.Group("/api/v1")
 
+	// v1.GET("/")
+	v1.GET("/coins", priceHandler.GetCoins)
 	v1.GET("/prices", priceHandler.GetPrices)
+
 	// v1.GET("/prices/:symbol", priceHandler.GetPriceBySymbol)
 
 	// Wallet endpoints (you'll add these later)

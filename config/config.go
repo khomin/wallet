@@ -8,10 +8,11 @@ import (
 )
 
 type Config struct {
-	Server   ServerConfig   `mapstructure:"server"`
-	Database DatabaseConfig `mapstructure:"database"`
-	Redis    RedisConfig    `mapstructure:"redis"`
-	Alchemy  AlchemyConfig  `mapstructure:"alchemy"`
+	Server    ServerConfig    `mapstructure:"server"`
+	Database  DatabaseConfig  `mapstructure:"database"`
+	Redis     RedisConfig     `mapstructure:"redis"`
+	Alchemy   AlchemyConfig   `mapstructure:"alchemy"`
+	CoinGecko CoinGeckoConfig `mapstructure:"coingecko"`
 }
 
 type ServerConfig struct {
@@ -35,6 +36,10 @@ type RedisConfig struct {
 }
 
 type AlchemyConfig struct {
+	APIKey string `mapstructure:"api_key"`
+}
+
+type CoinGeckoConfig struct {
 	APIKey string `mapstructure:"api_key"`
 }
 

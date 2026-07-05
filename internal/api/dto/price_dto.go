@@ -1,16 +1,11 @@
-package client
+package dto
 
 import (
-	"context"
-	"encoding/json"
-	"fmt"
-	"net/http"
 	"time"
+	"tracker/internal/core/entity"
 )
 
-// CoinGeckoCoin - maps exactly to the CoinGecko API response
-type CoinGeckoCoin struct {
-	ID                        string      `json:"id"`
+type PriceResponse struct {
 	Symbol                    string      `json:"symbol"`
 	Name                      string      `json:"name"`
 	Image                     string      `json:"image"`
@@ -38,42 +33,13 @@ type CoinGeckoCoin struct {
 	LastUpdated               time.Time   `json:"last_updated"`
 }
 
-type CoinGeckoClient struct {
-	httpClient *http.Client
-	baseURL    string
-	apiKey     string
-	coinLimit  int
-}
-
-func NewCoinGeckoClient(apiKey string) *CoinGeckoClient {
-	return &CoinGeckoClient{
-		httpClient: &http.Client{Timeout: 10 * time.Second},
-		baseURL:    "https://api.coingecko.com/api/v3",
-		apiKey:     apiKey,
-		coinLimit:  250,
+func ToPriceResponse(prices []entity.Price) []PriceResponse {
+	result := make([]PriceResponse, 0)
+	for i, coin := range prices {
+		result[i] = PriceResponse{
+			Symbol: coin.Symbol,
+			Name:   coin.Symbol,
+		}
 	}
-}
-
-func (c *CoinGeckoClient) GetCoins(ctx context.Context) ([]CoinGeckoCoin, error) {
-	reqURL := fmt.Sprintf("%s/coins/markets?vs_currency=usd&order=market_cap_desc&per_page=%d&page=1&sparkline=false&locale=en", c.baseURL, c.coinLimit)
-	if c.apiKey != "" {
-		reqURL += "&x_cg_pro_api_key=" + c.apiKey
-	}
-	req, err := http.NewRequestWithContext(ctx, http.MethodGet, reqURL, nil)
-	if err != nil {
-		return nil, err
-	}
-	resp, err := c.httpClient.Do(req)
-	if err != nil {
-		return nil, err
-	}
-	defer resp.Body.Close()
-	if resp.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("coingecko returned status %s", resp.Status)
-	}
-	var coins []CoinGeckoCoin
-	if err := json.NewDecoder(resp.Body).Decode(&coins); err != nil {
-		return nil, err
-	}
-	return coins, nil
+	return result
 }
