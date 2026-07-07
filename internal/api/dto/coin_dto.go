@@ -10,14 +10,18 @@ type CoinResponse struct {
 	ImageURL string `json:"image_url"`
 }
 
-func ToCoinResponse(coins []entity.Coin) []CoinResponse {
+func ToCoinsResponse(coins []entity.Coin) []CoinResponse {
 	result := make([]CoinResponse, len(coins))
 	for i, coin := range coins {
-		result[i] = CoinResponse{
-			Symbol:   coin.Symbol,
-			Name:     coin.Name,
-			ImageURL: coin.ImageURL,
-		}
+		result[i] = ToCoinResponse(coin)
 	}
 	return result
+}
+
+func ToCoinResponse(coin entity.Coin) CoinResponse {
+	return CoinResponse{
+		Symbol:   coin.Symbol,
+		Name:     coin.Name,
+		ImageURL: coin.ImageURL,
+	}
 }

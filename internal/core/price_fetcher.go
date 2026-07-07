@@ -2,6 +2,7 @@ package core
 
 import (
 	"context"
+	"fmt"
 	"time"
 	"tracker/internal/cache"
 	"tracker/internal/client/alchemy"
@@ -11,16 +12,16 @@ import (
 	repositories "tracker/internal/db/repo"
 
 	"github.com/google/uuid"
-	"github.com/samber/lo"
 	"github.com/sirupsen/logrus"
 )
 
 type PriceFetcher struct {
-	coingeckoClient *coingecko.CoinGeckoClient
-	alchemyClient   *alchemy.AlchemyClient
-	cache           *cache.RedisClient
-	repo            *repositories.PriceRepository
-	interval        time.Duration
+	coingeckoClient    *coingecko.CoinGeckoClient
+	alchemyClient      *alchemy.AlchemyClient
+	cache              *cache.RedisClient
+	repo               *repositories.PriceRepository
+	allCoinInterval    time.Duration
+	activeCoinInterval time.Duration
 }
 
 func NewPriceFetcher(
@@ -28,71 +29,85 @@ func NewPriceFetcher(
 	alchemyClient *alchemy.AlchemyClient,
 	cache *cache.RedisClient,
 	repo *repositories.PriceRepository,
-	interval time.Duration,
+	allCoinInterval time.Duration,
+	activeCoinInterval time.Duration,
 ) *PriceFetcher {
 	return &PriceFetcher{
-		coingeckoClient: coingeckoClient,
-		alchemyClient:   alchemyClient,
-		cache:           cache,
-		repo:            repo,
-		interval:        interval,
+		coingeckoClient:    coingeckoClient,
+		alchemyClient:      alchemyClient,
+		cache:              cache,
+		repo:               repo,
+		allCoinInterval:    allCoinInterval,
+		activeCoinInterval: activeCoinInterval,
 	}
 }
 
-func (f *PriceFetcher) Start(ctx context.Context) {
-	logrus.Info("Starting price fetcher background worker...")
+func (f *PriceFetcher) StartCoinFetcher(ctx context.Context) {
+	log := logrus.WithField("PriceFetcher", "StartCoinFetcher")
+	fetch := func() {
+		coins, err := f.coingeckoClient.GetCoins(ctx)
+		if err != nil {
+			logrus.WithError(err).Error("Failed to fetch coins")
+			return
+		}
+		f.storeCoinSnapshot(ctx, coins)
+	}
+	log.Info("fetcher update initial")
+	fetch()
 
-	f.pefrom(ctx)
-
-	// Then run every interval
-	ticker := time.NewTicker(f.interval)
+	ticker := time.NewTicker(f.allCoinInterval)
 	defer ticker.Stop()
 
 	for {
 		select {
 		case <-ctx.Done():
-			logrus.Info("Price fetcher stopped")
+			log.Info("fetcher stopped")
 			return
 		case <-ticker.C:
-			f.pefrom(ctx)
+			log.Info("fetcher update")
+			fetch()
 		}
 	}
 }
 
-// Solana: github.com/gagliardetto/solana-go (This is the most popular, active, and rock-solid Go library for Solana, maintained much better than the foundation's old one).
+func (f *PriceFetcher) StartActiveCoinFetcher(ctx context.Context) {
+	log := logrus.WithField("PriceFetcher", "StartActiveCoinFetcher")
+	fetch := func() {
+		coins, err := f.coingeckoClient.GetCoins(ctx)
+		if err != nil {
+			logrus.WithError(err).Error("Failed to fetch coins")
+			return
+		}
+		f.storeCoinSnapshot(ctx, coins)
+	}
+	log.Info("fetcher update initial")
+	fetch()
 
-// Ethereum / EVM Chains (BNB, Arbitrum, Base, Polygon): github.com/ethereum/go-ethereum (The official go-ethereum / Geth client. This handles ETH and every single EVM-compatible chain using the exact same code layout).
+	ticker := time.NewTicker(f.activeCoinInterval)
+	defer ticker.Stop()
 
-// Bitcoin: github.com/btcsuite/btcd/rpcclient (The legendary, rock-solid Go implementation for Bitcoin RPC).
+	for {
+		select {
+		case <-ctx.Done():
+			log.Info("fetcher stopped")
+			return
+		case <-ticker.C:
+			log.Info("fetcher update")
+			fetch()
+		}
+	}
+}
 
-// TRON: github.com/fbsobreira/gotron-sdk (The standard Go client package for TRON).
+// Solana: github.com/gagliardetto/solana-go
+
+// Ethereum / EVM Chains (BNB, Arbitrum, Base, Polygon): github.com/ethereum/go-ethereum
+
+// Bitcoin: github.com/btcsuite/btcd/rpcclient
+
+// TRON: github.com/fbsobreira/gotron-sdk
 
 // rubblelabs/ripple
 // blinklabs-io/gouroboros
-
-func (f *PriceFetcher) pefrom(ctx context.Context) {
-	coins, err := f.coingeckoClient.GetCoins(ctx)
-	if err != nil {
-		logrus.WithError(err).Error("Failed to fetch coins")
-		return
-	}
-	symbols := []string{}
-	for _, coin := range coins {
-		symbols = append(symbols, coin.Symbol)
-	}
-	prices := []entity.Price{}
-	chunks := lo.Chunk(symbols, 25)
-	for i := range chunks {
-		chunk := chunks[i]
-		prices, err = f.alchemyClient.GetPrices(ctx, chunk)
-		if err != nil {
-			logrus.WithError(err).WithField("chunk", chunk).Warn("Failed to fetch price chunk")
-			continue
-		}
-	}
-	f.storeCoinSnapshot(ctx, coins)
-	f.storePriceSnapshot(ctx, prices)
-}
 
 func (f *PriceFetcher) storeCoinSnapshot(ctx context.Context, coins []coingecko.CoinGeckoCoin) {
 	logrus.WithField("count", len(coins)).Debug("Storing snapshots...")
@@ -111,10 +126,17 @@ func (f *PriceFetcher) storeCoinSnapshot(ctx context.Context, coins []coingecko.
 		snapshots = append(snapshots, snapshot)
 	}
 
-	// Store in Redis cache
-	if err := f.cache.SetJSON(ctx, "coins:all", snapshots, 60); err != nil {
+	// Store in Redis cache all
+	if err := f.cache.SetJSON(ctx, "coins:all", snapshots, 1*time.Hour); err != nil {
 		logrus.WithError(err).Error("Failed to cache in Redis")
 	}
+	// Store in Redis one by one
+	for _, coin := range snapshots {
+		if err := f.cache.SetJSON(ctx, fmt.Sprintf("coins:%s", coin.Symbol), coin, 1*time.Hour); err != nil {
+			logrus.WithError(err).Error("Failed to cache in Redis")
+		}
+	}
+
 	if err := f.repo.SetCoinSnapshot(ctx, snapshots); err != nil {
 		logrus.WithError(err).Error("Failed to store snapshots")
 	}
@@ -131,10 +153,24 @@ func (f *PriceFetcher) storePriceSnapshot(ctx context.Context, prices []entity.P
 		})
 	}
 	// Store in Redis cache
-	if err := f.cache.SetJSON(ctx, "prices:all", snapshots, 60); err != nil {
+	if err := f.cache.SetJSON(ctx, "prices:all", snapshots, 60*time.Second); err != nil {
 		logrus.WithError(err).Error("Failed to cache in Redis")
 	}
 	if err := f.repo.SetPriceSnapshot(ctx, snapshots); err != nil {
 		logrus.WithError(err).Error("Failed to store snapshots")
 	}
 }
+
+// func (f *PriceFetcher) pefrom(ctx context.Context) {
+// 	prices := []entity.Price{}
+// 	chunks := lo.Chunk(symbols, 25)
+// 	for i := range chunks {
+// 		chunk := chunks[i]
+// 		prices, err = f.alchemyClient.GetPrices(ctx, chunk)
+// 		if err != nil {
+// 			logrus.WithError(err).WithField("chunk", chunk).Warn("Failed to fetch price chunk")
+// 			continue
+// 		}
+// 	}
+// 	f.storePriceSnapshot(ctx, prices)
+// }

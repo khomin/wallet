@@ -116,3 +116,11 @@ This project is still early and evolving. The focus right now is on building a s
 ## License
 
 This project is currently under active development. A license will be added as the project matures.
+
+
+# Database migration
+```
+go install -tags 'postgres' github.com/golang-migrate/migrate/v4/cmd/migrate@latest
+
+migrate -path $PWD/internal/db/migrations -database "postgres://tracker_admin:super_secure_password@localhost:5432/whale_tracker?sslmode=disable" up
+```

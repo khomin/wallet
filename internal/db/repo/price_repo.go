@@ -16,15 +16,31 @@ func NewPriceRepository(db *db.DataBase) *PriceRepository {
 
 func (r *PriceRepository) GetCoinSnapshot(ctx context.Context) ([]models.CoinSnapshot, error) {
 	query := `SELECT
-		id,
 		coin_id,
 		symbol,
 		coin_name,
+		price_usd,
+		market_cap_usd,
+		market_cap_rank,
+		total_volume_usd,
+		price_change_24h,
+		price_change_percent_24h,
+		market_cap_change_24h,
+		market_cap_change_percent_24h,
+		circulating_supply,
+		total_supply,
+		max_supply,
+		ath,
+		ath_change_percent,
+		ath_date,
+		atl,
+		atl_change_percent,
+		atl_date,
 		image_url,
 		last_updated,
 		snapshot_at
-	FROM coin_snapshots
-	ORDER BY coin_id ASC`
+		FROM coin_snapshots
+		ORDER BY coin_id ASC`
 
 	rows, err := r.db.Pool.Query(ctx, query)
 	if err != nil {

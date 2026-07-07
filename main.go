@@ -21,17 +21,6 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-// TODO: sheduled pull of current 250 prices
-// 	- put them in:
-// 			- reddis
-// 			- postress
-
-// TODO: handle API from clients
-//  - get prices
-//  - add wallet, delete wallet, get wallet/s
-//  - device authentification, tokens
-//  - profile
-
 func main() {
 	logrus.SetFormatter(&logrus.JSONFormatter{})
 	logrus.SetLevel(logrus.InfoLevel)
@@ -67,31 +56,25 @@ func main() {
 		alchemyClient,
 		redisClient,
 		priceRepo,
-		60*time.Second, // Fetch every 60 seconds
+		60*time.Second,
+		10*time.Second,
 	)
 
 	// Start the background fetcher in a goroutine
-	go priceFetcher.Start(ctx)
-	logrus.Info("Background price fetcher started")
+	go priceFetcher.StartCoinFetcher(ctx)
+
+	go priceFetcher.StartActiveCoinFetcher(ctx)
 
 	r := gin.Default()
-
-	// r.GET("/health", func(c *gin.Context) {
-	// 	c.JSON(http.StatusOK, gin.H{
-	// 		"status":    "ok",
-	// 		"timestamp": time.Now().UTC().Format(time.RFC3339),
-	// 	})
-	// })
 
 	// API v1 routes
 	v1 := r.Group("/api/v1")
 
-	// v1.GET("/")
 	v1.GET("/coins", priceHandler.GetCoins)
+	v1.GET("/coins/:id", priceHandler.GetCoin)
 	v1.GET("/prices", priceHandler.GetPrices)
 
 	// v1.GET("/prices/:symbol", priceHandler.GetPriceBySymbol)
-
 	// Wallet endpoints (you'll add these later)
 	// v1.POST("/wallets", walletHandler.AddWallet)
 	// v1.GET("/wallets", walletHandler.ListWallets)
@@ -132,3 +115,21 @@ func main() {
 
 	logrus.Info("Server shutdown complete")
 }
+
+// TODO: sheduled pull of current 250 prices
+// 	- put them in:
+// 			- reddis
+// 			- postress
+
+// TODO: handle API from clients
+//  - get prices
+//  - add wallet, delete wallet, get wallet/s
+//  - device authentification, tokens
+//  - profile
+
+// r.GET("/health", func(c *gin.Context) {
+// 	c.JSON(http.StatusOK, gin.H{
+// 		"status":    "ok",
+// 		"timestamp": time.Now().UTC().Format(time.RFC3339),
+// 	})
+// })

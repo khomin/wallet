@@ -10,5 +10,13 @@ database:
   password: "super_secure_password"
   name: "whale_tracker"
 
+redis:
+  addr: "localhost:6379"
+  password: ""
+  db: 0
+
 alchemy:
   api_key: ""
+
+coingecko:
+   api_key: ""

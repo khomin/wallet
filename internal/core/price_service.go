@@ -37,11 +37,11 @@ func NewPriceService(
 }
 
 func (s *PriceService) GetCoins(ctx context.Context) ([]entity.Coin, error) {
-	coins := []entity.Coin{}
-	cached := []models.CoinSnapshot{}
-	if err := s.cache.GetJSON(ctx, "coins:all", cached); err != nil {
-		return coins, err
+	var cached []models.CoinSnapshot
+	if err := s.cache.GetJSON(ctx, "coins:all", &cached); err != nil {
+		return []entity.Coin{}, err
 	}
+	coins := []entity.Coin{}
 	for _, i := range cached {
 		coins = append(coins, entity.Coin{
 			ID:       i.CoinID,
@@ -51,6 +51,19 @@ func (s *PriceService) GetCoins(ctx context.Context) ([]entity.Coin, error) {
 		})
 	}
 	return coins, nil
+}
+
+func (s *PriceService) GetCoin(ctx context.Context, id string) (*entity.Coin, error) {
+	cached := models.CoinSnapshot{}
+	if err := s.cache.GetJSON(ctx, fmt.Sprintf("coins:%s", id), &cached); err != nil {
+		return nil, err
+	}
+	return &entity.Coin{
+		ID:       cached.CoinID,
+		Name:     cached.Name,
+		Symbol:   cached.Symbol,
+		ImageURL: cached.ImageURL,
+	}, nil
 }
 
 func (s *PriceService) GetPrices(ctx context.Context, symbols []string) ([]entity.Price, error) {
