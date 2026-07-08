@@ -65,9 +65,30 @@ func (h *PriceHandler) GetPrices(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "internal_server_error"})
 		return
 	}
-	resp := dto.ToPriceResponse(prices)
+	resp := dto.ToPricesResponse(prices)
 	c.JSON(http.StatusOK, gin.H{
 		"prices": resp,
 		"total":  len(resp),
 	})
+}
+
+func (h *PriceHandler) GetPrice(c *gin.Context) {
+	log := logrus.WithField("PriceHandler", "GetPrice")
+	id := c.Param("id")
+	if id == "" {
+		logrus.Warning("empty id")
+		c.JSON(http.StatusBadRequest, nil)
+	}
+	prices, err := h.priceService.GetPrices(c.Request.Context(), []string{id})
+	if err != nil {
+		log.WithError(err).Warn("failed to get price")
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "internal_server_error"})
+		return
+	}
+	if len(prices) == 0 {
+		c.JSON(http.StatusNotFound, gin.H{})
+		return
+	}
+	resp := dto.ToPriceResponse(prices[0])
+	c.JSON(http.StatusOK, resp)
 }

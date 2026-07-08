@@ -3,6 +3,7 @@ package cache
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"time"
 
 	"github.com/redis/go-redis/v9"
@@ -64,4 +65,25 @@ func (c *RedisClient) Exists(ctx context.Context, key string) (bool, error) {
 
 func (c *RedisClient) Delete(ctx context.Context, key string) error {
 	return c.client.Del(ctx, key).Err()
+}
+
+func (r *RedisClient) Scan(ctx context.Context, pattern string) ([]any, error) {
+	keys, err := r.client.Keys(ctx, pattern).Result()
+	if err != nil {
+		return nil, err
+	}
+
+	values := make([]any, 0, len(keys))
+	for _, key := range keys {
+		val, err := r.client.Get(ctx, key).Result()
+		if err != nil {
+			if errors.Is(err, redis.Nil) {
+				continue
+			}
+			return nil, err
+		}
+		values = append(values, val)
+	}
+
+	return values, nil
 }

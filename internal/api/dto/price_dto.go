@@ -33,13 +33,17 @@ type PriceResponse struct {
 	LastUpdated               time.Time   `json:"last_updated"`
 }
 
-func ToPriceResponse(prices []entity.Price) []PriceResponse {
+func ToPricesResponse(prices []entity.Price) []PriceResponse {
 	result := make([]PriceResponse, 0)
-	for i, coin := range prices {
-		result[i] = PriceResponse{
-			Symbol: coin.Symbol,
-			Name:   coin.Symbol,
-		}
+	for i, v := range prices {
+		result[i] = ToPriceResponse(v)
 	}
 	return result
+}
+
+func ToPriceResponse(price entity.Price) PriceResponse {
+	return PriceResponse{
+		Symbol: price.Symbol,
+		Name:   price.Symbol,
+	}
 }

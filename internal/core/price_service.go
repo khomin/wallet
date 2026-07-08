@@ -11,8 +11,6 @@ import (
 	"tracker/internal/core/entity"
 	"tracker/internal/db/models"
 	repositories "tracker/internal/db/repo"
-
-	"github.com/sirupsen/logrus"
 )
 
 type PriceService struct {
@@ -67,13 +65,7 @@ func (s *PriceService) GetCoin(ctx context.Context, id string) (*entity.Coin, er
 }
 
 func (s *PriceService) GetPrices(ctx context.Context, symbols []string) ([]entity.Price, error) {
-	log := logrus.WithField("PriceService", "GetPrices")
 	prices := []entity.Price{}
-	if len(symbols) == 0 {
-		err := fmt.Errorf("empty symbols")
-		log.WithError(err)
-		return prices, err
-	}
 	symbolsUnique := make(map[string]string)
 	for _, symbol := range symbols {
 		symbolLower := strings.ToLower(symbol)
@@ -87,7 +79,7 @@ func (s *PriceService) GetPrices(ctx context.Context, symbols []string) ([]entit
 		if err == nil {
 			prices = append(prices, price)
 		}
-		s.cache.Set(ctx, fmt.Sprintf("active-coin:%s", symbol), nil, 5*time.Minute)
+		s.cache.Set(ctx, fmt.Sprintf("active-price:%s", symbol), nil, 5*time.Minute)
 	}
 	return prices, nil
 }

@@ -73,6 +73,7 @@ func main() {
 	v1.GET("/coins", priceHandler.GetCoins)
 	v1.GET("/coins/:id", priceHandler.GetCoin)
 	v1.GET("/prices", priceHandler.GetPrices)
+	v1.GET("/prices/:id", priceHandler.GetPrice)
 
 	// v1.GET("/prices/:symbol", priceHandler.GetPriceBySymbol)
 	// Wallet endpoints (you'll add these later)
