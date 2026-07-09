@@ -3,38 +3,31 @@ package core
 import (
 	"context"
 	"fmt"
-	"strings"
-	"time"
 	"tracker/internal/cache"
-	"tracker/internal/client/alchemy"
-	"tracker/internal/client/coingecko"
 	"tracker/internal/core/entity"
 	"tracker/internal/db/models"
 	repositories "tracker/internal/db/repo"
 )
 
 type PriceService struct {
-	priceClient     *alchemy.AlchemyClient
-	cache           *cache.RedisClient
-	coingeckoClient *coingecko.CoinGeckoClient
-	priceRepo       *repositories.PriceRepository
+	cache     *cache.RedisClient
+	priceRepo *repositories.PriceRepository
+	fetcher   *PriceFetcher
 }
 
 func NewPriceService(
-	priceClient *alchemy.AlchemyClient,
-	coingeckoClient *coingecko.CoinGeckoClient,
 	cache *cache.RedisClient,
 	priceRepo *repositories.PriceRepository,
+	fetcher *PriceFetcher,
 ) *PriceService {
 	return &PriceService{
-		priceClient:     priceClient,
-		cache:           cache,
-		coingeckoClient: coingeckoClient,
-		priceRepo:       priceRepo,
+		cache:     cache,
+		priceRepo: priceRepo,
+		fetcher:   fetcher,
 	}
 }
 
-func (s *PriceService) GetCoins(ctx context.Context) ([]entity.Coin, error) {
+func (s *PriceService) GetCoinsSnapshot(ctx context.Context) ([]entity.Coin, error) {
 	var cached []models.CoinSnapshot
 	if err := s.cache.GetJSON(ctx, "coins:all", &cached); err != nil {
 		return []entity.Coin{}, err
@@ -51,7 +44,7 @@ func (s *PriceService) GetCoins(ctx context.Context) ([]entity.Coin, error) {
 	return coins, nil
 }
 
-func (s *PriceService) GetCoin(ctx context.Context, id string) (*entity.Coin, error) {
+func (s *PriceService) GetCoinSnapshot(ctx context.Context, id string) (*entity.Coin, error) {
 	cached := models.CoinSnapshot{}
 	if err := s.cache.GetJSON(ctx, fmt.Sprintf("coins:%s", id), &cached); err != nil {
 		return nil, err
@@ -66,20 +59,13 @@ func (s *PriceService) GetCoin(ctx context.Context, id string) (*entity.Coin, er
 
 func (s *PriceService) GetPrices(ctx context.Context, symbols []string) ([]entity.Price, error) {
 	prices := []entity.Price{}
-	symbolsUnique := make(map[string]string)
 	for _, symbol := range symbols {
-		symbolLower := strings.ToLower(symbol)
-		if _, exists := symbolsUnique[symbolLower]; !exists {
-			symbolsUnique[symbol] = symbolLower
-		}
-	}
-	for symbol := range symbolsUnique {
 		price := entity.Price{}
-		err := s.cache.GetJSON(ctx, fmt.Sprintf("price:%s", symbol), price)
+		err := s.cache.GetJSON(ctx, fmt.Sprintf("prices:%s", symbol), price)
 		if err == nil {
 			prices = append(prices, price)
 		}
-		s.cache.Set(ctx, fmt.Sprintf("active-price:%s", symbol), nil, 5*time.Minute)
 	}
+	s.fetcher.setPricesToWatch(ctx, symbols)
 	return prices, nil
 }

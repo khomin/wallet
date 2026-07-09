@@ -72,7 +72,6 @@ func (r *RedisClient) Scan(ctx context.Context, pattern string) ([]any, error) {
 	if err != nil {
 		return nil, err
 	}
-
 	values := make([]any, 0, len(keys))
 	for _, key := range keys {
 		val, err := r.client.Get(ctx, key).Result()

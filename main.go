@@ -41,10 +41,7 @@ func main() {
 
 	coingeckoClient := coingecko.NewCoinGeckoClient(app.Cfg.CoinGecko.APIKey)
 	alchemyClient := alchemy.NewAlchemyClient(app.Cfg.Alchemy.APIKey)
-
 	priceRepo := repositories.NewPriceRepository(db)
-	priceService := core.NewPriceService(alchemyClient, coingeckoClient, redisClient, priceRepo)
-	priceHandler := handlers.NewPriceHandler(priceService)
 
 	// Create a context that can be cancelled for graceful shutdown
 	ctx, cancel := context.WithCancel(context.Background())
@@ -59,6 +56,9 @@ func main() {
 		60*time.Second,
 		10*time.Second,
 	)
+
+	priceService := core.NewPriceService(redisClient, priceRepo, priceFetcher)
+	priceHandler := handlers.NewPriceHandler(priceService)
 
 	// Start the background fetcher in a goroutine
 	go priceFetcher.StartCoinFetcher(ctx)

@@ -12,19 +12,20 @@ import (
 
 type PriceHandler struct {
 	priceService *core.PriceService
+	log          *logrus.Entry
 }
 
 func NewPriceHandler(priceService *core.PriceService) *PriceHandler {
 	return &PriceHandler{
 		priceService: priceService,
+		log:          logrus.WithField("component", "PriceHandler"),
 	}
 }
 
 func (h *PriceHandler) GetCoins(c *gin.Context) {
-	logrus.WithField("PriceHandler", "GetCoins")
-	coins, err := h.priceService.GetCoins(c)
+	coins, err := h.priceService.GetCoinsSnapshot(c)
 	if err != nil {
-		logrus.WithError(err).Warn("failed to get coins")
+		h.log.WithError(err).Warn("failed to get coins")
 		c.JSON(http.StatusInternalServerError, nil)
 		return
 	}
@@ -36,15 +37,15 @@ func (h *PriceHandler) GetCoins(c *gin.Context) {
 }
 
 func (h *PriceHandler) GetCoin(c *gin.Context) {
-	logrus.WithField("PriceHandler", "GetCoin")
 	id := c.Param("id")
 	if id == "" {
-		logrus.Warning("empty id")
+		h.log.Warning("empty id")
 		c.JSON(http.StatusBadRequest, nil)
 	}
-	coin, err := h.priceService.GetCoin(c, id)
+	cannot decide whether use id or symbol
+	coin, err := h.priceService.GetCoinSnapshot(c, id)
 	if err != nil {
-		logrus.WithError(err).Warn("failed to get coin")
+		h.log.WithError(err).Warn("failed to get coin")
 		c.JSON(http.StatusInternalServerError, nil)
 		return
 	}
@@ -53,7 +54,6 @@ func (h *PriceHandler) GetCoin(c *gin.Context) {
 }
 
 func (h *PriceHandler) GetPrices(c *gin.Context) {
-	log := logrus.WithField("PriceHandler", "GetPrices")
 	symbolsParam := c.Query("symbols")
 	var symbols []string
 	if symbolsParam != "" {
@@ -61,7 +61,7 @@ func (h *PriceHandler) GetPrices(c *gin.Context) {
 	}
 	prices, err := h.priceService.GetPrices(c.Request.Context(), symbols)
 	if err != nil {
-		log.WithError(err).Warn("failed to get prices")
+		h.log.WithError(err).Warn("failed to get prices")
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "internal_server_error"})
 		return
 	}
@@ -73,15 +73,14 @@ func (h *PriceHandler) GetPrices(c *gin.Context) {
 }
 
 func (h *PriceHandler) GetPrice(c *gin.Context) {
-	log := logrus.WithField("PriceHandler", "GetPrice")
 	id := c.Param("id")
 	if id == "" {
-		logrus.Warning("empty id")
+		h.log.Warning("empty id")
 		c.JSON(http.StatusBadRequest, nil)
 	}
 	prices, err := h.priceService.GetPrices(c.Request.Context(), []string{id})
 	if err != nil {
-		log.WithError(err).Warn("failed to get price")
+		h.log.WithError(err).Warn("failed to get price")
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "internal_server_error"})
 		return
 	}

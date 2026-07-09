@@ -48,8 +48,8 @@ func (c *CoinGeckoClient) GetCoins(ctx context.Context) ([]CoinGeckoCoin, error)
 	return coins, nil
 }
 
-func (c *CoinGeckoClient) GetPrice(ctx context.Context, symbol string) (CoinGeckoPrice, error) {
-	reqURL := fmt.Sprintf("%s/coins/%s", c.baseURL, symbol)
+func (c *CoinGeckoClient) GetPrice(ctx context.Context, id string) (CoinGeckoPrice, error) {
+	reqURL := fmt.Sprintf("%s/coins/%s", c.baseURL, id)
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, reqURL, nil)
 	if err != nil {
 		return CoinGeckoPrice{}, err
