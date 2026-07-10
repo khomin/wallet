@@ -47,17 +47,20 @@ func main() {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
+	priceCache := core.NewPriceCache(redisClient)
+
 	// Create the price fetcher with 60 second interval
 	priceFetcher := core.NewPriceFetcher(
 		coingeckoClient,
 		alchemyClient,
 		redisClient,
 		priceRepo,
+		priceCache,
 		60*time.Second,
 		10*time.Second,
 	)
 
-	priceService := core.NewPriceService(redisClient, priceRepo, priceFetcher)
+	priceService := core.NewPriceService(redisClient, priceRepo, priceFetcher, priceCache)
 	priceHandler := handlers.NewPriceHandler(priceService)
 
 	// Start the background fetcher in a goroutine

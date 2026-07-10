@@ -19,6 +19,7 @@ type PriceFetcher struct {
 	coingeckoClient    *coingecko.CoinGeckoClient
 	alchemyClient      *alchemy.AlchemyClient
 	cache              *cache.RedisClient
+	priceCache         *PriceCache
 	repo               *repositories.PriceRepository
 	allCoinInterval    time.Duration
 	activeCoinInterval time.Duration
@@ -30,12 +31,15 @@ func NewPriceFetcher(
 	alchemyClient *alchemy.AlchemyClient,
 	cache *cache.RedisClient,
 	repo *repositories.PriceRepository,
+	priceCache *PriceCache,
 	allCoinInterval time.Duration,
 	activeCoinInterval time.Duration,
 ) *PriceFetcher {
-	return &PriceFetcher{coingeckoClient: coingeckoClient,
+	return &PriceFetcher{
+		coingeckoClient:    coingeckoClient,
 		alchemyClient:      alchemyClient,
 		cache:              cache,
+		priceCache:         priceCache,
 		repo:               repo,
 		allCoinInterval:    allCoinInterval,
 		activeCoinInterval: activeCoinInterval,
@@ -71,11 +75,12 @@ func (f *PriceFetcher) StartCoinFetcher(ctx context.Context) {
 
 func (f *PriceFetcher) StartActiveCoinFetcher(ctx context.Context) {
 	fetch := func() {
-		pricesFetch := f.getPricesToWatch(ctx)
-		if len(pricesFetch) > 0 {
+		pricesToFetch := f.getPricesToWatch(ctx)
+		if len(pricesToFetch) > 0 {
+			coins := f.priceCache.GetCoinsBySymbol(ctx, pricesToFetch)
 			prices := []entity.Price{}
-			for _, symbol := range pricesFetch {
-				price, err := f.coingeckoClient.GetPrice(ctx, id)
+			for _, coin := range coins {
+				price, err := f.coingeckoClient.GetPrice(ctx, coin.ID)
 				if err != nil {
 					f.log.WithError(err).Error("Failed to fetch price")
 					return
@@ -155,9 +160,12 @@ func (f *PriceFetcher) storeCoinSnapshot(ctx context.Context, coins []coingecko.
 	}
 
 	// Store in Redis cache all
-	if err := f.cache.SetJSON(ctx, "coins:all", snapshots, 1*time.Hour); err != nil {
+	if err := f.priceCache.SetCoins(snapshots); err != nil {
 		f.log.WithError(err).Error("Failed to cache in Redis")
 	}
+	// if err := f.cache.SetJSON(ctx, "coins:all", snapshots, 1*time.Hour); err != nil {
+	// 	f.log.WithError(err).Error("Failed to cache in Redis")
+	// }
 	// Store in Redis one by one
 	for _, coin := range snapshots {
 		if err := f.cache.SetJSON(ctx, fmt.Sprintf("coins:%s", coin.Symbol), coin, 1*time.Hour); err != nil {

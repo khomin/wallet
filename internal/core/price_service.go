@@ -5,65 +5,51 @@ import (
 	"fmt"
 	"tracker/internal/cache"
 	"tracker/internal/core/entity"
-	"tracker/internal/db/models"
 	repositories "tracker/internal/db/repo"
 )
 
 type PriceService struct {
-	cache     *cache.RedisClient
-	priceRepo *repositories.PriceRepository
-	fetcher   *PriceFetcher
+	cache      *cache.RedisClient
+	priceRepo  *repositories.PriceRepository
+	fetcher    *PriceFetcher
+	priceCache *PriceCache
 }
 
 func NewPriceService(
 	cache *cache.RedisClient,
 	priceRepo *repositories.PriceRepository,
 	fetcher *PriceFetcher,
+	priceCache *PriceCache,
 ) *PriceService {
 	return &PriceService{
-		cache:     cache,
-		priceRepo: priceRepo,
-		fetcher:   fetcher,
+		cache:      cache,
+		priceRepo:  priceRepo,
+		fetcher:    fetcher,
+		priceCache: priceCache,
 	}
 }
 
-func (s *PriceService) GetCoinsSnapshot(ctx context.Context) ([]entity.Coin, error) {
-	var cached []models.CoinSnapshot
-	if err := s.cache.GetJSON(ctx, "coins:all", &cached); err != nil {
-		return []entity.Coin{}, err
-	}
-	coins := []entity.Coin{}
-	for _, i := range cached {
-		coins = append(coins, entity.Coin{
-			ID:       i.CoinID,
-			Name:     i.Name,
-			Symbol:   i.Symbol,
-			ImageURL: i.ImageURL,
-		})
+func (s *PriceService) GetCoins(ctx context.Context) ([]entity.Coin, error) {
+	coins, err := s.priceCache.GetCoins(ctx)
+	if err != nil {
+		return nil, err
 	}
 	return coins, nil
 }
 
 func (s *PriceService) GetCoinSnapshot(ctx context.Context, id string) (*entity.Coin, error) {
-	cached := models.CoinSnapshot{}
-	if err := s.cache.GetJSON(ctx, fmt.Sprintf("coins:%s", id), &cached); err != nil {
-		return nil, err
+	if coin := s.priceCache.GetCoinBySymbol(ctx, id); coin != nil {
+		return coin, nil
 	}
-	return &entity.Coin{
-		ID:       cached.CoinID,
-		Name:     cached.Name,
-		Symbol:   cached.Symbol,
-		ImageURL: cached.ImageURL,
-	}, nil
+	return nil, fmt.Errorf("not found")
 }
 
 func (s *PriceService) GetPrices(ctx context.Context, symbols []string) ([]entity.Price, error) {
 	prices := []entity.Price{}
 	for _, symbol := range symbols {
-		price := entity.Price{}
-		err := s.cache.GetJSON(ctx, fmt.Sprintf("prices:%s", symbol), price)
-		if err == nil {
-			prices = append(prices, price)
+		price := s.priceCache.GetPriceBySymbol(ctx, symbol)
+		if price != nil {
+			prices = append(prices, *price)
 		}
 	}
 	s.fetcher.setPricesToWatch(ctx, symbols)

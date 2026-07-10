@@ -23,7 +23,7 @@ func NewPriceHandler(priceService *core.PriceService) *PriceHandler {
 }
 
 func (h *PriceHandler) GetCoins(c *gin.Context) {
-	coins, err := h.priceService.GetCoinsSnapshot(c)
+	coins, err := h.priceService.GetCoins(c)
 	if err != nil {
 		h.log.WithError(err).Warn("failed to get coins")
 		c.JSON(http.StatusInternalServerError, nil)
@@ -42,7 +42,6 @@ func (h *PriceHandler) GetCoin(c *gin.Context) {
 		h.log.Warning("empty id")
 		c.JSON(http.StatusBadRequest, nil)
 	}
-	cannot decide whether use id or symbol
 	coin, err := h.priceService.GetCoinSnapshot(c, id)
 	if err != nil {
 		h.log.WithError(err).Warn("failed to get coin")
