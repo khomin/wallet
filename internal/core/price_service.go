@@ -3,13 +3,12 @@ package core
 import (
 	"context"
 	"errors"
-	"fmt"
 	"tracker/internal/cache"
 	"tracker/internal/db/models"
 	repositories "tracker/internal/db/repo"
 )
 
-var ErrPriceNotFound = errors.New("price not found")
+var ErrNotFound = errors.New("not found")
 
 type PriceService struct {
 	cache      *cache.RedisClient
@@ -34,36 +33,37 @@ func NewPriceService(
 
 func (s *PriceService) GetCoins(ctx context.Context) ([]models.Coin, error) {
 	coins, err := s.priceCache.GetCoins(ctx)
-	if err != nil {
-		return nil, err
+	if err == nil {
+		return coins, nil
 	}
-	return coins, nil
+	return nil, ErrNotFound
 }
 
-func (s *PriceService) GetCoinSnapshot(ctx context.Context, id string) (*models.Coin, error) {
-	if coin := s.priceCache.GetCoinBySymbol(ctx, id); coin != nil {
+func (s *PriceService) GetCoin(ctx context.Context, id string) (*models.Coin, error) {
+	coin := s.priceCache.GetCoinBySymbol(ctx, id)
+	if coin != nil {
 		return coin, nil
 	}
-	return nil, fmt.Errorf("not found")
+	return nil, ErrNotFound
 }
 
 func (s *PriceService) GetPrices(ctx context.Context, symbols []string) ([]models.Price, error) {
 	prices := []models.Price{}
+	s.priceCache.AddPricesToWatch(ctx, symbols)
 	for _, symbol := range symbols {
 		price := s.priceCache.GetPriceBySymbol(ctx, symbol)
 		if price != nil {
 			prices = append(prices, *price)
 		}
 	}
-	s.fetcher.addPricesToWatch(ctx, symbols)
 	return prices, nil
 }
 
 func (s *PriceService) GetPrice(ctx context.Context, symbol string) (*models.Price, error) {
-	s.fetcher.addPricesToWatch(ctx, []string{symbol})
+	s.priceCache.AddPricesToWatch(ctx, []string{symbol})
 	price := s.priceCache.GetPriceBySymbol(ctx, symbol)
 	if price != nil {
 		return price, nil
 	}
-	return nil, ErrPriceNotFound
+	return nil, ErrNotFound
 }

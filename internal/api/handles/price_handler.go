@@ -26,8 +26,10 @@ func NewPriceHandler(priceService *core.PriceService) *PriceHandler {
 func (h *PriceHandler) GetCoins(c *gin.Context) {
 	coins, err := h.priceService.GetCoins(c)
 	if err != nil {
-		h.log.WithError(err).Warn("failed to get coins")
-		c.JSON(http.StatusInternalServerError, nil)
+		c.JSON(http.StatusInternalServerError, dto.ErrorResponse{
+			Code:    "INTERNAL_ERROR",
+			Message: "unexpected error",
+		})
 		return
 	}
 	resp := dto.ToCoinsResponse(coins)
@@ -40,13 +42,18 @@ func (h *PriceHandler) GetCoins(c *gin.Context) {
 func (h *PriceHandler) GetCoin(c *gin.Context) {
 	id := c.Param("id")
 	if id == "" {
-		h.log.Warning("empty id")
-		c.JSON(http.StatusBadRequest, nil)
+		c.JSON(http.StatusBadRequest, dto.ErrorResponse{
+			Code:    "BAD_REQUEST",
+			Message: "id parameter is required",
+		})
+		return
 	}
-	coin, err := h.priceService.GetCoinSnapshot(c, id)
+	coin, err := h.priceService.GetCoin(c, id)
 	if err != nil {
-		h.log.WithError(err).Warn("failed to get coin")
-		c.JSON(http.StatusInternalServerError, nil)
+		c.JSON(http.StatusInternalServerError, dto.ErrorResponse{
+			Code:    "INTERNAL_ERROR",
+			Message: "unexpected error",
+		})
 		return
 	}
 	resp := dto.ToCoinResponse(*coin)
@@ -55,14 +62,20 @@ func (h *PriceHandler) GetCoin(c *gin.Context) {
 
 func (h *PriceHandler) GetPrices(c *gin.Context) {
 	symbolsParam := c.Query("symbols")
-	var symbols []string
-	if symbolsParam != "" {
-		symbols = strings.Split(strings.ToUpper(symbolsParam), ",")
+	symbols := strings.Split(strings.ToLower(symbolsParam), ",")
+	if len(symbols) == 0 {
+		c.JSON(http.StatusBadRequest, dto.ErrorResponse{
+			Code:    "BAD_REQUEST",
+			Message: "symbols parameter is required",
+		})
+		return
 	}
 	prices, err := h.priceService.GetPrices(c.Request.Context(), symbols)
 	if err != nil {
-		h.log.WithError(err).Warn("failed to get prices")
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "internal_server_error"})
+		c.JSON(http.StatusInternalServerError, dto.ErrorResponse{
+			Code:    "INTERNAL_ERROR",
+			Message: "unexpected error",
+		})
 		return
 	}
 	resp := dto.ToPricesResponse(prices)
@@ -83,7 +96,7 @@ func (h *PriceHandler) GetPrice(c *gin.Context) {
 	}
 	price, err := h.priceService.GetPrice(c.Request.Context(), id)
 	if err != nil {
-		if errors.Is(err, core.ErrPriceNotFound) {
+		if errors.Is(err, core.ErrNotFound) {
 			c.JSON(http.StatusNotFound, dto.ErrorResponse{
 				Code:    "NOT_FOUND",
 				Message: "requested price not found",

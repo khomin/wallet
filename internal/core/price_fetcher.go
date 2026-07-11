@@ -74,10 +74,10 @@ func (f *PriceFetcher) StartCoinFetcher(ctx context.Context) {
 
 func (f *PriceFetcher) StartActiveCoinFetcher(ctx context.Context) {
 	fetch := func() {
-		pricesToFetch := f.getPricesToWatch(ctx)
+		pricesToFetch := f.priceCache.GetPricesToWatch(ctx)
 		if len(pricesToFetch) > 0 {
-			coins := f.priceCache.GetCoinsBySymbol(ctx, pricesToFetch)
 			prices := []models.Price{}
+			coins, _ := f.priceCache.GetCoinsBySymbol(ctx, pricesToFetch)
 			for _, coin := range coins {
 				price, err := f.coingeckoClient.GetPrice(ctx, coin.CoinID)
 				if err != nil {
@@ -104,27 +104,6 @@ func (f *PriceFetcher) StartActiveCoinFetcher(ctx context.Context) {
 			fetch()
 		}
 	}
-}
-
-func (f *PriceFetcher) addPricesToWatch(ctx context.Context, symbols []string) error {
-	for _, symbol := range symbols {
-		if err := f.cache.Set(ctx, fmt.Sprintf("prices-to-watch:%s", symbol), symbol, 5*time.Minute); err != nil {
-			return err
-		}
-	}
-	return nil
-}
-
-func (f *PriceFetcher) getPricesToWatch(ctx context.Context) []string {
-	prices := []string{}
-	found, err := f.cache.Scan(ctx, "prices-to-watch:*")
-	if err != nil {
-		return prices
-	}
-	for _, foundPrice := range found {
-		prices = append(prices, foundPrice.(string))
-	}
-	return prices
 }
 
 // Solana: github.com/gagliardetto/solana-go

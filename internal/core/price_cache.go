@@ -39,16 +39,16 @@ func (p *PriceCache) GetCoins(ctx context.Context) ([]models.Coin, error) {
 	return coins, nil
 }
 
-func (p *PriceCache) GetCoinsBySymbol(ctx context.Context, symbols []string) []models.Coin {
+func (p *PriceCache) GetCoinsBySymbol(ctx context.Context, symbols []string) ([]models.Coin, error) {
 	coins := []models.Coin{}
 	for _, symbol := range symbols {
 		var coin models.Coin
 		if err := p.cache.GetJSON(ctx, fmt.Sprintf("coins:%s", symbol), &coin); err != nil {
-			return coins
+			return nil, err
 		}
 		coins = append(coins, coin)
 	}
-	return coins
+	return coins, nil
 }
 
 func (p *PriceCache) GetCoinBySymbol(ctx context.Context, symbol string) *models.Coin {
@@ -64,6 +64,27 @@ func (p *PriceCache) SetCoins(ctx context.Context, snapshots []models.Coin) erro
 		return err
 	}
 	return nil
+}
+
+func (p *PriceCache) AddPricesToWatch(ctx context.Context, symbols []string) error {
+	for _, symbol := range symbols {
+		if err := p.cache.Set(ctx, fmt.Sprintf("prices-to-watch:%s", symbol), symbol, 5*time.Minute); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func (p *PriceCache) GetPricesToWatch(ctx context.Context) []string {
+	prices := []string{}
+	found, err := p.cache.Scan(ctx, "prices-to-watch:*")
+	if err != nil {
+		return prices
+	}
+	for _, foundPrice := range found {
+		prices = append(prices, foundPrice.(string))
+	}
+	return prices
 }
 
 // if err := s.cache.GetJSON(ctx, fmt.Sprintf("coins:%s", id), &cached); err != nil {
