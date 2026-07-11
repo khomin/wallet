@@ -62,6 +62,10 @@ func main() {
 	priceService := core.NewPriceService(redisClient, priceRepo, priceFetcher, priceCache)
 	priceHandler := handlers.NewPriceHandler(priceService)
 
+	walletRepo := repositories.NewWalletRepository(db)
+	walletService := core.NewWalletService(walletRepo)
+	walletHandler := handlers.NewWalletHandler(walletService)
+
 	go priceFetcher.StartCoinFetcher(ctx)
 
 	r := gin.Default()
@@ -82,6 +86,13 @@ func main() {
 			"timestamp": time.Now().UTC().Format(time.RFC3339),
 		})
 	})
+
+	// Solana: github.com/gagliardetto/solana-go
+	// Ethereum / EVM Chains (BNB, Arbitrum, Base, Polygon): github.com/ethereum/go-ethereum
+	// Bitcoin: github.com/btcsuite/btcd/rpcclient
+	// TRON: github.com/fbsobreira/gotron-sdk
+	// rubblelabs/ripple
+	// blinklabs-io/gouroboros
 
 	server := &http.Server{
 		Addr:    fmt.Sprintf(":%d", app.Cfg.Server.Port),

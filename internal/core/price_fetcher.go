@@ -137,28 +137,3 @@ func (f *PriceFetcher) fromGeckoToCoinPrice(prices []coingecko.CoinGeckoCoin) []
 	}
 	return res
 }
-
-// func (f *PriceFetcher) pefrom(ctx context.Context) {
-// 	prices := []models.Price{}
-// 	chunks := lo.Chunk(symbols, 25)
-// 	for i := range chunks {
-// 		chunk := chunks[i]
-// 		prices, err = f.alchemyClient.GetPrices(ctx, chunk)
-// 		if err != nil {
-// 			f.log.WithError(err).WithField("chunk", chunk).Warn("Failed to fetch price chunk")
-// 			continue
-// 		}
-// 	}
-// 	f.storePriceSnapshot(ctx, prices)
-// }
-
-// Solana: github.com/gagliardetto/solana-go
-
-// Ethereum / EVM Chains (BNB, Arbitrum, Base, Polygon): github.com/ethereum/go-ethereum
-
-// Bitcoin: github.com/btcsuite/btcd/rpcclient
-
-// TRON: github.com/fbsobreira/gotron-sdk
-
-// rubblelabs/ripple
-// blinklabs-io/gouroboros
