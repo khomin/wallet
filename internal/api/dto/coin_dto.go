@@ -1,8 +1,6 @@
 package dto
 
-import (
-	"tracker/internal/core/entity"
-)
+import "tracker/internal/db/models"
 
 type CoinResponse struct {
 	Symbol   string `json:"symbol"`
@@ -10,7 +8,7 @@ type CoinResponse struct {
 	ImageURL string `json:"image_url"`
 }
 
-func ToCoinsResponse(coins []entity.Coin) []CoinResponse {
+func ToCoinsResponse(coins []models.Coin) []CoinResponse {
 	result := make([]CoinResponse, len(coins))
 	for i, coin := range coins {
 		result[i] = ToCoinResponse(coin)
@@ -18,7 +16,7 @@ func ToCoinsResponse(coins []entity.Coin) []CoinResponse {
 	return result
 }
 
-func ToCoinResponse(coin entity.Coin) CoinResponse {
+func ToCoinResponse(coin models.Coin) CoinResponse {
 	return CoinResponse{
 		Symbol:   coin.Symbol,
 		Name:     coin.Name,

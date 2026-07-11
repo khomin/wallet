@@ -14,7 +14,7 @@ func NewPriceRepository(db *db.DataBase) *PriceRepository {
 	return &PriceRepository{db: db}
 }
 
-func (r *PriceRepository) GetCoinSnapshot(ctx context.Context) ([]models.CoinSnapshot, error) {
+func (r *PriceRepository) GetCoinSnapshot(ctx context.Context) ([]models.Coin, error) {
 	query := `SELECT
 		coin_id,
 		symbol,
@@ -48,9 +48,9 @@ func (r *PriceRepository) GetCoinSnapshot(ctx context.Context) ([]models.CoinSna
 	}
 	defer rows.Close()
 
-	var snapshots []models.CoinSnapshot
+	var snapshots []models.Coin
 	for rows.Next() {
-		var snapshot models.CoinSnapshot
+		var snapshot models.Coin
 		if err := rows.Scan(
 			&snapshot.ID,
 			&snapshot.CoinID,
@@ -70,7 +70,7 @@ func (r *PriceRepository) GetCoinSnapshot(ctx context.Context) ([]models.CoinSna
 	return snapshots, nil
 }
 
-func (r *PriceRepository) SetCoinSnapshot(ctx context.Context, snapshots []models.CoinSnapshot) error {
+func (r *PriceRepository) SetCoinSnapshot(ctx context.Context, snapshots []models.Coin) error {
 	if len(snapshots) == 0 {
 		return nil
 	}
@@ -109,7 +109,7 @@ func (r *PriceRepository) SetCoinSnapshot(ctx context.Context, snapshots []model
 	return nil
 }
 
-func (r *PriceRepository) GetPriceSnapshot(ctx context.Context) ([]models.PriceSnapshot, error) {
+func (r *PriceRepository) GetPriceSnapshot(ctx context.Context) ([]models.Price, error) {
 	query := `SELECT
 		id,
 		coin_id,
@@ -127,9 +127,9 @@ func (r *PriceRepository) GetPriceSnapshot(ctx context.Context) ([]models.PriceS
 	}
 	defer rows.Close()
 
-	var snapshots []models.PriceSnapshot
+	var snapshots []models.Price
 	for rows.Next() {
-		var snapshot models.PriceSnapshot
+		var snapshot models.Price
 		if err := rows.Scan(
 			&snapshot.ID,
 			&snapshot.Symbol,
@@ -147,7 +147,7 @@ func (r *PriceRepository) GetPriceSnapshot(ctx context.Context) ([]models.PriceS
 	return snapshots, nil
 }
 
-func (r *PriceRepository) SetPriceSnapshot(ctx context.Context, snapshots []models.PriceSnapshot) error {
+func (r *PriceRepository) SetPriceSnapshot(ctx context.Context, snapshots []models.Price) error {
 	if len(snapshots) == 0 {
 		return nil
 	}

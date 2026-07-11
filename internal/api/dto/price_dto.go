@@ -1,39 +1,16 @@
 package dto
 
 import (
-	"time"
-	"tracker/internal/core/entity"
+	"tracker/internal/db/models"
 )
 
 type PriceResponse struct {
-	Symbol                    string      `json:"symbol"`
-	Name                      string      `json:"name"`
-	Image                     string      `json:"image"`
-	CurrentPrice              float64     `json:"current_price"`
-	MarketCap                 float64     `json:"market_cap"`
-	MarketCapRank             int         `json:"market_cap_rank"`
-	FullyDilutedValuation     float64     `json:"fully_diluted_valuation"`
-	TotalVolume               float64     `json:"total_volume"`
-	High24h                   float64     `json:"high_24h"`
-	Low24h                    float64     `json:"low_24h"`
-	PriceChange24h            float64     `json:"price_change_24h"`
-	PriceChangePercent24h     float64     `json:"price_change_percentage_24h"`
-	MarketCapChange24h        float64     `json:"market_cap_change_24h"`
-	MarketCapChangePercent24h float64     `json:"market_cap_change_percentage_24h"`
-	CirculatingSupply         float64     `json:"circulating_supply"`
-	TotalSupply               *float64    `json:"total_supply"`
-	MaxSupply                 *float64    `json:"max_supply"`
-	ATH                       float64     `json:"ath"`
-	ATHChangePercent          float64     `json:"ath_change_percentage"`
-	ATHDate                   time.Time   `json:"ath_date"`
-	ATL                       float64     `json:"atl"`
-	ATLChangePercent          float64     `json:"atl_change_percentage"`
-	ATLDate                   time.Time   `json:"atl_date"`
-	ROI                       interface{} `json:"roi"`
-	LastUpdated               time.Time   `json:"last_updated"`
+	Symbol       string  `json:"symbol"`
+	Name         string  `json:"name"`
+	CurrentPrice float64 `json:"current_price"`
 }
 
-func ToPricesResponse(prices []entity.Price) []PriceResponse {
+func ToPricesResponse(prices []models.Price) []PriceResponse {
 	result := make([]PriceResponse, 0)
 	for i, v := range prices {
 		result[i] = ToPriceResponse(v)
@@ -41,9 +18,10 @@ func ToPricesResponse(prices []entity.Price) []PriceResponse {
 	return result
 }
 
-func ToPriceResponse(price entity.Price) PriceResponse {
+func ToPriceResponse(price models.Price) PriceResponse {
 	return PriceResponse{
-		Symbol: price.Symbol,
-		Name:   price.Symbol,
+		Name:         price.Name,
+		Symbol:       price.Symbol,
+		CurrentPrice: price.PriceUSD,
 	}
 }

@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"errors"
 	"net/http"
 	"strings"
 	"tracker/internal/api/dto"
@@ -74,19 +75,27 @@ func (h *PriceHandler) GetPrices(c *gin.Context) {
 func (h *PriceHandler) GetPrice(c *gin.Context) {
 	id := c.Param("id")
 	if id == "" {
-		h.log.Warning("empty id")
-		c.JSON(http.StatusBadRequest, nil)
+		c.JSON(http.StatusBadRequest, dto.ErrorResponse{
+			Code:    "BAD_REQUEST",
+			Message: "id parameter is required",
+		})
+		return
 	}
-	prices, err := h.priceService.GetPrices(c.Request.Context(), []string{id})
+	price, err := h.priceService.GetPrice(c.Request.Context(), id)
 	if err != nil {
-		h.log.WithError(err).Warn("failed to get price")
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "internal_server_error"})
+		if errors.Is(err, core.ErrPriceNotFound) {
+			c.JSON(http.StatusNotFound, dto.ErrorResponse{
+				Code:    "NOT_FOUND",
+				Message: "requested price not found",
+			})
+			return
+		}
+		c.JSON(http.StatusInternalServerError, dto.ErrorResponse{
+			Code:    "INTERNAL_ERROR",
+			Message: "unexpected error",
+		})
 		return
 	}
-	if len(prices) == 0 {
-		c.JSON(http.StatusNotFound, gin.H{})
-		return
-	}
-	resp := dto.ToPriceResponse(prices[0])
+	resp := dto.ToPriceResponse(*price)
 	c.JSON(http.StatusOK, resp)
 }

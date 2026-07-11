@@ -6,7 +6,7 @@ import (
 	"github.com/google/uuid"
 )
 
-type CoinSnapshot struct {
+type Coin struct {
 	ID          uuid.UUID `db:"id" json:"id"`
 	CoinID      string    `db:"coin_id" json:"coin_id"` // "bitcoin"
 	Symbol      string    `db:"symbol" json:"symbol"`   // "btc"
@@ -16,7 +16,7 @@ type CoinSnapshot struct {
 	SnapshotAt  time.Time `db:"snapshot_at" json:"snapshot_at"` // When we captured this
 }
 
-type PriceSnapshot struct {
+type Price struct {
 	ID          uuid.UUID `db:"id" json:"id"`
 	CoinID      string    `db:"coin_id" json:"coin_id"` // "bitcoin"
 	Symbol      string    `db:"id" json:"symbol"`

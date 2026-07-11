@@ -7,7 +7,6 @@ import (
 	"tracker/internal/cache"
 	"tracker/internal/client/alchemy"
 	"tracker/internal/client/coingecko"
-	"tracker/internal/core/entity"
 	"tracker/internal/db/models"
 	repositories "tracker/internal/db/repo"
 
@@ -78,19 +77,14 @@ func (f *PriceFetcher) StartActiveCoinFetcher(ctx context.Context) {
 		pricesToFetch := f.getPricesToWatch(ctx)
 		if len(pricesToFetch) > 0 {
 			coins := f.priceCache.GetCoinsBySymbol(ctx, pricesToFetch)
-			prices := []entity.Price{}
+			prices := []models.Price{}
 			for _, coin := range coins {
-				price, err := f.coingeckoClient.GetPrice(ctx, coin.ID)
+				price, err := f.coingeckoClient.GetPrice(ctx, coin.CoinID)
 				if err != nil {
 					f.log.WithError(err).Error("Failed to fetch price")
 					return
 				}
-				prices = append(prices, entity.Price{
-					ID:          price.ID,
-					Symbol:      price.Symbol,
-					PriceUSD:    price.MarketData.CurrentPrice["usd"],
-					LastUpdated: price.LastUpdated,
-				})
+				prices = append(prices, priceFromGecko(price))
 			}
 			f.updatePriceSnapshot(ctx, prices)
 		}
@@ -112,7 +106,7 @@ func (f *PriceFetcher) StartActiveCoinFetcher(ctx context.Context) {
 	}
 }
 
-func (f *PriceFetcher) setPricesToWatch(ctx context.Context, symbols []string) error {
+func (f *PriceFetcher) addPricesToWatch(ctx context.Context, symbols []string) error {
 	for _, symbol := range symbols {
 		if err := f.cache.Set(ctx, fmt.Sprintf("prices-to-watch:%s", symbol), symbol, 5*time.Minute); err != nil {
 			return err
@@ -145,9 +139,9 @@ func (f *PriceFetcher) getPricesToWatch(ctx context.Context) []string {
 // blinklabs-io/gouroboros
 
 func (f *PriceFetcher) storeCoinSnapshot(ctx context.Context, coins []coingecko.CoinGeckoCoin) {
-	var snapshots []models.CoinSnapshot
+	var snapshots []models.Coin
 	for _, coin := range coins {
-		snapshot := models.CoinSnapshot{
+		snapshot := models.Coin{
 			ID:          uuid.New(),
 			CoinID:      coin.ID,
 			Symbol:      coin.Symbol,
@@ -160,12 +154,9 @@ func (f *PriceFetcher) storeCoinSnapshot(ctx context.Context, coins []coingecko.
 	}
 
 	// Store in Redis cache all
-	if err := f.priceCache.SetCoins(snapshots); err != nil {
+	if err := f.priceCache.SetCoins(ctx, snapshots); err != nil {
 		f.log.WithError(err).Error("Failed to cache in Redis")
 	}
-	// if err := f.cache.SetJSON(ctx, "coins:all", snapshots, 1*time.Hour); err != nil {
-	// 	f.log.WithError(err).Error("Failed to cache in Redis")
-	// }
 	// Store in Redis one by one
 	for _, coin := range snapshots {
 		if err := f.cache.SetJSON(ctx, fmt.Sprintf("coins:%s", coin.Symbol), coin, 1*time.Hour); err != nil {
@@ -178,16 +169,16 @@ func (f *PriceFetcher) storeCoinSnapshot(ctx context.Context, coins []coingecko.
 	}
 }
 
-func (f *PriceFetcher) updatePriceSnapshot(ctx context.Context, prices []entity.Price) {
-	var snapshots []models.PriceSnapshot
-	for _, v := range prices {
-		snapshots = append(snapshots, models.PriceSnapshot{
+func (f *PriceFetcher) updatePriceSnapshot(ctx context.Context, prices []models.Price) {
+	var snapshots []models.Price
+	for _, price := range prices {
+		snapshots = append(snapshots, models.Price{
 			ID:          uuid.New(),
-			Symbol:      v.Symbol,
-			PriceUSD:    v.PriceUSD,
-			LastUpdated: v.LastUpdated,
+			Symbol:      price.Symbol,
+			PriceUSD:    price.PriceUSD,
+			LastUpdated: price.LastUpdated,
 		})
-		if err := f.cache.SetJSON(ctx, fmt.Sprintf("prices:%s", v.Symbol), v, 60*time.Second); err != nil {
+		if err := f.priceCache.SetPrice(ctx, price.Symbol, price); err != nil {
 			f.log.WithError(err).Error("Failed to cache in Redis")
 		}
 	}
@@ -196,8 +187,18 @@ func (f *PriceFetcher) updatePriceSnapshot(ctx context.Context, prices []entity.
 	}
 }
 
+func priceFromGecko(price coingecko.CoinGeckoPrice) models.Price {
+	return models.Price{
+		CoinID:      price.ID,
+		Name:        price.Name,
+		Symbol:      price.Symbol,
+		PriceUSD:    price.MarketData.CurrentPrice["usd"],
+		LastUpdated: price.LastUpdated,
+	}
+}
+
 // func (f *PriceFetcher) pefrom(ctx context.Context) {
-// 	prices := []entity.Price{}
+// 	prices := []models.Price{}
 // 	chunks := lo.Chunk(symbols, 25)
 // 	for i := range chunks {
 // 		chunk := chunks[i]
