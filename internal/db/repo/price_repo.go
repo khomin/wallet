@@ -2,6 +2,7 @@ package repositories
 
 import (
 	"context"
+	"time"
 	"tracker/internal/db"
 	"tracker/internal/db/models"
 )
@@ -16,31 +17,15 @@ func NewPriceRepository(db *db.DataBase) *PriceRepository {
 
 func (r *PriceRepository) GetCoinSnapshot(ctx context.Context) ([]models.Coin, error) {
 	query := `SELECT
+		id,
 		coin_id,
 		symbol,
 		coin_name,
-		price_usd,
-		market_cap_usd,
-		market_cap_rank,
-		total_volume_usd,
-		price_change_24h,
-		price_change_percent_24h,
-		market_cap_change_24h,
-		market_cap_change_percent_24h,
-		circulating_supply,
-		total_supply,
-		max_supply,
-		ath,
-		ath_change_percent,
-		ath_date,
-		atl,
-		atl_change_percent,
-		atl_date,
 		image_url,
 		last_updated,
 		snapshot_at
-		FROM coin_snapshots
-		ORDER BY coin_id ASC`
+	FROM coins
+	ORDER BY coin_id ASC`
 
 	rows, err := r.db.Pool.Query(ctx, query)
 	if err != nil {
@@ -74,7 +59,7 @@ func (r *PriceRepository) SetCoinSnapshot(ctx context.Context, snapshots []model
 	if len(snapshots) == 0 {
 		return nil
 	}
-	query := `INSERT INTO coin_snapshots (
+	query := `INSERT INTO coins (
 			coin_id,
 			symbol,
 			coin_name,
@@ -111,14 +96,18 @@ func (r *PriceRepository) SetCoinSnapshot(ctx context.Context, snapshots []model
 
 func (r *PriceRepository) GetPriceSnapshot(ctx context.Context) ([]models.CoinPrice, error) {
 	query := `SELECT
-		id,
 		coin_id,
 		symbol,
 		coin_name,
-		image_url,
-		last_updated,
-		snapshot_at
-	FROM coin_snapshots
+		price_usd,
+		market_cap_usd,
+		total_volume_usd,
+		price_change_24h,
+		price_change_percent_24h,
+		market_cap_change_24h,
+		market_cap_change_percent_24h,
+		last_updated
+	FROM coin_price_snapshots
 	ORDER BY coin_id ASC`
 
 	rows, err := r.db.Pool.Query(ctx, query)
@@ -131,14 +120,21 @@ func (r *PriceRepository) GetPriceSnapshot(ctx context.Context) ([]models.CoinPr
 	for rows.Next() {
 		var snapshot models.CoinPrice
 		if err := rows.Scan(
-			&snapshot.ID,
+			&snapshot.CoinID,
 			&snapshot.Symbol,
+			&snapshot.Name,
 			&snapshot.CurrentPrice,
+			&snapshot.MarketCap,
+			&snapshot.TotalVolume,
 			&snapshot.Change_24h,
+			&snapshot.PriceChangePercentage_24h,
+			&snapshot.MarketCapChange_24h,
+			&snapshot.MarketCapChange_percentage_24h,
 			&snapshot.LastUpdated,
 		); err != nil {
 			return nil, err
 		}
+		snapshot.PriceChange_24h = snapshot.Change_24h
 		snapshots = append(snapshots, snapshot)
 	}
 	if err := rows.Err(); err != nil {
@@ -151,31 +147,51 @@ func (r *PriceRepository) SetPriceSnapshot(ctx context.Context, snapshots []mode
 	if len(snapshots) == 0 {
 		return nil
 	}
-	query := `INSERT INTO price_snapshots (
+	query := `INSERT INTO coin_price_snapshots (
 			coin_id,
 			symbol,
+			coin_name,
 			price_usd,
-			change_24h,
+			market_cap_usd,
+			total_volume_usd,
+			price_change_24h,
+			price_change_percent_24h,
+			market_cap_change_24h,
+			market_cap_change_percent_24h,
 			last_updated,
+			snapshot_at
 		)
 		VALUES (
-			$1, $2, $3, $4, $5, $6
+			$1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12
 		)
 		ON CONFLICT (coin_id)
 		DO UPDATE SET
 			symbol = EXCLUDED.symbol,
 			coin_name = EXCLUDED.coin_name,
-			image_url = EXCLUDED.image_url,
+			price_usd = EXCLUDED.price_usd,
+			market_cap_usd = EXCLUDED.market_cap_usd,
+			total_volume_usd = EXCLUDED.total_volume_usd,
+			price_change_24h = EXCLUDED.price_change_24h,
+			price_change_percent_24h = EXCLUDED.price_change_percent_24h,
+			market_cap_change_24h = EXCLUDED.market_cap_change_24h,
+			market_cap_change_percent_24h = EXCLUDED.market_cap_change_percent_24h,
 			last_updated = EXCLUDED.last_updated,
 			snapshot_at = EXCLUDED.snapshot_at
 	`
 	for _, snapshot := range snapshots {
 		_, err := r.db.Pool.Exec(ctx, query,
-			snapshot.ID,
+			snapshot.CoinID,
 			snapshot.Symbol,
+			snapshot.Name,
 			snapshot.CurrentPrice,
+			snapshot.MarketCap,
+			snapshot.TotalVolume,
 			snapshot.Change_24h,
+			snapshot.PriceChangePercentage_24h,
+			snapshot.MarketCapChange_24h,
+			snapshot.MarketCapChange_percentage_24h,
 			snapshot.LastUpdated,
+			time.Now().UTC(),
 		)
 		if err != nil {
 			return err
