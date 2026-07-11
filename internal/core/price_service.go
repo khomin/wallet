@@ -47,8 +47,8 @@ func (s *PriceService) GetCoin(ctx context.Context, id string) (*models.Coin, er
 	return nil, ErrNotFound
 }
 
-func (s *PriceService) GetPrices(ctx context.Context, symbols []string) ([]models.Price, error) {
-	prices := []models.Price{}
+func (s *PriceService) GetPrices(ctx context.Context, symbols []string) ([]models.CoinPrice, error) {
+	prices := []models.CoinPrice{}
 	s.priceCache.AddPricesToWatch(ctx, symbols)
 	for _, symbol := range symbols {
 		price := s.priceCache.GetPriceBySymbol(ctx, symbol)
@@ -59,7 +59,7 @@ func (s *PriceService) GetPrices(ctx context.Context, symbols []string) ([]model
 	return prices, nil
 }
 
-func (s *PriceService) GetPrice(ctx context.Context, symbol string) (*models.Price, error) {
+func (s *PriceService) GetPrice(ctx context.Context, symbol string) (*models.CoinPrice, error) {
 	s.priceCache.AddPricesToWatch(ctx, []string{symbol})
 	price := s.priceCache.GetPriceBySymbol(ctx, symbol)
 	if price != nil {

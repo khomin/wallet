@@ -28,7 +28,7 @@ func NewAlchemyClient(apiKey string) *AlchemyClient {
 	}
 }
 
-func (c *AlchemyClient) GetPrices(ctx context.Context, symbols []string) ([]models.Price, error) {
+func (c *AlchemyClient) GetPrices(ctx context.Context, symbols []string) ([]models.CoinPrice, error) {
 	if len(symbols) > 25 {
 		return nil, fmt.Errorf("maximum 25 symbols per request")
 	}
@@ -38,7 +38,7 @@ func (c *AlchemyClient) GetPrices(ctx context.Context, symbols []string) ([]mode
 	if err != nil {
 		return nil, err
 	}
-	var prices []models.Price
+	var prices []models.CoinPrice
 	if resp.StatusCode == http.StatusOK {
 		body, err := io.ReadAll(resp.Body)
 		if err != nil {
@@ -57,12 +57,12 @@ func (c *AlchemyClient) GetPrices(ctx context.Context, symbols []string) ([]mode
 				if strings.ToLower(p.Currency) == "usd" {
 					price, error := strconv.ParseFloat(p.Value, 2)
 					if error == nil {
-						prices = append(prices, models.Price{
-							Symbol:      token.Symbol,
-							CoinID:      "",
-							Name:        "",
-							PriceUSD:    price,
-							LastUpdated: p.LastUpdated,
+						prices = append(prices, models.CoinPrice{
+							Symbol:       token.Symbol,
+							CoinID:       "",
+							Name:         "",
+							CurrentPrice: price,
+							LastUpdated:  p.LastUpdated,
 						})
 					}
 				}

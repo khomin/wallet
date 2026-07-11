@@ -33,7 +33,7 @@ type CoinGeckoCoin struct {
 	LastUpdated               time.Time   `json:"last_updated"`
 }
 
-type CoinGeckoPrice struct {
+type CoinGeckoCoinDetail struct {
 	ID     string `json:"id"`
 	Symbol string `json:"symbol"`
 	Name   string `json:"name"`

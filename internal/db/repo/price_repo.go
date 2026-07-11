@@ -109,7 +109,7 @@ func (r *PriceRepository) SetCoinSnapshot(ctx context.Context, snapshots []model
 	return nil
 }
 
-func (r *PriceRepository) GetPriceSnapshot(ctx context.Context) ([]models.Price, error) {
+func (r *PriceRepository) GetPriceSnapshot(ctx context.Context) ([]models.CoinPrice, error) {
 	query := `SELECT
 		id,
 		coin_id,
@@ -127,14 +127,14 @@ func (r *PriceRepository) GetPriceSnapshot(ctx context.Context) ([]models.Price,
 	}
 	defer rows.Close()
 
-	var snapshots []models.Price
+	var snapshots []models.CoinPrice
 	for rows.Next() {
-		var snapshot models.Price
+		var snapshot models.CoinPrice
 		if err := rows.Scan(
 			&snapshot.ID,
 			&snapshot.Symbol,
-			&snapshot.PriceUSD,
-			&snapshot.Change24h,
+			&snapshot.CurrentPrice,
+			&snapshot.Change_24h,
 			&snapshot.LastUpdated,
 		); err != nil {
 			return nil, err
@@ -147,7 +147,7 @@ func (r *PriceRepository) GetPriceSnapshot(ctx context.Context) ([]models.Price,
 	return snapshots, nil
 }
 
-func (r *PriceRepository) SetPriceSnapshot(ctx context.Context, snapshots []models.Price) error {
+func (r *PriceRepository) SetPriceSnapshot(ctx context.Context, snapshots []models.CoinPrice) error {
 	if len(snapshots) == 0 {
 		return nil
 	}
@@ -173,8 +173,8 @@ func (r *PriceRepository) SetPriceSnapshot(ctx context.Context, snapshots []mode
 		_, err := r.db.Pool.Exec(ctx, query,
 			snapshot.ID,
 			snapshot.Symbol,
-			snapshot.PriceUSD,
-			snapshot.Change24h,
+			snapshot.CurrentPrice,
+			snapshot.Change_24h,
 			snapshot.LastUpdated,
 		)
 		if err != nil {

@@ -20,7 +20,7 @@ type PriceResponse struct {
 	LastUpdated                    time.Time `json:"last_updated"`
 }
 
-func ToPricesResponse(prices []models.Price) []PriceResponse {
+func ToPricesResponse(prices []models.CoinPrice) []PriceResponse {
 	result := make([]PriceResponse, len(prices))
 	for i, v := range prices {
 		result[i] = ToPriceResponse(v)
@@ -28,7 +28,7 @@ func ToPricesResponse(prices []models.Price) []PriceResponse {
 	return result
 }
 
-func ToPriceResponse(price models.Price) PriceResponse {
+func ToPriceResponse(price models.CoinPrice) PriceResponse {
 	return PriceResponse{
 		Symbol:                         price.Symbol,
 		Name:                           price.Name,

@@ -63,10 +63,9 @@ func main() {
 	priceService := core.NewPriceService(redisClient, priceRepo, priceFetcher, priceCache)
 	priceHandler := handlers.NewPriceHandler(priceService)
 
-	// Start the background fetcher in a goroutine
 	go priceFetcher.StartCoinFetcher(ctx)
 
-	go priceFetcher.StartActiveCoinFetcher(ctx)
+	// go priceFetcher.StartActiveCoinFetcher(ctx)
 
 	r := gin.Default()
 

@@ -18,8 +18,8 @@ func NewPriceCache(cache *cache.RedisClient) *PriceCache {
 	}
 }
 
-func (p *PriceCache) GetPriceBySymbol(ctx context.Context, symbol string) *models.Price {
-	price := models.Price{}
+func (p *PriceCache) GetPriceBySymbol(ctx context.Context, symbol string) *models.CoinPrice {
+	price := models.CoinPrice{}
 	err := p.cache.GetJSON(ctx, fmt.Sprintf("prices:%s", symbol), &price)
 	if err == nil {
 		return &price
@@ -27,13 +27,22 @@ func (p *PriceCache) GetPriceBySymbol(ctx context.Context, symbol string) *model
 	return nil
 }
 
-func (p *PriceCache) SetPrice(ctx context.Context, symbol string, price models.Price) error {
+func (p *PriceCache) SetPrices(ctx context.Context, prices []models.CoinPrice) error {
+	for _, price := range prices {
+		if err := p.cache.SetJSON(ctx, fmt.Sprintf("prices:%s", price.Symbol), price, 60*time.Second); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func (p *PriceCache) SetPrice(ctx context.Context, symbol string, price models.CoinPrice) error {
 	return p.cache.SetJSON(ctx, fmt.Sprintf("prices:%s", symbol), price, 60*time.Second)
 }
 
 func (p *PriceCache) GetCoins(ctx context.Context) ([]models.Coin, error) {
 	var coins []models.Coin
-	if err := p.cache.GetJSON(ctx, "coins:all", &coins); err != nil {
+	if err := p.cache.GetJSON(ctx, "coins:list", &coins); err != nil {
 		return nil, err
 	}
 	return coins, nil
@@ -59,9 +68,14 @@ func (p *PriceCache) GetCoinBySymbol(ctx context.Context, symbol string) *models
 	return &coin
 }
 
-func (p *PriceCache) SetCoins(ctx context.Context, snapshots []models.Coin) error {
-	if err := p.cache.SetJSON(ctx, "coins:all", snapshots, 1*time.Hour); err != nil {
+func (p *PriceCache) SetCoins(ctx context.Context, coins []models.Coin) error {
+	if err := p.cache.SetJSON(ctx, "coins:list", coins, 1*time.Hour); err != nil {
 		return err
+	}
+	for _, i := range coins {
+		if err := p.cache.SetJSON(ctx, fmt.Sprintf("coins:%s", i.Symbol), i, 1*time.Hour); err != nil {
+			return err
+		}
 	}
 	return nil
 }
@@ -86,13 +100,3 @@ func (p *PriceCache) GetPricesToWatch(ctx context.Context) []string {
 	}
 	return prices
 }
-
-// if err := s.cache.GetJSON(ctx, fmt.Sprintf("coins:%s", id), &cached); err != nil {
-// 	return nil, err
-// }
-// return &entity.Coin{
-// 	ID:       cached.CoinID,
-// 	Name:     cached.Name,
-// 	Symbol:   cached.Symbol,
-// 	ImageURL: cached.ImageURL,
-// }, nil

@@ -2,7 +2,6 @@ package core
 
 import (
 	"context"
-	"fmt"
 	"time"
 	"tracker/internal/cache"
 	"tracker/internal/client/alchemy"
@@ -48,12 +47,23 @@ func NewPriceFetcher(
 
 func (f *PriceFetcher) StartCoinFetcher(ctx context.Context) {
 	fetch := func() {
-		coins, err := f.coingeckoClient.GetCoins(ctx)
+		coinsMarket, err := f.coingeckoClient.GetMarket(ctx)
 		if err != nil {
 			f.log.WithError(err).Error("Failed to fetch coins")
 			return
 		}
-		f.storeCoinSnapshot(ctx, coins)
+		coins := f.fromGeckoToCoin(coinsMarket)
+		prices := f.fromGeckoToCoinPrice(coinsMarket)
+
+		if err := f.priceCache.SetCoins(ctx, coins); err != nil {
+			f.log.WithError(err).Error("Failed to cache coins")
+		}
+		if err := f.priceCache.SetPrices(ctx, prices); err != nil {
+			f.log.WithError(err).Error("Failed to cache prices")
+		}
+		if err := f.repo.SetCoinSnapshot(ctx, coins); err != nil {
+			f.log.WithError(err).Error("Failed to store snapshots")
+		}
 	}
 	fetch()
 
@@ -72,40 +82,6 @@ func (f *PriceFetcher) StartCoinFetcher(ctx context.Context) {
 	}
 }
 
-func (f *PriceFetcher) StartActiveCoinFetcher(ctx context.Context) {
-	fetch := func() {
-		pricesToFetch := f.priceCache.GetPricesToWatch(ctx)
-		if len(pricesToFetch) > 0 {
-			prices := []models.Price{}
-			coins, _ := f.priceCache.GetCoinsBySymbol(ctx, pricesToFetch)
-			for _, coin := range coins {
-				price, err := f.coingeckoClient.GetPrice(ctx, coin.CoinID)
-				if err != nil {
-					f.log.WithError(err).Error("Failed to fetch price")
-					return
-				}
-				prices = append(prices, priceFromGecko(price))
-			}
-			f.updatePriceSnapshot(ctx, prices)
-		}
-	}
-	fetch()
-
-	ticker := time.NewTicker(f.activeCoinInterval)
-	defer ticker.Stop()
-
-	for {
-		select {
-		case <-ctx.Done():
-			f.log.Info("fetcher active prices stopped")
-			return
-		case <-ticker.C:
-			f.log.Info("fetcher active prices update")
-			fetch()
-		}
-	}
-}
-
 // Solana: github.com/gagliardetto/solana-go
 
 // Ethereum / EVM Chains (BNB, Arbitrum, Base, Polygon): github.com/ethereum/go-ethereum
@@ -117,45 +93,14 @@ func (f *PriceFetcher) StartActiveCoinFetcher(ctx context.Context) {
 // rubblelabs/ripple
 // blinklabs-io/gouroboros
 
-func (f *PriceFetcher) storeCoinSnapshot(ctx context.Context, coins []coingecko.CoinGeckoCoin) {
-	var snapshots []models.Coin
-	for _, coin := range coins {
-		snapshot := models.Coin{
-			ID:          uuid.New(),
-			CoinID:      coin.ID,
-			Symbol:      coin.Symbol,
-			Name:        coin.Name,
-			ImageURL:    coin.Image,
-			LastUpdated: coin.LastUpdated,
-			SnapshotAt:  time.Now(),
-		}
-		snapshots = append(snapshots, snapshot)
-	}
-
-	// Store in Redis cache all
-	if err := f.priceCache.SetCoins(ctx, snapshots); err != nil {
-		f.log.WithError(err).Error("Failed to cache in Redis")
-	}
-	// Store in Redis one by one
-	for _, coin := range snapshots {
-		if err := f.cache.SetJSON(ctx, fmt.Sprintf("coins:%s", coin.Symbol), coin, 1*time.Hour); err != nil {
-			f.log.WithError(err).Error("Failed to cache in Redis")
-		}
-	}
-
-	if err := f.repo.SetCoinSnapshot(ctx, snapshots); err != nil {
-		f.log.WithError(err).Error("Failed to store snapshots")
-	}
-}
-
-func (f *PriceFetcher) updatePriceSnapshot(ctx context.Context, prices []models.Price) {
-	var snapshots []models.Price
+func (f *PriceFetcher) updatePriceSnapshot(ctx context.Context, prices []models.CoinPrice) {
+	var snapshots []models.CoinPrice
 	for _, price := range prices {
-		snapshots = append(snapshots, models.Price{
-			ID:          uuid.New(),
-			Symbol:      price.Symbol,
-			PriceUSD:    price.PriceUSD,
-			LastUpdated: price.LastUpdated,
+		snapshots = append(snapshots, models.CoinPrice{
+			ID:           uuid.New(),
+			Symbol:       price.Symbol,
+			CurrentPrice: price.CurrentPrice,
+			LastUpdated:  price.LastUpdated,
 		})
 		if err := f.priceCache.SetPrice(ctx, price.Symbol, price); err != nil {
 			f.log.WithError(err).Error("Failed to cache in Redis")
@@ -166,14 +111,41 @@ func (f *PriceFetcher) updatePriceSnapshot(ctx context.Context, prices []models.
 	}
 }
 
-func priceFromGecko(price coingecko.CoinGeckoPrice) models.Price {
-	return models.Price{
-		CoinID:      price.ID,
-		Name:        price.Name,
-		Symbol:      price.Symbol,
-		PriceUSD:    price.MarketData.CurrentPrice["usd"],
-		LastUpdated: price.LastUpdated,
+func (f *PriceFetcher) fromGeckoToCoin(price []coingecko.CoinGeckoCoin) []models.Coin {
+	res := []models.Coin{}
+	for _, i := range price {
+		res = append(res, models.Coin{
+			CoinID:      i.ID,
+			Name:        i.Name,
+			Symbol:      i.Symbol,
+			ImageURL:    i.Image,
+			LastUpdated: i.LastUpdated,
+		})
 	}
+	return res
+}
+
+func (f *PriceFetcher) fromGeckoToCoinPrice(price []coingecko.CoinGeckoCoin) []models.CoinPrice {
+	res := []models.CoinPrice{}
+	for _, i := range price {
+		res = append(res, models.CoinPrice{
+			CoinID:                         i.ID,
+			Name:                           i.Name,
+			Symbol:                         i.Symbol,
+			CurrentPrice:                   i.CurrentPrice,
+			Change_24h:                     i.PriceChange24h,
+			MarketCap:                      i.MarketCap,
+			TotalVolume:                    i.TotalVolume,
+			High_24h:                       i.High24h,
+			Low_24h:                        i.Low24h,
+			PriceChange_24h:                i.PriceChange24h,
+			PriceChangePercentage_24h:      i.PriceChangePercent24h,
+			MarketCapChange_24h:            i.MarketCapChange24h,
+			MarketCapChange_percentage_24h: i.MarketCapChangePercent24h,
+			LastUpdated:                    i.LastUpdated,
+		})
+	}
+	return res
 }
 
 // func (f *PriceFetcher) pefrom(ctx context.Context) {

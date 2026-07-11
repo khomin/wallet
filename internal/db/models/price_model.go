@@ -16,7 +16,7 @@ type Coin struct {
 	SnapshotAt  time.Time `db:"snapshot_at" json:"snapshot_at"` // When we captured this
 }
 
-type Price struct {
+type CoinPrice struct {
 	ID                             uuid.UUID `db:"id" json:"id"`
 	CoinID                         string    `db:"coin_id" json:"coin_id"` // "bitcoin"
 	Symbol                         string    `db:"id" json:"symbol"`
