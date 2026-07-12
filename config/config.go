@@ -8,11 +8,12 @@ import (
 )
 
 type Config struct {
-	Server    ServerConfig    `mapstructure:"server"`
-	Database  DatabaseConfig  `mapstructure:"database"`
-	Redis     RedisConfig     `mapstructure:"redis"`
-	Alchemy   AlchemyConfig   `mapstructure:"alchemy"`
-	CoinGecko CoinGeckoConfig `mapstructure:"coingecko"`
+	Server     ServerConfig     `mapstructure:"server"`
+	Database   DatabaseConfig   `mapstructure:"database"`
+	Redis      RedisConfig      `mapstructure:"redis"`
+	Alchemy    AlchemyConfig    `mapstructure:"alchemy"`
+	CoinGecko  CoinGeckoConfig  `mapstructure:"coingecko"`
+	Blockchain BlockchainConfig `mapstructure:"blockchain"`
 }
 
 type ServerConfig struct {
@@ -41,6 +42,16 @@ type AlchemyConfig struct {
 
 type CoinGeckoConfig struct {
 	APIKey string `mapstructure:"api_key"`
+}
+
+type BlockchainConfig struct {
+	EthereumRPC    string `mapstructure:"ethereum_rpc"`
+	SolanaRPC      string `mapstructure:"solana_rpc"`
+	BitcoinRPCHost string `mapstructure:"bitcoin_rpc_host"`
+	BitcoinRPCUser string `mapstructure:"bitcoin_rpc_user"`
+	BitcoinRPCPass string `mapstructure:"bitcoin_rpc_pass"`
+	TronGRPC       string `mapstructure:"tron_grpc"`
+	TronAPIKey     string `mapstructure:"tron_api_key"`
 }
 
 func NewConfig() *Config {

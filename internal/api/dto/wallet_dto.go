@@ -3,6 +3,7 @@ package dto
 import (
 	"time"
 
+	"tracker/internal/core"
 	"tracker/internal/db/models"
 
 	"github.com/google/uuid"
@@ -19,10 +20,21 @@ type WalletResponse struct {
 }
 
 type CreateWalletRequest struct {
-	Address string `json:"address" binding:"required"`
 	Chain   string `json:"chain" binding:"required"`
+	Address string `json:"address" binding:"required"`
 	Label   string `json:"label,omitempty"`
 	UserID  string `json:"user_id,omitempty"`
+}
+
+type GetWalletBalanceResponse struct {
+	Chain   string  `json:"chain" binding:"required"`
+	Address string  `json:"address" binding:"required"`
+	Balance float64 `json:"label,omitempty"`
+}
+
+type GetWalletBalanceRequest struct {
+	Address string `json:"address" binding:"required"`
+	Chain   string `json:"chain" binding:"required"`
 }
 
 func ToWalletResponse(wallet models.Wallet) WalletResponse {
@@ -43,4 +55,12 @@ func ToWalletResponses(wallets []models.Wallet) []WalletResponse {
 		resp[i] = ToWalletResponse(wallet)
 	}
 	return resp
+}
+
+func ToGetWalletBalanceResponse(balance *core.Balance) GetWalletBalanceResponse {
+	return GetWalletBalanceResponse{
+		Chain:   balance.Chain,
+		Address: balance.Address,
+		Balance: balance.Balance,
+	}
 }

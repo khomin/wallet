@@ -12,7 +12,11 @@ import (
 	handlers "tracker/internal/api/handles"
 	"tracker/internal/cache"
 	"tracker/internal/client/alchemy"
+	"tracker/internal/client/bitcoin"
 	"tracker/internal/client/coingecko"
+	"tracker/internal/client/ethereum"
+	"tracker/internal/client/solana"
+	"tracker/internal/client/tron"
 	"tracker/internal/core"
 	"tracker/internal/db"
 	repositories "tracker/internal/db/repo"
@@ -41,6 +45,10 @@ func main() {
 
 	coingeckoClient := coingecko.NewCoinGeckoClient(app.Cfg.CoinGecko.APIKey)
 	alchemyClient := alchemy.NewAlchemyClient(app.Cfg.Alchemy.APIKey)
+	ethereumClient := ethereum.NewEthereumClient(app.Cfg.Blockchain.EthereumRPC)
+	solanaClient := solana.NewSolanaClient(app.Cfg.Blockchain.SolanaRPC)
+	bitcoinClient := bitcoin.NewBitcoinClient(app.Cfg.Blockchain.BitcoinRPCHost, app.Cfg.Blockchain.BitcoinRPCUser, app.Cfg.Blockchain.BitcoinRPCPass)
+	tronClient := tron.NewTronClient(app.Cfg.Blockchain.TronGRPC, app.Cfg.Blockchain.TronAPIKey)
 	priceRepo := repositories.NewPriceRepository(db)
 
 	// Create a context that can be cancelled for graceful shutdown
@@ -62,9 +70,14 @@ func main() {
 	priceService := core.NewPriceService(redisClient, priceRepo, priceFetcher, priceCache)
 	priceHandler := handlers.NewPriceHandler(priceService)
 
+	blockchainService := core.NewBlockchainService(ethereumClient, solanaClient, bitcoinClient, tronClient)
+	if err := blockchainService.ConnectAll(ctx); err != nil {
+		logrus.WithError(err).Warn("failed to connect all blockchain clients")
+	}
+
 	walletRepo := repositories.NewWalletRepository(db)
 	walletService := core.NewWalletService(walletRepo)
-	walletHandler := handlers.NewWalletHandler(walletService)
+	walletHandler := handlers.NewWalletHandler(walletService, blockchainService)
 
 	go priceFetcher.StartCoinFetcher(ctx)
 
@@ -79,6 +92,7 @@ func main() {
 		v1.GET("/prices/:id", priceHandler.GetPrice)
 		v1.GET("/wallets", walletHandler.ListWallets)
 		v1.POST("/wallets", walletHandler.AddWallet)
+		v1.GET("/wallets/:chain/:address/balance", walletHandler.GetWalletBalance)
 	}
 	r.GET("/health", func(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{
