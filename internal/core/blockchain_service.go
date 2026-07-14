@@ -3,19 +3,24 @@ package core
 import (
 	"context"
 	"fmt"
-	"strings"
 
 	"tracker/internal/client/bitcoin"
 	"tracker/internal/client/ethereum"
 	"tracker/internal/client/solana"
 	"tracker/internal/client/tron"
+
+	"github.com/google/uuid"
 )
 
+type ChainProvider interface {
+	GetBalance(ctx context.Context, address string) (float64, error)
+	Connect(ctx context.Context) error
+	Close()
+}
+
 type BlockchainService struct {
-	Ethereum *ethereum.EthereumClient
-	Solana   *solana.SolanaClient
-	Bitcoin  *bitcoin.BitcoinClient
-	Tron     *tron.TronClient
+	providers  map[string]ChainProvider
+	walletRepo WalletRepository
 }
 
 type Balance struct {
@@ -25,90 +30,61 @@ type Balance struct {
 }
 
 func NewBlockchainService(
-	eth *ethereum.EthereumClient,
+	ethereumMainnet *ethereum.EthereumClient,
+	ethereumArbitrum *ethereum.EthereumClient,
+	ethereumBase *ethereum.EthereumClient,
+	polygon *ethereum.EthereumClient,
+	bnb *ethereum.EthereumClient,
 	sol *solana.SolanaClient,
 	btc *bitcoin.BitcoinClient,
-	tronCli *tron.TronClient,
+	tron *tron.TronClient,
+	walletRepo WalletRepository,
 ) *BlockchainService {
 	return &BlockchainService{
-		Ethereum: eth,
-		Solana:   sol,
-		Bitcoin:  btc,
-		Tron:     tronCli,
+		providers: map[string]ChainProvider{
+			"ethereum": ethereumMainnet,
+			"eth":      ethereumMainnet,
+			"arbitrum": ethereumArbitrum,
+			"arb":      ethereumArbitrum,
+			"base":     ethereumBase,
+			"polygon":  polygon,
+			"bnb":      bnb,
+			"bsc":      bnb,
+			"solana":   sol,
+			"sol":      sol,
+			"tron":     tron,
+			"trx":      tron,
+		},
+		walletRepo: walletRepo,
 	}
 }
 
 func (s *BlockchainService) ConnectAll(ctx context.Context) error {
-	if s.Ethereum != nil {
-		if err := s.Ethereum.Connect(ctx); err != nil {
-			return fmt.Errorf("ethereum connect: %w", err)
-		}
-	}
-	if s.Solana != nil {
-		// No explicit connection step required, just validate endpoint.
-	}
-	if s.Bitcoin != nil {
-		if err := s.Bitcoin.Connect(ctx); err != nil {
-			return fmt.Errorf("bitcoin connect: %w", err)
-		}
-	}
-	if s.Tron != nil {
-		if err := s.Tron.Connect(ctx); err != nil {
-			return fmt.Errorf("tron connect: %w", err)
+	for key, value := range s.providers {
+		if err := value.Connect(ctx); err != nil {
+			return fmt.Errorf("%s connect: %w", key, err)
 		}
 	}
 	return nil
 }
 
-func (s *BlockchainService) GetBalance(
-	ctx context.Context,
-	chain string,
-	address string,
-) (*Balance, error) {
-	balance := Balance{
-		Chain:   chain,
-		Address: address,
-		Balance: 0,
+func (s *BlockchainService) GetBalance(ctx context.Context, userID string, id uuid.UUID) (*Balance, error) {
+	wallet, err := s.walletRepo.GetWallet(ctx, userID, id)
+	if err != nil {
+		return nil, err
 	}
-	switch strings.ToLower(chain) {
-	case "ethereum", "eth", "bnb", "polygon", "arbitrum", "base":
-		if s.Ethereum == nil {
-			return nil, fmt.Errorf("ethereum provider not configured")
-		}
-		v, err := s.Ethereum.GetBalance(ctx, address)
-		if err != nil {
-			return nil, err
-		}
-		balance.Balance = v
-	case "solana", "sol":
-		if s.Solana == nil {
-			return nil, fmt.Errorf("solana provider not configured")
-		}
-		v, err := s.Solana.GetBalance(ctx, address)
-		if err != nil {
-			return nil, err
-		}
-		balance.Balance = v
-	case "bitcoin", "btc":
-		if s.Bitcoin == nil {
-			return nil, fmt.Errorf("bitcoin provider not configured")
-		}
-		v, err := s.Bitcoin.GetBalance(ctx, address)
-		if err != nil {
-			return nil, err
-		}
-		balance.Balance = v
-	case "tron":
-		if s.Tron == nil {
-			return nil, fmt.Errorf("tron provider not configured")
-		}
-		v, err := s.Tron.GetBalance(ctx, address)
-		if err != nil {
-			return nil, err
-		}
-		balance.Balance = v
-	default:
-		return nil, fmt.Errorf("unsupported chain: %s", chain)
+	// chain := strings.ToLower(wallet.Chain)
+	provider, found := s.providers[wallet.Chain]
+	if !found {
+		return nil, fmt.Errorf("unsupported chain: %s", wallet.Chain)
 	}
-	return &balance, nil
+	balance, err := provider.GetBalance(ctx, wallet.Address)
+	if err != nil {
+		return nil, err
+	}
+	return &Balance{
+		Chain:   wallet.Chain,
+		Address: wallet.Address,
+		Balance: balance,
+	}, nil
 }

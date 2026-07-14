@@ -11,8 +11,8 @@ type PriceRepository struct {
 	db *db.DataBase
 }
 
-func NewPriceRepository(db *db.DataBase) *PriceRepository {
-	return &PriceRepository{db: db}
+func NewPriceRepository(db *db.DataBase) PriceRepository {
+	return PriceRepository{db: db}
 }
 
 func (r *PriceRepository) GetCoinSnapshot(ctx context.Context) ([]models.Coin, error) {

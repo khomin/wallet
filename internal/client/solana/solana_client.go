@@ -27,6 +27,27 @@ func (c *SolanaClient) getClient() *rpc.Client {
 	return c.client
 }
 
+func (c *SolanaClient) Connect(ctx context.Context) error {
+	// if c.client != nil {
+	// 	return nil
+	// }
+	// if c.rpcURL == "" {
+	// 	return errors.New("ethereum rpc url is not configured")
+	// }
+	// client, err := ethclient.DialContext(ctx, c.rpcURL)
+	// if err != nil {
+	// 	return err
+	// }
+	// c.client = client
+	return nil
+}
+
+func (c *SolanaClient) Close() {
+	if c.client != nil {
+		c.client.Close()
+	}
+}
+
 func (c *SolanaClient) GetBalance(ctx context.Context, address string) (float64, error) {
 	if address == "" {
 		return 0, errors.New("solana address is required")

@@ -45,13 +45,17 @@ type CoinGeckoConfig struct {
 }
 
 type BlockchainConfig struct {
-	EthereumRPC    string `mapstructure:"ethereum_rpc"`
-	SolanaRPC      string `mapstructure:"solana_rpc"`
-	BitcoinRPCHost string `mapstructure:"bitcoin_rpc_host"`
-	BitcoinRPCUser string `mapstructure:"bitcoin_rpc_user"`
-	BitcoinRPCPass string `mapstructure:"bitcoin_rpc_pass"`
-	TronGRPC       string `mapstructure:"tron_grpc"`
-	TronAPIKey     string `mapstructure:"tron_api_key"`
+	EthereumMainnet  string `mapstructure:"ethereum_mainnet_rpc"`
+	EthereumArbitrum string `mapstructure:"ethereum_arbitrum_rpc"`
+	EthereumBase     string `mapstructure:"ethereum_base_rpc"`
+	PolygonMainnet   string `mapstructure:"polygon_mainnet"`
+	Bnb              string `mapstructure:"bnb"`
+	SolanaRPC        string `mapstructure:"solana_rpc"`
+	BitcoinRPCHost   string `mapstructure:"bitcoin_rpc_host"`
+	BitcoinRPCUser   string `mapstructure:"bitcoin_rpc_user"`
+	BitcoinRPCPass   string `mapstructure:"bitcoin_rpc_pass"`
+	TronGRPC         string `mapstructure:"tron_grpc"`
+	TronAPIKey       string `mapstructure:"tron_api_key"`
 }
 
 func NewConfig() *Config {

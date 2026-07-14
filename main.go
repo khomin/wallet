@@ -9,7 +9,8 @@ import (
 	"syscall"
 	"time"
 	"tracker/bootstrap"
-	handlers "tracker/internal/api/handles"
+	"tracker/internal/api/handlers"
+	"tracker/internal/api/middleware"
 	"tracker/internal/cache"
 	"tracker/internal/client/alchemy"
 	"tracker/internal/client/bitcoin"
@@ -19,7 +20,7 @@ import (
 	"tracker/internal/client/tron"
 	"tracker/internal/core"
 	"tracker/internal/db"
-	repositories "tracker/internal/db/repo"
+	"tracker/internal/db/repositories"
 
 	"github.com/gin-gonic/gin"
 	"github.com/sirupsen/logrus"
@@ -42,14 +43,19 @@ func main() {
 		app.Cfg.Redis.Password,
 		app.Cfg.Redis.DB,
 	)
+	priceRepo := repositories.NewPriceRepository(db)
 
 	coingeckoClient := coingecko.NewCoinGeckoClient(app.Cfg.CoinGecko.APIKey)
 	alchemyClient := alchemy.NewAlchemyClient(app.Cfg.Alchemy.APIKey)
-	ethereumClient := ethereum.NewEthereumClient(app.Cfg.Blockchain.EthereumRPC)
+
+	ethMainnetClient := ethereum.NewEthereumClient(app.Cfg.Blockchain.EthereumMainnet)
+	ethArbitrumClient := ethereum.NewEthereumClient(app.Cfg.Blockchain.EthereumArbitrum)
+	ethBaseClient := ethereum.NewEthereumClient(app.Cfg.Blockchain.EthereumBase)
+	polygonMainnetClient := ethereum.NewEthereumClient(app.Cfg.Blockchain.PolygonMainnet)
+	bnbClient := ethereum.NewEthereumClient(app.Cfg.Blockchain.Bnb)
 	solanaClient := solana.NewSolanaClient(app.Cfg.Blockchain.SolanaRPC)
 	bitcoinClient := bitcoin.NewBitcoinClient(app.Cfg.Blockchain.BitcoinRPCHost, app.Cfg.Blockchain.BitcoinRPCUser, app.Cfg.Blockchain.BitcoinRPCPass)
 	tronClient := tron.NewTronClient(app.Cfg.Blockchain.TronGRPC, app.Cfg.Blockchain.TronAPIKey)
-	priceRepo := repositories.NewPriceRepository(db)
 
 	// Create a context that can be cancelled for graceful shutdown
 	ctx, cancel := context.WithCancel(context.Background())
@@ -61,16 +67,20 @@ func main() {
 	priceFetcher := core.NewPriceFetcher(
 		coingeckoClient,
 		alchemyClient,
-		priceRepo,
+		&priceRepo,
 		priceCache,
 		60*time.Second,
 		10*time.Second,
 	)
 
-	priceService := core.NewPriceService(redisClient, priceRepo, priceFetcher, priceCache)
+	priceService := core.NewPriceService(redisClient, &priceRepo, priceFetcher, priceCache)
 	priceHandler := handlers.NewPriceHandler(priceService)
 
-	blockchainService := core.NewBlockchainService(ethereumClient, solanaClient, bitcoinClient, tronClient)
+	blockchainService := core.NewBlockchainService(
+		ethMainnetClient, ethArbitrumClient, ethBaseClient, polygonMainnetClient, bnbClient,
+		solanaClient, bitcoinClient, tronClient,
+		walletRepo,
+	)
 	if err := blockchainService.ConnectAll(ctx); err != nil {
 		logrus.WithError(err).Warn("failed to connect all blockchain clients")
 	}
@@ -83,16 +93,19 @@ func main() {
 
 	r := gin.Default()
 
-	// API v1 routes
 	v1 := r.Group("/api/v1")
 	{
 		v1.GET("/coins", priceHandler.GetCoins)
 		v1.GET("/coins/:id", priceHandler.GetCoin)
 		v1.GET("/prices", priceHandler.GetPrices)
 		v1.GET("/prices/:id", priceHandler.GetPrice)
-		v1.GET("/wallets", walletHandler.ListWallets)
-		v1.POST("/wallets", walletHandler.AddWallet)
-		v1.GET("/wallets/:chain/:address/balance", walletHandler.GetWalletBalance)
+		// protected wallets
+		protected := v1.Group("").Use(middleware.AuthMiddleware())
+		protected.GET("/wallets", walletHandler.ListWallets)
+		protected.POST("/wallets", walletHandler.AddWallet)
+		protected.DELETE("/wallets/:id", walletHandler.DeleteWallet)
+		protected.GET("/wallets/:id/balance", walletHandler.GetWalletBalance)
+		protected.GET("/wallets/balance", walletHandler.GetWalletBalance)
 	}
 	r.GET("/health", func(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{

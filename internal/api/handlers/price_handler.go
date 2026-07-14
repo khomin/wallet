@@ -96,7 +96,7 @@ func (h *PriceHandler) GetPrice(c *gin.Context) {
 	}
 	price, err := h.priceService.GetPrice(c.Request.Context(), id)
 	if err != nil {
-		if errors.Is(err, core.ErrNotFound) {
+		if errors.Is(err, core.ErrPriceNotFound) {
 			c.JSON(http.StatusNotFound, dto.ErrorResponse{
 				Code:    "NOT_FOUND",
 				Message: "requested price not found",

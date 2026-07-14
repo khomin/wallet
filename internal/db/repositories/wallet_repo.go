@@ -2,8 +2,11 @@ package repositories
 
 import (
 	"context"
+	"tracker/internal/core"
 	"tracker/internal/db"
 	"tracker/internal/db/models"
+
+	"github.com/google/uuid"
 )
 
 type WalletRepository struct {
@@ -14,7 +17,7 @@ func NewWalletRepository(db *db.DataBase) *WalletRepository {
 	return &WalletRepository{db: db}
 }
 
-func (r *WalletRepository) ListWallets(ctx context.Context) ([]models.Wallet, error) {
+func (r *WalletRepository) ListWallets(ctx context.Context, userID string) ([]models.Wallet, error) {
 	query := `SELECT id, address, chain, label, user_id, created_at, updated_at FROM wallets ORDER BY created_at ASC`
 
 	rows, err := r.db.Pool.Query(ctx, query)
@@ -45,7 +48,7 @@ func (r *WalletRepository) ListWallets(ctx context.Context) ([]models.Wallet, er
 	return wallets, nil
 }
 
-func (r *WalletRepository) CreateWallet(ctx context.Context, wallet models.Wallet) error {
+func (r *WalletRepository) CreateWallet(ctx context.Context, userID string, chain string, address string, label string) (*models.Wallet, error) {
 	query := `INSERT INTO wallets (id, address, chain, label, user_id, created_at, updated_at)
         VALUES ($1, $2, $3, $4, $5, $6, $7)`
 
@@ -59,4 +62,16 @@ func (r *WalletRepository) CreateWallet(ctx context.Context, wallet models.Walle
 		wallet.UpdatedAt,
 	)
 	return err
+}
+
+func (r *WalletRepository) DeleteWallet(ctx context.Context, userID string, id uuid.UUID) error {
+	query := `DELETE FROM wallets WHERE id = $1`
+	res, err := r.db.Pool.Exec(ctx, query, id)
+	if res.RowsAffected() == 0 {
+		return core.ErrWalletNotFound
+	}
+	return err
+}
+
+func (r *WalletRepository) GetWallet(ctx context.Context, userID string, id uuid.UUID) (*models.Wallet, error) {
 }

@@ -23,18 +23,25 @@ type CreateWalletRequest struct {
 	Chain   string `json:"chain" binding:"required"`
 	Address string `json:"address" binding:"required"`
 	Label   string `json:"label,omitempty"`
-	UserID  string `json:"user_id,omitempty"`
+}
+
+type DeleteWalletResponse struct {
+	ID uuid.UUID `json:"id"`
+}
+
+type DeleteWalletRequest struct {
+	ID     uuid.UUID `json:"id"`
+	UserID string    `json:"user_id" binding:"required"`
 }
 
 type GetWalletBalanceResponse struct {
 	Chain   string  `json:"chain" binding:"required"`
 	Address string  `json:"address" binding:"required"`
-	Balance float64 `json:"label,omitempty"`
+	Balance float64 `json:"balance"`
 }
 
 type GetWalletBalanceRequest struct {
-	Address string `json:"address" binding:"required"`
-	Chain   string `json:"chain" binding:"required"`
+	ID uuid.UUID `json:"id"`
 }
 
 func ToWalletResponse(wallet models.Wallet) WalletResponse {

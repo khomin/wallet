@@ -6,7 +6,6 @@ import (
 	"tracker/internal/client/alchemy"
 	"tracker/internal/client/coingecko"
 	"tracker/internal/db/models"
-	repositories "tracker/internal/db/repo"
 
 	"github.com/sirupsen/logrus"
 )
@@ -15,7 +14,7 @@ type PriceFetcher struct {
 	coingeckoClient    *coingecko.CoinGeckoClient
 	alchemyClient      *alchemy.AlchemyClient
 	priceCache         *PriceCache
-	repo               *repositories.PriceRepository
+	repo               PriceRepository
 	allCoinInterval    time.Duration
 	activeCoinInterval time.Duration
 	log                *logrus.Entry
@@ -24,7 +23,7 @@ type PriceFetcher struct {
 func NewPriceFetcher(
 	coingeckoClient *coingecko.CoinGeckoClient,
 	alchemyClient *alchemy.AlchemyClient,
-	repo *repositories.PriceRepository,
+	repo PriceRepository,
 	priceCache *PriceCache,
 	allCoinInterval time.Duration,
 	activeCoinInterval time.Duration,
