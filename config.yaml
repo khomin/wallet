@@ -20,3 +20,16 @@ alchemy:
 
 coingecko:
    api_key: ""
+
+blockchain:
+  ethereum_mainnet_rpc: "https://eth.drpc.org"
+  ethereum_arbitrum_rpc: "https://arb1.arbitrum.io/rpc"
+  ethereum_base_rpc: "https://rpc.baseazul.dev"
+  polygon_mainnet: "https://polygon.gateway.tenderly.co"
+  bnb: "https://bsc-mainnet.public.blastapi.io"
+  solana_rpc: "https://api.mainnet-beta.solana.com"
+  bitcoin_rpc_host: "127.0.0.1:8332"
+  bitcoin_rpc_user: "satoshi_admin"
+  bitcoin_rpc_pass: "super_secret_rpc_password"
+  tron_grpc: "grpc.trongrid.io:50051"
+  tron_api_key: "11111111-2222-3333-4444-555555555555"

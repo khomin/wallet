@@ -9,7 +9,8 @@ import (
 	"github.com/google/uuid"
 )
 
-var ErrWalletNotFound = errors.New("not found")
+var ErrWalletNotFound = errors.New("not_found")
+var ErrDatabase = errors.New("internal_error_database")
 
 type WalletRepository interface {
 	ListWallets(ctx context.Context, userID string) ([]models.Wallet, error)

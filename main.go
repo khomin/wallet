@@ -75,6 +75,7 @@ func main() {
 
 	priceService := core.NewPriceService(redisClient, &priceRepo, priceFetcher, priceCache)
 	priceHandler := handlers.NewPriceHandler(priceService)
+	walletRepo := repositories.NewWalletRepository(db)
 
 	blockchainService := core.NewBlockchainService(
 		ethMainnetClient, ethArbitrumClient, ethBaseClient, polygonMainnetClient, bnbClient,
@@ -85,7 +86,6 @@ func main() {
 		logrus.WithError(err).Warn("failed to connect all blockchain clients")
 	}
 
-	walletRepo := repositories.NewWalletRepository(db)
 	walletService := core.NewWalletService(walletRepo)
 	walletHandler := handlers.NewWalletHandler(walletService, blockchainService)
 

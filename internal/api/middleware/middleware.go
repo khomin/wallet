@@ -20,7 +20,7 @@ func AuthMiddleware() gin.HandlerFunc {
 			return
 		}
 
-		// tokenString := parts[1]
+		tokenString := parts[1]
 
 		// --- 1. VALIDATE TOKEN HERE ---
 		// Use your Auth0/JWT validation logic.

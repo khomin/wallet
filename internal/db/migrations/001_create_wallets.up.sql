@@ -1,5 +1,5 @@
 CREATE TABLE IF NOT EXISTS wallets (
-    id UUID PRIMARY KEY,
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     address TEXT NOT NULL,
     chain TEXT NOT NULL,
     label TEXT,
