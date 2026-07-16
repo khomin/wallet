@@ -30,8 +30,7 @@ type DeleteWalletResponse struct {
 }
 
 type DeleteWalletRequest struct {
-	ID     uuid.UUID `json:"id"`
-	UserID string    `json:"user_id" binding:"required"`
+	ID uuid.UUID `json:"id"`
 }
 
 type GetWalletBalanceResponse struct {
@@ -41,7 +40,7 @@ type GetWalletBalanceResponse struct {
 }
 
 type GetWalletBalanceRequest struct {
-	ID uuid.UUID `json:"id"`
+	ID uuid.UUID `form:"id" json:"id"`
 }
 
 func ToWalletResponse(wallet models.Wallet) WalletResponse {

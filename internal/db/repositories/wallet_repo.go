@@ -58,11 +58,11 @@ func (r *WalletRepository) CreateWallet(ctx context.Context, userID string, chai
 		label,
 		userID,
 	)
-	defer rows.Close()
 	if err != nil {
 		return nil, err
 	}
-	for rows.Next() {
+	defer rows.Close()
+	if rows.Next() {
 		var wallet models.Wallet
 		if err := rows.Scan(
 			&wallet.ID,
@@ -75,7 +75,7 @@ func (r *WalletRepository) CreateWallet(ctx context.Context, userID string, chai
 		); err != nil {
 			return nil, err
 		}
-
+		return &wallet, nil
 	}
 	return nil, core.ErrDatabase
 }
@@ -90,8 +90,9 @@ func (r *WalletRepository) DeleteWallet(ctx context.Context, userID string, id u
 }
 
 func (r *WalletRepository) GetWallet(ctx context.Context, userID string, id uuid.UUID) (*models.Wallet, error) {
-	query := `SELECT * FROM wallets WHERE id = $1 AND user_id = $2`
-	rows, err := r.db.Pool.Query(ctx, query)
+	query := `SELECT * FROM wallets
+		WHERE user_id = $1 AND id = $2`
+	rows, err := r.db.Pool.Query(ctx, query, userID, id)
 	if err != nil {
 		return nil, err
 	}

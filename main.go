@@ -91,8 +91,12 @@ func main() {
 
 	go priceFetcher.StartCoinFetcher(ctx)
 
-	r := gin.Default()
+	verifier, err := middleware.NewTokenVerifier(ctx, app.Cfg.Authorization.IssuerURL, app.Cfg.Authorization.ClientID)
+	if err != nil {
+		logrus.Panicf("failed to create jwt verifier")
+	}
 
+	r := gin.Default()
 	v1 := r.Group("/api/v1")
 	{
 		v1.GET("/coins", priceHandler.GetCoins)
@@ -100,11 +104,10 @@ func main() {
 		v1.GET("/prices", priceHandler.GetPrices)
 		v1.GET("/prices/:id", priceHandler.GetPrice)
 		// protected wallets
-		protected := v1.Group("").Use(middleware.AuthMiddleware())
+		protected := v1.Group("").Use(middleware.Auth(verifier))
 		protected.GET("/wallets", walletHandler.ListWallets)
 		protected.POST("/wallets", walletHandler.AddWallet)
-		protected.DELETE("/wallets/:id", walletHandler.DeleteWallet)
-		protected.GET("/wallets/:id/balance", walletHandler.GetWalletBalance)
+		protected.DELETE("/wallets", walletHandler.DeleteWallet)
 		protected.GET("/wallets/balance", walletHandler.GetWalletBalance)
 	}
 	r.GET("/health", func(c *gin.Context) {

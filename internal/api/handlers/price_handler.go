@@ -26,10 +26,7 @@ func NewPriceHandler(priceService *core.PriceService) *PriceHandler {
 func (h *PriceHandler) GetCoins(c *gin.Context) {
 	coins, err := h.priceService.GetCoins(c)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, dto.ErrorResponse{
-			Code:    "INTERNAL_ERROR",
-			Message: "unexpected error",
-		})
+		dto.InternallError(c)
 		return
 	}
 	resp := dto.ToCoinsResponse(coins)
@@ -42,18 +39,12 @@ func (h *PriceHandler) GetCoins(c *gin.Context) {
 func (h *PriceHandler) GetCoin(c *gin.Context) {
 	id := c.Param("id")
 	if id == "" {
-		c.JSON(http.StatusBadRequest, dto.ErrorResponse{
-			Code:    "BAD_REQUEST",
-			Message: "id parameter is required",
-		})
+		dto.InvalidParametersMessage(c, "id parameter is required")
 		return
 	}
 	coin, err := h.priceService.GetCoin(c, id)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, dto.ErrorResponse{
-			Code:    "INTERNAL_ERROR",
-			Message: "unexpected error",
-		})
+		dto.InternallError(c)
 		return
 	}
 	resp := dto.ToCoinResponse(*coin)
@@ -64,18 +55,12 @@ func (h *PriceHandler) GetPrices(c *gin.Context) {
 	symbolsParam := c.Query("symbols")
 	symbols := strings.Split(strings.ToLower(symbolsParam), ",")
 	if len(symbols) == 0 {
-		c.JSON(http.StatusBadRequest, dto.ErrorResponse{
-			Code:    "BAD_REQUEST",
-			Message: "symbols parameter is required",
-		})
+		dto.InvalidParametersMessage(c, "symbols parameter is required")
 		return
 	}
 	prices, err := h.priceService.GetPrices(c.Request.Context(), symbols)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, dto.ErrorResponse{
-			Code:    "INTERNAL_ERROR",
-			Message: "unexpected error",
-		})
+		dto.InternallError(c)
 		return
 	}
 	resp := dto.ToPricesResponse(prices)
@@ -88,25 +73,16 @@ func (h *PriceHandler) GetPrices(c *gin.Context) {
 func (h *PriceHandler) GetPrice(c *gin.Context) {
 	id := c.Param("id")
 	if id == "" {
-		c.JSON(http.StatusBadRequest, dto.ErrorResponse{
-			Code:    "BAD_REQUEST",
-			Message: "id parameter is required",
-		})
+		dto.InvalidParametersMessage(c, "id parameter is required")
 		return
 	}
 	price, err := h.priceService.GetPrice(c.Request.Context(), id)
 	if err != nil {
 		if errors.Is(err, core.ErrPriceNotFound) {
-			c.JSON(http.StatusNotFound, dto.ErrorResponse{
-				Code:    "NOT_FOUND",
-				Message: "requested price not found",
-			})
+			dto.NotFoundErrorMessage(c, "requested price not found")
 			return
 		}
-		c.JSON(http.StatusInternalServerError, dto.ErrorResponse{
-			Code:    "INTERNAL_ERROR",
-			Message: "unexpected error",
-		})
+		dto.InternallError(c)
 		return
 	}
 	resp := dto.ToPriceResponse(*price)

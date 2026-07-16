@@ -8,18 +8,24 @@ import (
 )
 
 type Config struct {
-	Server     ServerConfig     `mapstructure:"server"`
-	Database   DatabaseConfig   `mapstructure:"database"`
-	Redis      RedisConfig      `mapstructure:"redis"`
-	Alchemy    AlchemyConfig    `mapstructure:"alchemy"`
-	CoinGecko  CoinGeckoConfig  `mapstructure:"coingecko"`
-	Blockchain BlockchainConfig `mapstructure:"blockchain"`
+	Server        ServerConfig     `mapstructure:"server"`
+	Authorization Authorization    `mapstructure:"authorization"`
+	Database      DatabaseConfig   `mapstructure:"database"`
+	Redis         RedisConfig      `mapstructure:"redis"`
+	Alchemy       AlchemyConfig    `mapstructure:"alchemy"`
+	CoinGecko     CoinGeckoConfig  `mapstructure:"coingecko"`
+	Blockchain    BlockchainConfig `mapstructure:"blockchain"`
 }
 
 type ServerConfig struct {
 	Port        int    `mapstructure:"port"`
 	Environment string `mapstructure:"environment"`
 	LogPath     string `mapstructure:"log_path"`
+}
+
+type Authorization struct {
+	IssuerURL string `mapstructure:"issuer_url"`
+	ClientID  string `mapstructure:"client_id"`
 }
 
 type DatabaseConfig struct {

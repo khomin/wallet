@@ -3,6 +3,10 @@ server:
   environment: "development"
   log_path: "/var/log/tracker/app.log"
 
+authorization:
+  issuer_url: "http://localhost:9090/realms/whale-tracker"
+  client_id: "whale-tracker-app"
+
 database:
   host: "localhost" # Becomes "postgres" inside Docker later
   port: 5432
