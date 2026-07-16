@@ -1,0 +1,32 @@
+info:
+  name: auth-test1
+  type: http
+  seq: 9
+
+http:
+  method: GET
+  url: http://localhost:9090
+  auth:
+    type: oauth2
+    flow: authorization_code
+    authorizationUrl: http://localhost:9090/realms/whale-tracker/protocol/openid-connect/auth
+    accessTokenUrl: http://localhost:9090/realms/whale-tracker/protocol/openid-connect/token
+    callbackUrl: http://localhost:8080
+    credentials:
+      clientId: "{{client-id}}"
+      placement: body
+    pkce: {}
+    tokenConfig:
+      id: credentials
+      placement:
+        header: Bearer
+      source: access_token
+    settings:
+      autoFetchToken: true
+      autoRefreshToken: false
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

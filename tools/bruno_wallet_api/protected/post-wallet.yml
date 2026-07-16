@@ -1,0 +1,23 @@
+info:
+  name: post-wallet
+  type: http
+  seq: 7
+
+http:
+  method: POST
+  url: "{{url}}/api/v1/wallets"
+  body:
+    type: json
+    data: |-
+      {
+        "chain": "arb",
+        "address": "0xD17F0EBf046ab5C0d5a92BDFddf24c38b526AD9F",
+        "label": "my-first-wallet-eth-arb"
+      }
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

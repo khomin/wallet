@@ -1,0 +1,36 @@
+info:
+  name: alchemy-get_prices
+  type: http
+  seq: 2
+
+http:
+  method: GET
+  url: https://api.g.alchemy.com/prices/v1/{{alchemyKey}}/tokens/by-symbol?symbols=ETH
+  params:
+    - name: symbols
+      value: ETH
+      type: query
+  body:
+    type: json
+    data: |-
+      {
+        "addresses": [
+          {
+            "address": "0xD17F0EBf046ab5C0d5a92BDFddf24c38b526AD9F",
+            "networks": [
+              "eth-mainnet", "arb-mainnet"
+            ]
+          }
+        ],
+        "withMetadata": true,
+        "withPrices": true,
+        "includeNativeTokens": true,
+        "includeErc20Tokens": true
+      }
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

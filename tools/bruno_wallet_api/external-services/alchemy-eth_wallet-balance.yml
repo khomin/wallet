@@ -1,0 +1,32 @@
+info:
+  name: alchemy-eth_wallet-balance
+  type: http
+  seq: 1
+
+http:
+  method: POST
+  url: https://api.g.alchemy.com/data/v1/{{alchemyKey}}/assets/tokens/by-address
+  body:
+    type: json
+    data: |-
+      {
+        "addresses": [
+          {
+            "address": "0xD17F0EBf046ab5C0d5a92BDFddf24c38b526AD9F",
+            "networks": [
+              "eth-mainnet", "arb-mainnet"
+            ]
+          }
+        ],
+        "withMetadata": true,
+        "withPrices": true,
+        "includeNativeTokens": true,
+        "includeErc20Tokens": true
+      }
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

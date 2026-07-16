@@ -1,0 +1,39 @@
+info:
+  name: coingecko-price-one
+  type: http
+  seq: 5
+
+http:
+  method: GET
+  url: "{{coinGeckoUri}}/api/v3/coins/ethereum"
+  headers:
+    - name: x-cg-pro-api-key
+      value: "{{coinGeckoKey}}"
+  params:
+    - name: localization
+      value: "false"
+      type: query
+      disabled: true
+    - name: tickers
+      value: "false"
+      type: query
+      disabled: true
+    - name: market_data
+      value: "false"
+      type: query
+      disabled: true
+    - name: community_data
+      value: "false"
+      type: query
+      disabled: true
+    - name: developer_data
+      value: "false"
+      type: query
+      disabled: true
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

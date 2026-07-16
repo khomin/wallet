@@ -1,0 +1,21 @@
+info:
+  name: delete-wallet
+  type: http
+  seq: 8
+
+http:
+  method: DELETE
+  url: "{{url}}/api/v1/wallets"
+  body:
+    type: json
+    data: |-
+      {
+        "id": "9536d1c8-873e-4ec8-88bb-aa4f6f3f828d"
+      }
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

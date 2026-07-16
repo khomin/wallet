@@ -1,0 +1,21 @@
+info:
+  name: get-api-wallet-balance
+  type: http
+  seq: 5
+
+http:
+  method: GET
+  url: "{{url}}/api/v1/wallets/balance"
+  body:
+    type: json
+    data: |-
+      {
+        "id": "e9a2d542-6e1d-4ed4-b545-44b88e9bf4dc"
+      }
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
