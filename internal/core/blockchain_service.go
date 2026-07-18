@@ -8,8 +8,6 @@ import (
 	"tracker/internal/client/ethereum"
 	"tracker/internal/client/solana"
 	"tracker/internal/client/tron"
-
-	"github.com/google/uuid"
 )
 
 type ChainProvider interface {
@@ -23,7 +21,7 @@ type BlockchainService struct {
 	walletRepo WalletRepository
 }
 
-type Balance struct {
+type AddressBalance struct {
 	Chain   string
 	Address string
 	Balance float64
@@ -68,23 +66,18 @@ func (s *BlockchainService) ConnectAll(ctx context.Context) error {
 	return nil
 }
 
-func (s *BlockchainService) GetBalance(ctx context.Context, userID string, id uuid.UUID) (*Balance, error) {
-	wallet, err := s.walletRepo.GetWallet(ctx, userID, id)
-	if err != nil {
-		return nil, err
-	}
-	// chain := strings.ToLower(wallet.Chain)
-	provider, found := s.providers[wallet.Chain]
+func (s *BlockchainService) GetBalance(ctx context.Context, chain string, address string) (*AddressBalance, error) {
+	provider, found := s.providers[chain]
 	if !found {
-		return nil, fmt.Errorf("unsupported chain: %s", wallet.Chain)
+		return nil, fmt.Errorf("unsupported chain: %s", chain)
 	}
-	balance, err := provider.GetBalance(ctx, wallet.Address)
+	balance, err := provider.GetBalance(ctx, address)
 	if err != nil {
 		return nil, err
 	}
-	return &Balance{
-		Chain:   wallet.Chain,
-		Address: wallet.Address,
+	return &AddressBalance{
+		Chain:   chain,
+		Address: address,
 		Balance: balance,
 	}, nil
 }

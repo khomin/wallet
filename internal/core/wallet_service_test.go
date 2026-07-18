@@ -18,7 +18,7 @@ func (f *fakeWalletRepo) ListWallets(ctx context.Context, userID string) ([]mode
 	return nil, nil
 }
 
-func (f *fakeWalletRepo) CreateWallet(ctx context.Context, userID string, chain string, address string, label string) (*models.Wallet, error) {
+func (f *fakeWalletRepo) CreateWallet(ctx context.Context, userID string, chain string, address string, symbol string, label string) (*models.Wallet, error) {
 	return nil, nil
 }
 
@@ -39,7 +39,7 @@ func TestDeleteWalletReturnsDeletedWallet(t *testing.T) {
 		UserID:  "user-1",
 	}
 
-	svc := NewWalletService(&fakeWalletRepo{deleted: want})
+	svc := NewWalletService(&fakeWalletRepo{deleted: want}, &PriceService{}, &BlockchainService{})
 	err := svc.DeleteWallet(context.Background(), want.UserID, want.ID)
 	if err != nil {
 		t.Fatalf("DeleteWallet returned unexpected error: %v", err)

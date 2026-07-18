@@ -29,11 +29,7 @@ func (h *PriceHandler) GetCoins(c *gin.Context) {
 		dto.InternallError(c)
 		return
 	}
-	resp := dto.ToCoinsResponse(coins)
-	c.JSON(http.StatusOK, gin.H{
-		"coins": resp,
-		"total": len(resp),
-	})
+	c.JSON(http.StatusOK, dto.ToCoinsResponse(coins))
 }
 
 func (h *PriceHandler) GetCoin(c *gin.Context) {
@@ -47,8 +43,7 @@ func (h *PriceHandler) GetCoin(c *gin.Context) {
 		dto.InternallError(c)
 		return
 	}
-	resp := dto.ToCoinResponse(*coin)
-	c.JSON(http.StatusOK, resp)
+	c.JSON(http.StatusOK, dto.ToCoinResponse(coin))
 }
 
 func (h *PriceHandler) GetPrices(c *gin.Context) {
@@ -63,11 +58,7 @@ func (h *PriceHandler) GetPrices(c *gin.Context) {
 		dto.InternallError(c)
 		return
 	}
-	resp := dto.ToPricesResponse(prices)
-	c.JSON(http.StatusOK, gin.H{
-		"prices": resp,
-		"total":  len(resp),
-	})
+	c.JSON(http.StatusOK, dto.ToPricesResponse(prices))
 }
 
 func (h *PriceHandler) GetPrice(c *gin.Context) {
@@ -85,6 +76,6 @@ func (h *PriceHandler) GetPrice(c *gin.Context) {
 		dto.InternallError(c)
 		return
 	}
-	resp := dto.ToPriceResponse(*price)
+	resp := dto.ToPriceResponse(price)
 	c.JSON(http.StatusOK, resp)
 }

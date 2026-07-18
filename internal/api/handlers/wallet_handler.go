@@ -12,19 +12,16 @@ import (
 )
 
 type WalletHandler struct {
-	walletService     *core.WalletService
-	blockchainService *core.BlockchainService
-	log               *logrus.Entry
+	walletService *core.WalletService
+	log           *logrus.Entry
 }
 
 func NewWalletHandler(
 	walletService *core.WalletService,
-	blockchainService *core.BlockchainService,
 ) *WalletHandler {
 	return &WalletHandler{
-		walletService:     walletService,
-		blockchainService: blockchainService,
-		log:               logrus.WithField("component", "WalletHandler"),
+		walletService: walletService,
+		log:           logrus.WithField("component", "WalletHandler"),
 	}
 }
 
@@ -34,16 +31,12 @@ func (h *WalletHandler) ListWallets(c *gin.Context) {
 		dto.UnauthorizedError(c)
 		return
 	}
-	wallets, err := h.walletService.ListWallets(c.Request.Context(), userID)
+	wallet, err := h.walletService.ListWallets(c.Request.Context(), userID)
 	if err != nil {
 		dto.InternallError(c)
 		return
 	}
-	resp := dto.ToWalletResponses(wallets)
-	c.JSON(http.StatusOK, gin.H{
-		"wallets": resp,
-		"total":   len(resp),
-	})
+	c.JSON(http.StatusOK, dto.ToWalletResponses(wallet))
 }
 
 func (h *WalletHandler) AddWallet(c *gin.Context) {
@@ -57,12 +50,12 @@ func (h *WalletHandler) AddWallet(c *gin.Context) {
 		dto.UnauthorizedError(c)
 		return
 	}
-	createdWallet, err := h.walletService.AddWallet(c.Request.Context(), userID, req.Chain, req.Address, req.Label)
+	wallet, err := h.walletService.AddWallet(c.Request.Context(), userID, req.Chain, req.Address, req.Symbol, req.Label)
 	if err != nil {
 		dto.InternallError(c)
 		return
 	}
-	c.JSON(http.StatusCreated, dto.ToWalletResponse(*createdWallet))
+	c.JSON(http.StatusCreated, dto.ToWalletResponse(wallet))
 }
 
 func (h *WalletHandler) DeleteWallet(c *gin.Context) {
@@ -101,10 +94,10 @@ func (h *WalletHandler) GetWalletBalance(c *gin.Context) {
 		dto.UnauthorizedError(c)
 		return
 	}
-	balance, err := h.blockchainService.GetBalance(c.Request.Context(), userID, req.ID)
+	wallet, err := h.walletService.GetWallet(c.Request.Context(), userID, req.ID)
 	if err != nil {
 		dto.InternallError(c)
 		return
 	}
-	c.JSON(http.StatusOK, dto.ToGetWalletBalanceResponse(balance))
+	c.JSON(http.StatusOK, dto.ToGetWalletBalanceResponse(wallet))
 }

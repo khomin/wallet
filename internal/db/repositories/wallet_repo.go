@@ -18,7 +18,7 @@ func NewWalletRepository(db *db.DataBase) *WalletRepository {
 }
 
 func (r *WalletRepository) ListWallets(ctx context.Context, userID string) ([]models.Wallet, error) {
-	query := `SELECT id, address, chain, label, user_id, created_at, updated_at FROM wallets ORDER BY created_at ASC`
+	query := `SELECT id, address, chain, symbol, label, user_id, created_at, updated_at FROM wallets ORDER BY created_at ASC`
 
 	rows, err := r.db.Pool.Query(ctx, query)
 	if err != nil {
@@ -33,6 +33,7 @@ func (r *WalletRepository) ListWallets(ctx context.Context, userID string) ([]mo
 			&wallet.ID,
 			&wallet.Address,
 			&wallet.Chain,
+			&wallet.Symbol,
 			&wallet.Label,
 			&wallet.UserID,
 			&wallet.CreatedAt,
@@ -48,13 +49,14 @@ func (r *WalletRepository) ListWallets(ctx context.Context, userID string) ([]mo
 	return wallets, nil
 }
 
-func (r *WalletRepository) CreateWallet(ctx context.Context, userID string, chain string, address string, label string) (*models.Wallet, error) {
-	query := `INSERT INTO wallets (address, chain, label, user_id)
-        VALUES ($1, $2, $3, $4)
+func (r *WalletRepository) CreateWallet(ctx context.Context, userID string, chain string, address string, symbol string, label string) (*models.Wallet, error) {
+	query := `INSERT INTO wallets (address, chain, symbol, label, user_id)
+        VALUES ($1, $2, $3, $4, $5)
 		RETURNING *`
 	rows, err := r.db.Pool.Query(ctx, query,
 		address,
 		chain,
+		symbol,
 		label,
 		userID,
 	)
@@ -68,6 +70,7 @@ func (r *WalletRepository) CreateWallet(ctx context.Context, userID string, chai
 			&wallet.ID,
 			&wallet.Address,
 			&wallet.Chain,
+			&wallet.Symbol,
 			&wallet.Label,
 			&wallet.UserID,
 			&wallet.CreatedAt,
@@ -77,7 +80,7 @@ func (r *WalletRepository) CreateWallet(ctx context.Context, userID string, chai
 		}
 		return &wallet, nil
 	}
-	return nil, core.ErrDatabase
+	return nil, core.ErrWalletInternalError
 }
 
 func (r *WalletRepository) DeleteWallet(ctx context.Context, userID string, id uuid.UUID) error {
@@ -104,6 +107,7 @@ func (r *WalletRepository) GetWallet(ctx context.Context, userID string, id uuid
 			&wallet.ID,
 			&wallet.Address,
 			&wallet.Chain,
+			&wallet.Symbol,
 			&wallet.Label,
 			&wallet.UserID,
 			&wallet.CreatedAt,

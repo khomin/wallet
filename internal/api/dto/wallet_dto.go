@@ -4,24 +4,33 @@ import (
 	"time"
 
 	"tracker/internal/core"
-	"tracker/internal/db/models"
 
 	"github.com/google/uuid"
 )
 
+type WalletsResponse struct {
+	Wallet                 []WalletResponse `json:"wallet"`
+	Total                  int              `json:"total"`
+	TotalAccountBalanceUsd float64          `json:"total_balance_usd"`
+}
+
 type WalletResponse struct {
-	ID        uuid.UUID `json:"id"`
-	Address   string    `json:"address"`
-	Chain     string    `json:"chain"`
-	Label     string    `json:"label"`
-	UserID    string    `json:"user_id,omitempty"`
-	CreatedAt time.Time `json:"created_at"`
-	UpdatedAt time.Time `json:"updated_at"`
+	ID               uuid.UUID `json:"id"`
+	Address          string    `json:"address"`
+	Chain            string    `json:"chain"`
+	Symbol           string    `json:"symbol"`
+	Label            string    `json:"label"`
+	CreatedAt        time.Time `json:"created_at"`
+	UpdatedAt        time.Time `json:"updated_at"`
+	BalanceCrypto    float64   `json:"balance_crypto"`
+	BalanceUsd       float64   `json:"balance_usd"`
+	Change24hPercent float64   `json:"change_24h_percent"`
 }
 
 type CreateWalletRequest struct {
 	Chain   string `json:"chain" binding:"required"`
 	Address string `json:"address" binding:"required"`
+	Symbol  string `json:"symbol" binding:"required"`
 	Label   string `json:"label,omitempty"`
 }
 
@@ -34,39 +43,50 @@ type DeleteWalletRequest struct {
 }
 
 type GetWalletBalanceResponse struct {
-	Chain   string  `json:"chain" binding:"required"`
-	Address string  `json:"address" binding:"required"`
-	Balance float64 `json:"balance"`
+	Chain      string  `json:"chain" binding:"required"`
+	Address    string  `json:"address" binding:"required"`
+	Balance    float64 `json:"balance"`
+	BalanceUSD float64 `json:"balance_usd"`
 }
 
 type GetWalletBalanceRequest struct {
 	ID uuid.UUID `form:"id" json:"id"`
 }
 
-func ToWalletResponse(wallet models.Wallet) WalletResponse {
+func ToWalletResponse(walletPortfolio *core.WalletPortfolioItem) WalletResponse {
 	return WalletResponse{
-		ID:        wallet.ID,
-		Address:   wallet.Address,
-		Chain:     wallet.Chain,
-		Label:     wallet.Label,
-		UserID:    wallet.UserID,
-		CreatedAt: wallet.CreatedAt,
-		UpdatedAt: wallet.UpdatedAt,
+		ID:               walletPortfolio.Wallet.ID,
+		Address:          walletPortfolio.Wallet.Address,
+		Chain:            walletPortfolio.Wallet.Chain,
+		Symbol:           walletPortfolio.Wallet.Symbol,
+		Label:            walletPortfolio.Wallet.Label,
+		CreatedAt:        walletPortfolio.Wallet.CreatedAt,
+		UpdatedAt:        walletPortfolio.Wallet.UpdatedAt,
+		Change24hPercent: walletPortfolio.Price.PriceChangePercentage_24h,
+		BalanceCrypto:    walletPortfolio.Balance,
+		BalanceUsd:       walletPortfolio.BalanceUSD,
 	}
 }
 
-func ToWalletResponses(wallets []models.Wallet) []WalletResponse {
-	resp := make([]WalletResponse, len(wallets))
+func ToWalletResponses(wallets []core.WalletPortfolioItem) WalletsResponse {
+	wallets_ := make([]WalletResponse, len(wallets))
+	var total float64
 	for i, wallet := range wallets {
-		resp[i] = ToWalletResponse(wallet)
+		wallets_[i] = ToWalletResponse(&wallet)
+		total += wallet.BalanceUSD
 	}
-	return resp
+	return WalletsResponse{
+		Total:                  len(wallets_),
+		Wallet:                 wallets_,
+		TotalAccountBalanceUsd: total,
+	}
 }
 
-func ToGetWalletBalanceResponse(balance *core.Balance) GetWalletBalanceResponse {
+func ToGetWalletBalanceResponse(walletPortfolio *core.WalletPortfolioItem) GetWalletBalanceResponse {
 	return GetWalletBalanceResponse{
-		Chain:   balance.Chain,
-		Address: balance.Address,
-		Balance: balance.Balance,
+		Chain:      walletPortfolio.Wallet.Chain,
+		Address:    walletPortfolio.Wallet.Address,
+		Balance:    walletPortfolio.Balance,
+		BalanceUSD: walletPortfolio.BalanceUSD,
 	}
 }

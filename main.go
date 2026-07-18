@@ -86,8 +86,8 @@ func main() {
 		logrus.WithError(err).Warn("failed to connect all blockchain clients")
 	}
 
-	walletService := core.NewWalletService(walletRepo)
-	walletHandler := handlers.NewWalletHandler(walletService, blockchainService)
+	walletService := core.NewWalletService(walletRepo, priceService, blockchainService)
+	walletHandler := handlers.NewWalletHandler(walletService)
 
 	go priceFetcher.StartCoinFetcher(ctx)
 
@@ -160,8 +160,3 @@ func main() {
 
 	logrus.Info("Server shutdown complete")
 }
-
-// TODO: handle API from clients
-//  - add wallet, delete wallet, get wallet/s
-//  - device authentification, tokens
-//  - profile

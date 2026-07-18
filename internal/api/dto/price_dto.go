@@ -5,10 +5,15 @@ import (
 	"tracker/internal/db/models"
 )
 
+type PricesResponse struct {
+	Total int             `json:"total"`
+	Price []PriceResponse `json:"price"`
+}
+
 type PriceResponse struct {
 	Symbol                         string    `json:"symbol"`
 	Name                           string    `json:"name"`
-	CurrentPrice                   float64   `json:"current_price"`
+	PriceUSD                       float64   `json:"price_usd"`
 	MarketCap                      float64   `json:"market_cap"`
 	TotalVolume                    float64   `json:"total_volume"`
 	High_24h                       float64   `json:"high_24h"`
@@ -20,19 +25,22 @@ type PriceResponse struct {
 	LastUpdated                    time.Time `json:"last_updated"`
 }
 
-func ToPricesResponse(prices []models.CoinPrice) []PriceResponse {
-	result := make([]PriceResponse, len(prices))
+func ToPricesResponse(prices []models.CoinPrice) PricesResponse {
+	prices_ := make([]PriceResponse, len(prices))
 	for i, v := range prices {
-		result[i] = ToPriceResponse(v)
+		prices_[i] = ToPriceResponse(&v)
 	}
-	return result
+	return PricesResponse{
+		Total: len(prices_),
+		Price: prices_,
+	}
 }
 
-func ToPriceResponse(price models.CoinPrice) PriceResponse {
+func ToPriceResponse(price *models.CoinPrice) PriceResponse {
 	return PriceResponse{
 		Symbol:                         price.Symbol,
 		Name:                           price.Name,
-		CurrentPrice:                   price.CurrentPrice,
+		PriceUSD:                       price.CurrentPrice,
 		MarketCap:                      price.MarketCap,
 		TotalVolume:                    price.TotalVolume,
 		High_24h:                       price.High_24h,
