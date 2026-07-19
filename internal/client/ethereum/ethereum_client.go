@@ -3,7 +3,6 @@ package ethereum
 import (
 	"context"
 	"errors"
-	"log/slog"
 	"math"
 	"math/big"
 	"time"
@@ -67,45 +66,56 @@ func (c *EthereumClient) GetBalance(ctx context.Context, address string) (float6
 }
 
 func (c *EthereumClient) GetTokenBalance(ctx context.Context, address, tokenAddress string) (float64, error) {
-	if address == "0x51C72848c68a965f66FA7a88855F9f7784502a7F" {
-		slog.Debug("ddd")
-	}
 	userAddressHex := common.HexToAddress(address)
 	tokenAddressHex := common.HexToAddress(tokenAddress)
 
-	// 1. Generate the function selector for standard ERC-20 "balanceOf(address)"
-	// transfer/balanceOf function signature hash is: 0x70a08231
-	transferFnSignature := []byte("balanceOf(address)")
-	methodID := crypto.Keccak256(transferFnSignature)[:4]
+	// --- STEP 1: AUTO-DETECT DECIMALS ---
+	// Keccak256 signature hash for "decimals()" is 0x313ce567
+	decimalsSignature := []byte("decimals()")
+	decimalsMethodID := crypto.Keccak256(decimalsSignature)[:4]
 
-	// 2. Pad the user's address to 32 bytes to pack it correctly into the data payload
+	decimalsMsg := ethereum.CallMsg{
+		To:   &tokenAddressHex,
+		Data: decimalsMethodID,
+	}
+
+	var decimals int64 = 18 // Default fallback to 18
+	decimalsOutput, err := c.client.CallContract(ctx, decimalsMsg, nil)
+	if err == nil && len(decimalsOutput) > 0 {
+		// Unpack the 32-byte hex return into a standard integer
+		decimals = new(big.Int).SetBytes(decimalsOutput).Int64()
+	}
+
+	// --- STEP 2: GET RAW BALANCE ---
+	transferFnSignature := []byte("balanceOf(address)")
+	balanceMethodID := crypto.Keccak256(transferFnSignature)[:4]
 	paddedUserAddress := common.LeftPadBytes(userAddressHex.Bytes(), 32)
 
-	// 3. Combine the method ID and the padded address parameters
-	var data []byte
-	data = append(data, methodID...)
-	data = append(data, paddedUserAddress...)
+	var balanceData []byte
+	balanceData = append(balanceData, balanceMethodID...)
+	balanceData = append(balanceData, paddedUserAddress...)
 
-	// 4. Construct the standard CallMsg execution request payload
-	msg := ethereum.CallMsg{
+	balanceMsg := ethereum.CallMsg{
 		To:   &tokenAddressHex,
-		Data: data,
+		Data: balanceData,
 	}
 
-	// 5. Execute the read call to the node
-	output, err := c.client.CallContract(ctx, msg, nil)
+	balanceOutput, err := c.client.CallContract(ctx, balanceMsg, nil)
 	if err != nil {
 		return 0, err
 	}
 
-	// 6. Unpack the raw 32-byte hex return data into a standard Go big.Int
-	balance := new(big.Int).SetBytes(output)
-	// return balance, nil
-	if err != nil {
-		return 0, err
-	}
-	balanceFloat := new(big.Float).SetInt(balance)
-	etherValue := new(big.Float).Quo(balanceFloat, big.NewFloat(math.Pow10(18)))
+	// --- STEP 3: CONVERT DYNAMICALLY ---
+	balanceInt := new(big.Int).SetBytes(balanceOutput)
+	balanceFloat := new(big.Float).SetInt(balanceInt)
+
+	// Create the divisor directly by passing the integer directly to Pow10
+	// We cast the int64 'decimals' to an int
+	divisorFloat := math.Pow10(int(decimals))
+	divisor := new(big.Float).SetFloat64(divisorFloat)
+
+	etherValue := new(big.Float).Quo(balanceFloat, divisor)
+
 	f, _ := etherValue.Float64()
 	return f, nil
 }
