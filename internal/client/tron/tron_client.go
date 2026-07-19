@@ -59,3 +59,8 @@ func (c *TronClient) GetBalance(ctx context.Context, address string) (float64, e
 	}
 	return float64(account.GetBalance()) / 1e6, nil
 }
+
+func (c *TronClient) GetTokenBalance(ctx context.Context, address, tokenAddress string) (float64, error) {
+	// TODO: tokens
+	return 0, nil
+}

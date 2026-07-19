@@ -3,6 +3,7 @@ package core
 import (
 	"context"
 	"fmt"
+	"strings"
 	"time"
 	"tracker/internal/cache"
 	"tracker/internal/db/models"
@@ -20,7 +21,7 @@ func NewPriceCache(cache *cache.RedisClient) *PriceCache {
 
 func (p *PriceCache) GetPriceBySymbol(ctx context.Context, symbol string) *models.CoinPrice {
 	price := models.CoinPrice{}
-	err := p.cache.GetJSON(ctx, fmt.Sprintf("prices:%s", symbol), &price)
+	err := p.cache.GetJSON(ctx, fmt.Sprintf("prices:%s", strings.ToUpper(symbol)), &price)
 	if err == nil {
 		return &price
 	}
@@ -29,7 +30,7 @@ func (p *PriceCache) GetPriceBySymbol(ctx context.Context, symbol string) *model
 
 func (p *PriceCache) SetPrices(ctx context.Context, prices []models.CoinPrice) error {
 	for _, price := range prices {
-		if err := p.cache.SetJSON(ctx, fmt.Sprintf("prices:%s", price.Symbol), price, 60*time.Second); err != nil {
+		if err := p.cache.SetJSON(ctx, fmt.Sprintf("prices:%s", strings.ToUpper(price.Symbol)), price, 60*time.Second); err != nil {
 			return err
 		}
 	}
@@ -37,7 +38,7 @@ func (p *PriceCache) SetPrices(ctx context.Context, prices []models.CoinPrice) e
 }
 
 func (p *PriceCache) SetPrice(ctx context.Context, symbol string, price models.CoinPrice) error {
-	return p.cache.SetJSON(ctx, fmt.Sprintf("prices:%s", symbol), price, 60*time.Second)
+	return p.cache.SetJSON(ctx, fmt.Sprintf("prices:%s", strings.ToUpper(symbol)), price, 60*time.Second)
 }
 
 func (p *PriceCache) GetCoins(ctx context.Context) ([]models.Coin, error) {
@@ -52,7 +53,7 @@ func (p *PriceCache) GetCoinsBySymbol(ctx context.Context, symbols []string) ([]
 	coins := []models.Coin{}
 	for _, symbol := range symbols {
 		var coin models.Coin
-		if err := p.cache.GetJSON(ctx, fmt.Sprintf("coins:%s", symbol), &coin); err != nil {
+		if err := p.cache.GetJSON(ctx, fmt.Sprintf("coins:%s", strings.ToUpper(symbol)), &coin); err != nil {
 			return nil, err
 		}
 		coins = append(coins, coin)
@@ -62,7 +63,7 @@ func (p *PriceCache) GetCoinsBySymbol(ctx context.Context, symbols []string) ([]
 
 func (p *PriceCache) GetCoinBySymbol(ctx context.Context, symbol string) *models.Coin {
 	var coin models.Coin
-	if err := p.cache.GetJSON(ctx, fmt.Sprintf("coins:%s", symbol), &coin); err != nil {
+	if err := p.cache.GetJSON(ctx, fmt.Sprintf("coins:%s", strings.ToUpper(symbol)), &coin); err != nil {
 		return nil
 	}
 	return &coin
@@ -73,7 +74,7 @@ func (p *PriceCache) SetCoins(ctx context.Context, coins []models.Coin) error {
 		return err
 	}
 	for _, i := range coins {
-		if err := p.cache.SetJSON(ctx, fmt.Sprintf("coins:%s", i.Symbol), i, 1*time.Hour); err != nil {
+		if err := p.cache.SetJSON(ctx, fmt.Sprintf("coins:%s", strings.ToUpper(i.Symbol)), i, 1*time.Hour); err != nil {
 			return err
 		}
 	}
@@ -82,7 +83,7 @@ func (p *PriceCache) SetCoins(ctx context.Context, coins []models.Coin) error {
 
 func (p *PriceCache) AddPricesToWatch(ctx context.Context, symbols []string) error {
 	for _, symbol := range symbols {
-		if err := p.cache.Set(ctx, fmt.Sprintf("prices-to-watch:%s", symbol), symbol, 5*time.Minute); err != nil {
+		if err := p.cache.Set(ctx, fmt.Sprintf("prices-to-watch:%s", strings.ToUpper(symbol)), symbol, 5*time.Minute); err != nil {
 			return err
 		}
 	}

@@ -9,4 +9,4 @@ CREATE TABLE IF NOT EXISTS wallets (
     updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
-CREATE UNIQUE INDEX IF NOT EXISTS idx_wallets_address_chain ON wallets (address, chain);
+CREATE UNIQUE INDEX IF NOT EXISTS idx_wallets_address_chain ON wallets (address, chain, symbol);

@@ -22,6 +22,10 @@ func (f *fakeWalletRepo) CreateWallet(ctx context.Context, userID string, chain 
 	return nil, nil
 }
 
+func (f *fakeWalletRepo) EditWallet(ctx context.Context, userID string, id uuid.UUID, label string) (*models.Wallet, error) {
+	return nil, nil
+}
+
 func (f *fakeWalletRepo) DeleteWallet(ctx context.Context, userID string, id uuid.UUID) error {
 	return nil
 }

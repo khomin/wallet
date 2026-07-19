@@ -2,11 +2,14 @@ package repositories
 
 import (
 	"context"
+	"errors"
+	"strings"
 	"tracker/internal/core"
 	"tracker/internal/db"
 	"tracker/internal/db/models"
 
 	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5/pgconn"
 )
 
 type WalletRepository struct {
@@ -53,34 +56,56 @@ func (r *WalletRepository) CreateWallet(ctx context.Context, userID string, chai
 	query := `INSERT INTO wallets (address, chain, symbol, label, user_id)
         VALUES ($1, $2, $3, $4, $5)
 		RETURNING *`
-	rows, err := r.db.Pool.Query(ctx, query,
+	row := r.db.Pool.QueryRow(ctx, query,
 		address,
-		chain,
-		symbol,
+		strings.ToUpper(chain),
+		strings.ToUpper(symbol),
 		label,
 		userID,
 	)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-	if rows.Next() {
-		var wallet models.Wallet
-		if err := rows.Scan(
-			&wallet.ID,
-			&wallet.Address,
-			&wallet.Chain,
-			&wallet.Symbol,
-			&wallet.Label,
-			&wallet.UserID,
-			&wallet.CreatedAt,
-			&wallet.UpdatedAt,
-		); err != nil {
-			return nil, err
+	var wallet models.Wallet
+	if err := row.Scan(
+		&wallet.ID,
+		&wallet.Address,
+		&wallet.Chain,
+		&wallet.Symbol,
+		&wallet.Label,
+		&wallet.UserID,
+		&wallet.CreatedAt,
+		&wallet.UpdatedAt,
+	); err != nil {
+		var pgErr *pgconn.PgError
+		if errors.As(err, &pgErr) && pgErr.Code == "23505" {
+			return nil, core.ErrWalletAlreadyExists
 		}
-		return &wallet, nil
+		return nil, core.ErrWalletInternalError
 	}
-	return nil, core.ErrWalletInternalError
+	return &wallet, nil
+}
+
+func (r *WalletRepository) EditWallet(ctx context.Context, userID string, id uuid.UUID, label string) (*models.Wallet, error) {
+	query := `UPDATE wallets
+		SET label = $1
+		WHERE user_id = $2 AND id = $3
+		RETURNING*;`
+	row := r.db.Pool.QueryRow(ctx, query,
+		label,
+		userID, id,
+	)
+	var wallet models.Wallet
+	if err := row.Scan(
+		&wallet.ID,
+		&wallet.Address,
+		&wallet.Chain,
+		&wallet.Symbol,
+		&wallet.Label,
+		&wallet.UserID,
+		&wallet.CreatedAt,
+		&wallet.UpdatedAt,
+	); err != nil {
+		return nil, core.ErrWalletNotFound
+	}
+	return &wallet, nil
 }
 
 func (r *WalletRepository) DeleteWallet(ctx context.Context, userID string, id uuid.UUID) error {
@@ -93,8 +118,7 @@ func (r *WalletRepository) DeleteWallet(ctx context.Context, userID string, id u
 }
 
 func (r *WalletRepository) GetWallet(ctx context.Context, userID string, id uuid.UUID) (*models.Wallet, error) {
-	query := `SELECT * FROM wallets
-		WHERE user_id = $1 AND id = $2`
+	query := `SELECT * FROM wallets WHERE user_id = $1 AND id = $2`
 	rows, err := r.db.Pool.Query(ctx, query, userID, id)
 	if err != nil {
 		return nil, err

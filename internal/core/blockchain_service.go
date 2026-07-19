@@ -3,6 +3,7 @@ package core
 import (
 	"context"
 	"fmt"
+	"strings"
 
 	"tracker/internal/client/bitcoin"
 	"tracker/internal/client/ethereum"
@@ -12,13 +13,15 @@ import (
 
 type ChainProvider interface {
 	GetBalance(ctx context.Context, address string) (float64, error)
+	GetTokenBalance(ctx context.Context, address, tokenAddress string) (float64, error)
 	Connect(ctx context.Context) error
 	Close()
 }
 
 type BlockchainService struct {
-	providers  map[string]ChainProvider
-	walletRepo WalletRepository
+	providers     map[string]ChainProvider
+	walletRepo    WalletRepository
+	tokenRegistry *TokenRegistry
 }
 
 type AddressBalance struct {
@@ -37,23 +40,21 @@ func NewBlockchainService(
 	btc *bitcoin.BitcoinClient,
 	tron *tron.TronClient,
 	walletRepo WalletRepository,
+	tokenRegistry *TokenRegistry,
 ) *BlockchainService {
 	return &BlockchainService{
 		providers: map[string]ChainProvider{
-			"ethereum": ethereumMainnet,
-			"eth":      ethereumMainnet,
-			"arbitrum": ethereumArbitrum,
-			"arb":      ethereumArbitrum,
-			"base":     ethereumBase,
-			"polygon":  polygon,
-			"bnb":      bnb,
-			"bsc":      bnb,
-			"solana":   sol,
-			"sol":      sol,
-			"tron":     tron,
-			"trx":      tron,
+			"ETH":     ethereumMainnet,
+			"ARB":     ethereumArbitrum,
+			"BASE":    ethereumBase,
+			"POLYGON": polygon,
+			"BNB":     bnb,
+			"BSC":     bnb,
+			"SOL":     sol,
+			"TRX":     tron,
 		},
-		walletRepo: walletRepo,
+		walletRepo:    walletRepo,
+		tokenRegistry: tokenRegistry,
 	}
 }
 
@@ -66,18 +67,36 @@ func (s *BlockchainService) ConnectAll(ctx context.Context) error {
 	return nil
 }
 
-func (s *BlockchainService) GetBalance(ctx context.Context, chain string, address string) (*AddressBalance, error) {
+func (s *BlockchainService) GetBalance(ctx context.Context, chain string, address string, tokenSymbol string) (*AddressBalance, error) {
+	chain = strings.ToUpper(chain)
 	provider, found := s.providers[chain]
 	if !found {
 		return nil, fmt.Errorf("unsupported chain: %s", chain)
 	}
-	balance, err := provider.GetBalance(ctx, address)
-	if err != nil {
-		return nil, err
+	if chain == tokenSymbol {
+		balance, err := provider.GetBalance(ctx, address)
+		if err != nil {
+			return nil, err
+		}
+		return &AddressBalance{
+			Chain:   chain,
+			Address: address,
+			Balance: balance,
+		}, nil
+	} else {
+		token, ok := s.tokenRegistry.GetByChainAndSymbol(chain, tokenSymbol)
+		if !ok {
+			return nil, fmt.Errorf("token not found %s", tokenSymbol)
+		}
+		balance, err := provider.GetTokenBalance(ctx, address, token.Address)
+		if err != nil {
+			return nil, err
+		}
+
+		return &AddressBalance{
+			Chain:   chain,
+			Address: token.Address,
+			Balance: balance,
+		}, nil
 	}
-	return &AddressBalance{
-		Chain:   chain,
-		Address: address,
-		Balance: balance,
-	}, nil
 }

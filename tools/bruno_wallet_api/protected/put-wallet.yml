@@ -1,19 +1,17 @@
 info:
-  name: post-wallet
+  name: put-wallet
   type: http
-  seq: 7
+  seq: 8
 
 http:
-  method: POST
+  method: PUT
   url: "{{url}}/api/v1/wallets"
   body:
     type: json
     data: |-
       {
-        "chain": "eth",
-        "address": "0x695B99B6D905FfD6B8fea9b458113679295E0E6B",
-        "token_symbol": "paxg",
-        "label": "test"
+        "id": "0ed0bf89-c4a8-4aa2-9c90-821009a70644",
+        "label": "sol-edit-1"
       }
   auth: inherit
 

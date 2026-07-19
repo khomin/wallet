@@ -63,3 +63,10 @@ func NotFoundErrorMessage(c *gin.Context, message string) {
 		Message: message,
 	})
 }
+
+func AlreadyExistsError(c *gin.Context) {
+	c.JSON(http.StatusConflict, ErrorResponse{
+		Code:    "ALREADY_EXISTS",
+		Message: "already exists",
+	})
+}

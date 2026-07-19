@@ -3,6 +3,7 @@ package core
 import (
 	"context"
 	"errors"
+	"fmt"
 
 	"tracker/internal/db/models"
 
@@ -10,8 +11,9 @@ import (
 )
 
 var (
-	ErrWalletNotFound      = errors.New("wallet not found")
-	ErrWalletInternalError = errors.New("wallet internal error")
+	ErrWalletNotFound      = errors.New("not found")
+	ErrWalletAlreadyExists = errors.New("already exists")
+	ErrWalletInternalError = errors.New("internal error")
 )
 
 type WalletPortfolioItem struct {
@@ -24,6 +26,7 @@ type WalletPortfolioItem struct {
 type WalletRepository interface {
 	ListWallets(ctx context.Context, userID string) ([]models.Wallet, error)
 	CreateWallet(ctx context.Context, userID string, chain string, address string, symbol string, label string) (*models.Wallet, error)
+	EditWallet(ctx context.Context, userID string, id uuid.UUID, label string) (*models.Wallet, error)
 	DeleteWallet(ctx context.Context, userID string, id uuid.UUID) error
 	GetWallet(ctx context.Context, userID string, id uuid.UUID) (*models.Wallet, error)
 }
@@ -82,23 +85,53 @@ func (s *WalletService) AddWallet(ctx context.Context, userID string, chain stri
 	return portfolio, nil
 }
 
+func (s *WalletService) EditWallet(ctx context.Context, userID string, id uuid.UUID, label string) (*WalletPortfolioItem, error) {
+	wallet, err := s.walletRepo.EditWallet(ctx, userID, id, label)
+	if err != nil {
+		return nil, err
+	}
+	portfolio, err := s.getWalletPortfolio(ctx, wallet)
+	if err != nil {
+		return nil, err
+	}
+	return portfolio, nil
+}
+
 func (s *WalletService) DeleteWallet(ctx context.Context, userID string, id uuid.UUID) error {
 	return s.walletRepo.DeleteWallet(ctx, userID, id)
 }
 
 func (s *WalletService) getWalletPortfolio(ctx context.Context, wallet *models.Wallet) (*WalletPortfolioItem, error) {
-	price, err := s.priceService.GetPrice(ctx, wallet.Symbol)
-	if err != nil {
-		return nil, errors.New("cannot pull wallet price")
+	if wallet.Chain == wallet.Symbol {
+		price, err := s.priceService.GetPrice(ctx, wallet.Chain)
+		if err != nil {
+			return nil, fmt.Errorf("cannot pull wallet native price: %s", wallet.Chain)
+		}
+		balance, err := s.blockchainService.GetBalance(ctx, wallet.Chain, wallet.Address, wallet.Symbol)
+		if err != nil {
+			return nil, fmt.Errorf("cannot pull wallet native balance: %s", wallet.Chain)
+		}
+		return &WalletPortfolioItem{
+			Wallet:     *wallet,
+			Price:      *price,
+			Balance:    balance.Balance,
+			BalanceUSD: balance.Balance * price.CurrentPrice,
+		}, nil
+	} else {
+		price, err := s.priceService.GetPrice(ctx, wallet.Symbol)
+		if err != nil {
+			return nil, fmt.Errorf("cannot pull wallet price: %s", wallet.Chain)
+		}
+		balance, err := s.blockchainService.GetBalance(ctx, wallet.Chain, wallet.Address, wallet.Symbol)
+		if err != nil {
+			return nil, fmt.Errorf("cannot pull wallet balance: %s", wallet.Chain)
+		}
+		return &WalletPortfolioItem{
+			Wallet:     *wallet,
+			Price:      *price,
+			Balance:    balance.Balance,
+			BalanceUSD: balance.Balance * price.CurrentPrice,
+		}, nil
 	}
-	balance, err := s.blockchainService.GetBalance(ctx, wallet.Chain, wallet.Address)
-	if err != nil {
-		return nil, errors.New("cannot pull wallet balance")
-	}
-	return &WalletPortfolioItem{
-		Wallet:     *wallet,
-		Price:      *price,
-		Balance:    balance.Balance,
-		BalanceUSD: balance.Balance * price.CurrentPrice,
-	}, nil
+
 }

@@ -63,3 +63,8 @@ func (c *SolanaClient) GetBalance(ctx context.Context, address string) (float64,
 	}
 	return float64(result.Value) / 1e9, nil
 }
+
+func (c *SolanaClient) GetTokenBalance(ctx context.Context, address, tokenAddress string) (float64, error) {
+	// TODO: tokens
+	return 0, nil
+}

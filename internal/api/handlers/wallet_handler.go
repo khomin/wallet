@@ -50,8 +50,12 @@ func (h *WalletHandler) AddWallet(c *gin.Context) {
 		dto.UnauthorizedError(c)
 		return
 	}
-	wallet, err := h.walletService.AddWallet(c.Request.Context(), userID, req.Chain, req.Address, req.Symbol, req.Label)
+	wallet, err := h.walletService.AddWallet(c.Request.Context(), userID, req.Chain, req.Address, req.TokenSymbol, req.Label)
 	if err != nil {
+		if errors.Is(err, core.ErrWalletAlreadyExists) {
+			dto.AlreadyExistsError(c)
+			return
+		}
 		dto.InternallError(c)
 		return
 	}
@@ -83,6 +87,31 @@ func (h *WalletHandler) DeleteWallet(c *gin.Context) {
 	})
 }
 
+func (h *WalletHandler) EditWallet(c *gin.Context) {
+	var req dto.EditWalletRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		dto.InvalidParameters(c)
+		return
+	}
+	userID, ok := middleware.UserIDFromContext(c)
+	if !ok {
+		dto.UnauthorizedError(c)
+		return
+	}
+	wallet, err := h.walletService.EditWallet(c.Request.Context(), userID, req.ID, req.Label)
+	if err != nil {
+		if errors.Is(err, core.ErrWalletNotFound) {
+			dto.NotFoundErrorMessage(c, "wallet not found")
+			return
+		}
+		dto.InternallError(c)
+		return
+	}
+	c.JSON(http.StatusOK, dto.EditWalletResponse{
+		WalletResponse: dto.ToWalletResponse(wallet),
+	})
+}
+
 func (h *WalletHandler) GetWalletBalance(c *gin.Context) {
 	var req dto.GetWalletBalanceRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
@@ -96,6 +125,10 @@ func (h *WalletHandler) GetWalletBalance(c *gin.Context) {
 	}
 	wallet, err := h.walletService.GetWallet(c.Request.Context(), userID, req.ID)
 	if err != nil {
+		if errors.Is(err, core.ErrWalletNotFound) {
+			dto.NotFoundErrorMessage(c, "wallet not found")
+			return
+		}
 		dto.InternallError(c)
 		return
 	}

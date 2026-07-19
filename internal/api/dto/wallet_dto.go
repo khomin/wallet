@@ -18,7 +18,7 @@ type WalletResponse struct {
 	ID               uuid.UUID `json:"id"`
 	Address          string    `json:"address"`
 	Chain            string    `json:"chain"`
-	Symbol           string    `json:"symbol"`
+	TokenSymbol      string    `json:"token_symbol"`
 	Label            string    `json:"label"`
 	CreatedAt        time.Time `json:"created_at"`
 	UpdatedAt        time.Time `json:"updated_at"`
@@ -28,25 +28,35 @@ type WalletResponse struct {
 }
 
 type CreateWalletRequest struct {
-	Chain   string `json:"chain" binding:"required"`
-	Address string `json:"address" binding:"required"`
-	Symbol  string `json:"symbol" binding:"required"`
-	Label   string `json:"label,omitempty"`
+	Chain       string `json:"chain" binding:"required"`
+	Address     string `json:"address" binding:"required"`
+	TokenSymbol string `json:"token_symbol" binding:"required"`
+	Label       string `json:"label,omitempty"`
 }
 
-type DeleteWalletResponse struct {
-	ID uuid.UUID `json:"id"`
+type EditWalletRequest struct {
+	ID    uuid.UUID `json:"id" binding:"required"`
+	Label string    `json:"label,omitempty"`
+}
+
+type EditWalletResponse struct {
+	WalletResponse
 }
 
 type DeleteWalletRequest struct {
-	ID uuid.UUID `json:"id"`
+	ID uuid.UUID `json:"id" binding:"required"`
+}
+
+type DeleteWalletResponse struct {
+	ID uuid.UUID `json:"id" binding:"required"`
 }
 
 type GetWalletBalanceResponse struct {
-	Chain      string  `json:"chain" binding:"required"`
-	Address    string  `json:"address" binding:"required"`
-	Balance    float64 `json:"balance"`
-	BalanceUSD float64 `json:"balance_usd"`
+	Chain       string  `json:"chain"`
+	TokenSymbol string  `json:"token_symbol"`
+	Address     string  `json:"address" `
+	Balance     float64 `json:"balance"`
+	BalanceUSD  float64 `json:"balance_usd"`
 }
 
 type GetWalletBalanceRequest struct {
@@ -58,7 +68,7 @@ func ToWalletResponse(walletPortfolio *core.WalletPortfolioItem) WalletResponse 
 		ID:               walletPortfolio.Wallet.ID,
 		Address:          walletPortfolio.Wallet.Address,
 		Chain:            walletPortfolio.Wallet.Chain,
-		Symbol:           walletPortfolio.Wallet.Symbol,
+		TokenSymbol:      walletPortfolio.Wallet.Symbol,
 		Label:            walletPortfolio.Wallet.Label,
 		CreatedAt:        walletPortfolio.Wallet.CreatedAt,
 		UpdatedAt:        walletPortfolio.Wallet.UpdatedAt,
