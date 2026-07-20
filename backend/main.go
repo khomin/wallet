@@ -119,8 +119,7 @@ func main() {
 		})
 	})
 
-	// Solana: github.com/gagliardetto/solana-go
-	// Ethereum / EVM Chains (BNB, Arbitrum, Base, Polygon): github.com/ethereum/go-ethereum
+	// TODO: sdk
 	// Bitcoin: github.com/btcsuite/btcd/rpcclient
 	// TRON: github.com/fbsobreira/gotron-sdk
 	// rubblelabs/ripple
