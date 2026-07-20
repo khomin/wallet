@@ -8,7 +8,7 @@ authorization:
   client_id: "whale-tracker-app"
 
 database:
-  host: "localhost" # Becomes "postgres" inside Docker later
+  host: "localhost"
   port: 5432
   user: "tracker_admin"
   password: "super_secure_password"
@@ -37,3 +37,169 @@ blockchain:
   bitcoin_rpc_pass: "super_secret_rpc_password"
   tron_grpc: "grpc.trongrid.io:50051"
   tron_api_key: "11111111-2222-3333-4444-555555555555"
+
+token_registry:
+  ETH:
+    - id: "eth_ethereum"
+      symbol: "ETH"
+      name: "Ethereum"
+      address: "native"
+      decimals: 18
+      is_native: true
+
+    - id: "usdc_ethereum"
+      symbol: "USDC"
+      name: "USD Coin"
+      address: "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48"
+      decimals: 6
+      is_native: false
+
+    - id: "usdt_ethereum"
+      symbol: "USDT"
+      name: "Tether USD"
+      address: "0xdAC17F958D2ee523a2206206994597C13D831ec7"
+      decimals: 6
+      is_native: false
+
+    - id: "wbtc_ethereum"
+      symbol: "WBTC"
+      name: "Wrapped Bitcoin"
+      address: "0x2260FAC5E5542a773Aa44fBCfeDf7C193bc2C599"
+      decimals: 8
+      is_native: false
+
+    - id: "xaut_ethereum"
+      symbol: "XAUT"
+      name: "Tether Gold"
+      address: "0x68749665FF8D2d112Fa859AA293F07A622782F38"
+      decimals: 6
+      is_native: false
+
+    - id: "paxg_ethereum"
+      symbol: "PAXG"
+      name: "Paxos Gold"
+      address: "0x45804880De22913dAFE09f4980848ECE6EcbAf78"
+      decimals: 18
+      is_native: false
+
+    - id: "aaplx_ethereum"
+      symbol: "AAPLx"
+      name: "Apple xStock"
+      address: "0xE5f6d3b2405ABdfE6F660e63202B25D23763160d"
+      decimals: 18
+      is_native: false
+
+    - id: "gldx_ethereum"
+      symbol: "GLDx"
+      name: "Gold xStock"
+      address: "0x2380F2673C640fB67E2d6B55B44C62F0E0e69DA9"
+      decimals: 18
+      is_native: false
+
+  POL:
+    - id: "pol_polygon"
+      symbol: "POL"
+      name: "Polygon"
+      address: "native"
+      decimals: 18
+      is_native: true
+
+    - id: "usdc_polygon"
+      symbol: "USDC"
+      name: "USD Coin (Polygon)"
+      address: "0x3c499c542cEF5E3811e1192ce70d8cC03d5c3359"
+      decimals: 6
+      is_native: false
+
+  ARB:
+    - id: "aaplx_arbitrum"
+      symbol: "AAPLx"
+      name: "Apple xStock"
+      address: "0xE5f6d3b2405ABdfE6F660e63202B25D23763160d"
+      decimals: 18
+      is_native: false
+
+    - id: "googlx_arbitrum"
+      symbol: "GOOGLx"
+      name: "Alphabet xStock"
+      address: "0xe92f673Ca36C5E2Efd2DE7628f815f84807e803F"
+      decimals: 18
+      is_native: false
+
+  SOL:
+    - id: "xaut_sol"
+      symbol: "XAUt"
+      name: "Tether Gold"
+      address: "AymATz4TCL9sWNEEV9Kvyz45CHVhDZ6kUgjTJPzLpU9P"
+      decimals: 18
+      is_native: false
+
+    - id: "googlx_sol"
+      symbol: "GOOGLx"
+      name: "Alphabet xStock"
+      address: "XsCPL9dNWBMvFtTmwcCA5v3xWPSMEBCszbQdiLLq6aN"
+      decimals: 18
+      is_native: false
+
+    - id: "tslax_sol"
+      symbol: "TSLAx"
+      name: "Tesla xStock"
+      address: "XsDoVfqeBukxuZHWhdvWHBhgEHjGNst4MLodqsJHzoB"
+      decimals: 18
+      is_native: false
+
+    - id: "aaplx_sol"
+      symbol: "AAPLx"
+      name: "Apple xStock"
+      address: "XsbEhLAtcf6HdfpFZ5xEMdqW8nfAvcsP5bdudRLJzJp"
+      decimals: 18
+      is_native: false
+
+    - id: "spyx_sol"
+      symbol: "SPYx"
+      name: "S&P500 ETF xStock"
+      address: "XsoCS1TfEyfFhfvj8EtZ528L3CaKBDBRqRapnBbDF2W"
+      decimals: 18
+      is_native: false
+
+    - id: "qqqx_sol"
+      symbol: "QQQx"
+      name: "Nasdaq ETF xStock"
+      address: "Xs8S1uUs1zvS2p7iwtsG3b6fkhpvmwz4GYU3gWAmWHZ"
+      decimals: 18
+      is_native: false
+
+    - id: "nvdax_sol"
+      symbol: "NVDAx"
+      name: "NVIDIA xStock"
+      address: "Xsc9qvGR1efVDFGLrVsmkzv3qi45LTBjeUKSPmx9qEh"
+      decimals: 18
+      is_native: false
+
+    - id: "mstrx_sol"
+      symbol: "MSTRx"
+      name: "MicroStrategy xStock"
+      address: "XsP7xzNPvEHS1m6qfanPUGjNmdnmsLKEoNAnHjdxxyZ"
+      decimals: 18
+      is_native: false
+
+    - id: "hoodx_sol"
+      symbol: "HOODx"
+      name: "Robinhood xStock"
+      address: "XsvNBAYkrDRNhA7wPHQfX3ZUXZyZLdnCQDfHZ56bzpg"
+      decimals: 18
+      is_native: false
+
+    - id: "metax_sol"
+      symbol: "METAx"
+      name: "Meta xStock"
+      address: "Xsa62P5mvPszXL1krVUnU5ar38bBSVcWAB6fmPCo5Zu"
+      decimals: 18
+      is_native: false
+
+    - id: "crclx_sol"
+      symbol: "CRCLx"
+      name: "Circle xStock"
+      address: "XsueG8BtpquVJX9LVLLEGuViXUungE6WmK5YZ3p3bd1"
+      decimals: 18
+      is_native: false

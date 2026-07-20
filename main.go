@@ -75,7 +75,7 @@ func main() {
 
 	priceService := core.NewPriceService(redisClient, &priceRepo, priceFetcher, priceCache)
 	priceHandler := handlers.NewPriceHandler(priceService)
-	tokenRegistry := core.DefaultTokenRegistry()
+	tokenRegistry := core.DefaultTokenRegistry(app.Cfg.TokenRegistry)
 	walletRepo := repositories.NewWalletRepository(db)
 
 	blockchainService := core.NewBlockchainService(

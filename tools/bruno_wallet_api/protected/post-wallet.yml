@@ -10,10 +10,10 @@ http:
     type: json
     data: |-
       {
-        "chain": "eth",
-        "address": "0x695B99B6D905FfD6B8fea9b458113679295E0E6B",
-        "token_symbol": "paxg",
-        "label": "test"
+        "chain": "sol",
+        "address": "CFMQzGS8M8wpvcWs1udJ2XgzXEmVf31bmYxBwtgPBLRg",
+        "token_symbol": "XAUt",
+        "label": "test some XAUt0"
       }
   auth: inherit
 

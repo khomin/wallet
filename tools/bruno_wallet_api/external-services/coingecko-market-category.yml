@@ -1,0 +1,32 @@
+info:
+  name: coingecko-market-category
+  type: http
+  seq: 7
+
+http:
+  method: GET
+  url: https://api.coingecko.com/api/v3/coins/markets?category=tokenized-stock&order=market_cap_desc&vs_currency=usd&per_page=250
+  headers:
+    - name: x-cg-pro-api-key
+      value: "{{coinGeckoKey}}"
+      disabled: true
+  params:
+    - name: category
+      value: tokenized-stock
+      type: query
+    - name: order
+      value: market_cap_desc
+      type: query
+    - name: vs_currency
+      value: usd
+      type: query
+    - name: per_page
+      value: "250"
+      type: query
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

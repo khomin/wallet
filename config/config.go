@@ -8,13 +8,14 @@ import (
 )
 
 type Config struct {
-	Server        ServerConfig     `mapstructure:"server"`
-	Authorization Authorization    `mapstructure:"authorization"`
-	Database      DatabaseConfig   `mapstructure:"database"`
-	Redis         RedisConfig      `mapstructure:"redis"`
-	Alchemy       AlchemyConfig    `mapstructure:"alchemy"`
-	CoinGecko     CoinGeckoConfig  `mapstructure:"coingecko"`
-	Blockchain    BlockchainConfig `mapstructure:"blockchain"`
+	Server        ServerConfig               `mapstructure:"server"`
+	Authorization Authorization              `mapstructure:"authorization"`
+	Database      DatabaseConfig             `mapstructure:"database"`
+	Redis         RedisConfig                `mapstructure:"redis"`
+	Alchemy       AlchemyConfig              `mapstructure:"alchemy"`
+	CoinGecko     CoinGeckoConfig            `mapstructure:"coingecko"`
+	Blockchain    BlockchainConfig           `mapstructure:"blockchain"`
+	TokenRegistry map[string][]TokenRegistry `mapstructure:"token_registry"`
 }
 
 type ServerConfig struct {
@@ -64,8 +65,17 @@ type BlockchainConfig struct {
 	TronAPIKey       string `mapstructure:"tron_api_key"`
 }
 
+type TokenRegistry struct {
+	ID       string `mapstructure:"id" yaml:"id"`
+	Symbol   string `mapstructure:"symbol" yaml:"symbol"`
+	Name     string `mapstructure:"name" yaml:"name"`
+	Address  string `mapstructure:"address" yaml:"address"`
+	Decimals int    `mapstructure:"decimals" yaml:"decimals"`
+	IsNative bool   `mapstructure:"is_native" yaml:"is_native"`
+}
+
 func NewConfig() *Config {
-	env := Config{}
+	config := Config{}
 	viper.SetConfigName("config")
 	viper.SetConfigType("yaml")
 	viper.AddConfigPath(".")
@@ -74,12 +84,12 @@ func NewConfig() *Config {
 	if err != nil {
 		logrus.Fatalf("can't find the file: %s", err.Error())
 	}
-	err = viper.Unmarshal(&env)
+	err = viper.Unmarshal(&config)
 	if err != nil {
 		logrus.Fatalf("environment can't be loaded: %s", err.Error())
 	}
 	logrus.Infof("environment ready")
-	return &env
+	return &config
 }
 
 func (c *Config) DSN() string {

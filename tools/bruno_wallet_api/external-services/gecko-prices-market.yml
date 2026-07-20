@@ -1,5 +1,5 @@
 info:
-  name: coingecko-prices-market
+  name: gecko-prices-market
   type: http
   seq: 4
 
@@ -10,6 +10,10 @@ http:
     - name: vs_currency
       value: usd
       type: query
+    - name: category
+      value: tokenized-stock
+      type: query
+      disabled: true
   auth: inherit
 
 settings:

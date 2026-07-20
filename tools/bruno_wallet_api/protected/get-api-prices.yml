@@ -5,10 +5,10 @@ info:
 
 http:
   method: GET
-  url: "{{url}}/api/v1/prices?symbols=btc,trx,ada"
+  url: "{{url}}/api/v1/prices?symbols=btc,trx,xaut"
   params:
     - name: symbols
-      value: btc,trx,ada
+      value: btc,trx,xaut
       type: query
   auth: inherit
 
