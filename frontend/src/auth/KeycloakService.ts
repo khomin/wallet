@@ -8,6 +8,7 @@ import { generateCodeVerifier, generateCodeChallenge, generateState } from './pk
 // ── Storage keys (sessionStorage – cleared when tab closes) ──────────────────
 const STORAGE_KEYS = {
   accessToken: 'kc_access_token',
+  idToken: 'kc_id_token',
   refreshToken: 'kc_refresh_token',
   expiresAt: 'kc_expires_at',    // Unix timestamp (ms)
   codeVerifier: 'kc_code_verifier', // Temporary – only needed during the callback
@@ -27,6 +28,7 @@ export interface UserInfo {
 // ── Token response from Keycloak /token endpoint ─────────────────────────────
 interface TokenResponse {
   access_token: string;
+  id_token: string;
   refresh_token?: string;
   expires_in: number;   // seconds
   token_type: string;
@@ -139,11 +141,14 @@ class KeycloakService {
 
   // ── Logout: clear local state + redirect to Keycloak logout ──────────────
   logout(): void {
+    const idToken = sessionStorage.getItem(STORAGE_KEYS.idToken);
     const params = new URLSearchParams({
       client_id: KEYCLOAK_CONFIG.clientId,
       post_logout_redirect_uri: window.location.origin,
     });
-
+    if (idToken) {
+      params.append('id_token_hint', idToken);
+    }
     this.clearTokens();
     window.location.href = `${OIDC_ENDPOINTS.logout}?${params}`;
   }
@@ -183,6 +188,9 @@ class KeycloakService {
   // ─── Private ──────────────────────────────────────────────────────────────
   private _storeTokens(tokens: TokenResponse): void {
     sessionStorage.setItem(STORAGE_KEYS.accessToken, tokens.access_token);
+    if (tokens.id_token) {
+      sessionStorage.setItem(STORAGE_KEYS.idToken, tokens.id_token); // <-- ADD THIS
+    }
     if (tokens.refresh_token) {
       sessionStorage.setItem(STORAGE_KEYS.refreshToken, tokens.refresh_token);
     }

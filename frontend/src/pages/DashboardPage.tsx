@@ -40,16 +40,6 @@ export default function DashboardPage() {
 
       {/* ── Main content ────────────────────────────────────────────────── */}
       <main className="flex-1 p-8 max-w-6xl mx-auto w-full">
-        {/* Welcome banner */}
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-white">
-            Welcome back,{' '}
-            <span className="text-purple-400">{displayName}</span>
-          </h1>
-          <p className="mt-1 text-gray-500 text-sm">
-            Here&apos;s your portfolio overview.
-          </p>
-        </div>
 
         {/* Stats row – skeleton placeholders */}
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
