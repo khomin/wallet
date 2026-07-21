@@ -1,0 +1,37 @@
+info:
+  name: test2
+  type: http
+  seq: 9
+
+http:
+  method: GET
+  url: http://localhost:9090/realms/whale-tracker/protocol/openid-connect/auth?response_type=code&client_id=whale-tracker-app&redirect_uri=http%3A%2F%2Flocalhost%3A5173%2Fcallback&scope=openid+profile+email&state=l2r5OlKsaF21NlP9Xy-GHA&code_challenge=BIMdmZ0jpY_Kq_awau0_nRgW8hQ6WgDSb6A27yJr_do&code_challenge_method=S256
+  params:
+    - name: response_type
+      value: code
+      type: query
+    - name: client_id
+      value: whale-tracker-app
+      type: query
+    - name: redirect_uri
+      value: http%3A%2F%2Flocalhost%3A5173%2Fcallback
+      type: query
+    - name: scope
+      value: openid+profile+email
+      type: query
+    - name: state
+      value: l2r5OlKsaF21NlP9Xy-GHA
+      type: query
+    - name: code_challenge
+      value: BIMdmZ0jpY_Kq_awau0_nRgW8hQ6WgDSb6A27yJr_do
+      type: query
+    - name: code_challenge_method
+      value: S256
+      type: query
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

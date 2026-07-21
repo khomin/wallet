@@ -7,19 +7,18 @@ import { useNavigate } from 'react-router-dom';
 import { keycloakService } from '../auth/KeycloakService';
 
 export default function CallbackPage() {
-  const navigate    = useNavigate();
+  const navigate = useNavigate();
   const [error, setError] = useState<string | null>(null);
-  // Guard against React StrictMode double-invoke in dev
   const handled = useRef(false);
 
   useEffect(() => {
     if (handled.current) return;
     handled.current = true;
 
-    const params        = new URLSearchParams(window.location.search);
-    const code          = params.get('code');
+    const params = new URLSearchParams(window.location.search);
+    const code = params.get('code');
     const returnedState = params.get('state');
-    const errorParam    = params.get('error');
+    const errorParam = params.get('error');
 
     if (errorParam) {
       setError(`Keycloak returned an error: ${errorParam} – ${params.get('error_description') ?? ''}`);

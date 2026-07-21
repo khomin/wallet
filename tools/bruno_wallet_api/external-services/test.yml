@@ -1,0 +1,30 @@
+info:
+  name: test
+  type: http
+  seq: 8
+
+http:
+  method: POST
+  url: http://localhost:9090/realms/whale-tracker/protocol/openid-connect/token
+  body:
+    type: form-urlencoded
+    data:
+      - name: grant_type
+        value: authorization_code
+      - name: client_id
+        value: whale-tracker-app
+      - name: redirect_uri
+        value: http://localhost:5173/callback
+      - name: scope
+        value: whale-tracker-audience
+      - name: code
+        value: 8699943e-7bb1-cab8-c47e-3962c1994e82.Z2AZQ78uX032ncC7FGTQqlbK.c9484047-2e79-43e7-a284-4370cd8d8bd2
+      - name: code_verifier
+        value: 8699943e-7bb1-cab8-c47e-3962c1994e82.Z2AZQ78uX032ncC7FGTQqlbK.c9484047-2e79-43e7-a284-4370cd8d8bd2
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

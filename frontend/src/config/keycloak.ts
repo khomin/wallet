@@ -17,9 +17,9 @@ const base = `${KEYCLOAK_CONFIG.baseUrl}/realms/${KEYCLOAK_CONFIG.realm}/protoco
 
 export const OIDC_ENDPOINTS = {
   authorization: `${base}/auth`,
-  token:         `${base}/token`,
-  logout:        `${base}/logout`,
-  userinfo:      `${base}/userinfo`,
+  token: `${base}/token`,
+  logout: `${base}/logout`,
+  userinfo: `${base}/userinfo`,
 } as const;
 
 // The URL Keycloak will redirect back to after login

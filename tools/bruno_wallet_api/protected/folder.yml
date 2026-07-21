@@ -9,7 +9,7 @@ request:
     flow: authorization_code
     authorizationUrl: http://localhost:9090/realms/whale-tracker/protocol/openid-connect/auth
     accessTokenUrl: http://localhost:9090/realms/whale-tracker/protocol/openid-connect/token
-    callbackUrl: http://localhost:8080
+    callbackUrl: http://localhost:5173/callback
     credentials:
       clientId: "{{client-id}}"
       placement: body

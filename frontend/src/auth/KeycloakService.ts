@@ -7,29 +7,29 @@ import { generateCodeVerifier, generateCodeChallenge, generateState } from './pk
 
 // ── Storage keys (sessionStorage – cleared when tab closes) ──────────────────
 const STORAGE_KEYS = {
-  accessToken:  'kc_access_token',
+  accessToken: 'kc_access_token',
   refreshToken: 'kc_refresh_token',
-  expiresAt:    'kc_expires_at',    // Unix timestamp (ms)
+  expiresAt: 'kc_expires_at',    // Unix timestamp (ms)
   codeVerifier: 'kc_code_verifier', // Temporary – only needed during the callback
-  oauthState:   'kc_oauth_state',   // Temporary – CSRF guard
+  oauthState: 'kc_oauth_state',   // Temporary – CSRF guard
 } as const;
 
 // ── Token payload shape (what we care about) ─────────────────────────────────
 export interface UserInfo {
-  sub:               string;
+  sub: string;
   preferred_username?: string;
-  email?:            string;
-  name?:             string;
-  given_name?:       string;
-  family_name?:      string;
+  email?: string;
+  name?: string;
+  given_name?: string;
+  family_name?: string;
 }
 
 // ── Token response from Keycloak /token endpoint ─────────────────────────────
 interface TokenResponse {
-  access_token:  string;
+  access_token: string;
   refresh_token?: string;
-  expires_in:    number;   // seconds
-  token_type:    string;
+  expires_in: number;   // seconds
+  token_type: string;
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -37,31 +37,31 @@ interface TokenResponse {
 class KeycloakService {
   // ── Step 1: Redirect the browser to Keycloak's login page ─────────────────
   async login(): Promise<void> {
-    const verifier   = generateCodeVerifier();
-    const challenge  = await generateCodeChallenge(verifier);
-    const state      = generateState();
+    const verifier = generateCodeVerifier();
+    const challenge = await generateCodeChallenge(verifier);
+    const state = generateState();
 
     // Persist verifier + state so we can use them in the callback
     sessionStorage.setItem(STORAGE_KEYS.codeVerifier, verifier);
-    sessionStorage.setItem(STORAGE_KEYS.oauthState,   state);
+    sessionStorage.setItem(STORAGE_KEYS.oauthState, state);
 
     const params = new URLSearchParams({
-      response_type:         'code',
-      client_id:             KEYCLOAK_CONFIG.clientId,
-      redirect_uri:          REDIRECT_URI,
-      scope:                 'openid profile email',
+      response_type: 'code',
+      client_id: KEYCLOAK_CONFIG.clientId,
+      redirect_uri: REDIRECT_URI, // http://localhost:5173/callback
+      scope: 'openid profile email',
       state,
-      code_challenge:        challenge,
+      code_challenge: challenge,
       code_challenge_method: 'S256',
     });
-
+    // http://localhost:9090/realms/whale-tracker/protocol/openid-connect/auth
     window.location.href = `${OIDC_ENDPOINTS.authorization}?${params}`;
   }
 
   // ── Step 2: Exchange the authorization code for tokens ────────────────────
   async handleCallback(code: string, returnedState: string): Promise<void> {
-    const storedState    = sessionStorage.getItem(STORAGE_KEYS.oauthState);
-    const codeVerifier   = sessionStorage.getItem(STORAGE_KEYS.codeVerifier);
+    const storedState = sessionStorage.getItem(STORAGE_KEYS.oauthState);
+    const codeVerifier = sessionStorage.getItem(STORAGE_KEYS.codeVerifier);
 
     // CSRF guard
     if (returnedState !== storedState) {
@@ -72,30 +72,37 @@ class KeycloakService {
     }
 
     const body = new URLSearchParams({
-      grant_type:    'authorization_code',
-      client_id:     KEYCLOAK_CONFIG.clientId,
-      redirect_uri:  REDIRECT_URI,
-      code,
+      grant_type: 'authorization_code',
+      client_id: KEYCLOAK_CONFIG.clientId,
+      redirect_uri: REDIRECT_URI,
+      code: code,
       code_verifier: codeVerifier,
+      scope: 'whale-tracker-audience'
     });
+    try {
+      console.log(`code: ${code}`)
+      console.log(`code_verifier: ${codeVerifier}`)
+      const response = await fetch(OIDC_ENDPOINTS.token, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: body,
+      });
 
-    const response = await fetch(OIDC_ENDPOINTS.token, {
-      method:  'POST',
-      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-      body,
-    });
+      if (!response.ok) {
+        const err = await response.text();
+        throw new Error(`Token exchange failed: ${err}`);
+      }
 
-    if (!response.ok) {
-      const err = await response.text();
-      throw new Error(`Token exchange failed: ${err}`);
+      const tokens: TokenResponse = await response.json();
+      this._storeTokens(tokens);
+
+      // Clean up temporary PKCE values
+      sessionStorage.removeItem(STORAGE_KEYS.codeVerifier);
+      sessionStorage.removeItem(STORAGE_KEYS.oauthState);
+
+    } catch (error) {
+      console.error(error);
     }
-
-    const tokens: TokenResponse = await response.json();
-    this._storeTokens(tokens);
-
-    // Clean up temporary PKCE values
-    sessionStorage.removeItem(STORAGE_KEYS.codeVerifier);
-    sessionStorage.removeItem(STORAGE_KEYS.oauthState);
   }
 
   // ── Refresh the access token using the refresh token ─────────────────────
@@ -104,14 +111,14 @@ class KeycloakService {
     if (!refresh) return false;
 
     const body = new URLSearchParams({
-      grant_type:    'refresh_token',
-      client_id:     KEYCLOAK_CONFIG.clientId,
+      grant_type: 'refresh_token',
+      client_id: KEYCLOAK_CONFIG.clientId,
       refresh_token: refresh,
     });
 
     try {
       const response = await fetch(OIDC_ENDPOINTS.token, {
-        method:  'POST',
+        method: 'POST',
         headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
         body,
       });
@@ -133,7 +140,7 @@ class KeycloakService {
   // ── Logout: clear local state + redirect to Keycloak logout ──────────────
   logout(): void {
     const params = new URLSearchParams({
-      client_id:            KEYCLOAK_CONFIG.clientId,
+      client_id: KEYCLOAK_CONFIG.clientId,
       post_logout_redirect_uri: window.location.origin,
     });
 
@@ -143,7 +150,7 @@ class KeycloakService {
 
   // ── Check if the user is currently authenticated (token present + not expired) ─
   isAuthenticated(): boolean {
-    const token     = sessionStorage.getItem(STORAGE_KEYS.accessToken);
+    const token = sessionStorage.getItem(STORAGE_KEYS.accessToken);
     const expiresAt = sessionStorage.getItem(STORAGE_KEYS.expiresAt);
     if (!token || !expiresAt) return false;
     // Give a 30-second buffer before the real expiry
