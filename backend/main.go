@@ -98,6 +98,21 @@ func main() {
 	}
 
 	r := gin.Default()
+
+	// CORS – allow Vite dev server (localhost:5173) and any other origins you need
+	r.Use(func(c *gin.Context) {
+		c.Header("Access-Control-Allow-Origin", "*")
+		c.Header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
+		c.Header("Access-Control-Allow-Headers", "Origin, Content-Type, Accept, Authorization")
+		c.Header("Access-Control-Max-Age", "86400")
+
+		if c.Request.Method == "OPTIONS" {
+			c.AbortWithStatus(http.StatusNoContent)
+			return
+		}
+		c.Next()
+	})
+
 	v1 := r.Group("/api/v1")
 	{
 		v1.GET("/coins", priceHandler.GetCoins)

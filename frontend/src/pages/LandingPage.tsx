@@ -154,7 +154,7 @@ export default function LandingPage() {
 
       {/* ── Feature cards ───────────────────────────────────────────────── */}
       <section className="relative z-10 grid grid-cols-1 sm:grid-cols-3 gap-px px-6 pb-20 max-w-4xl mx-auto w-full">
-        {FEATURES.map((f, i) => (
+        {FEATURES.map((f) => (
           <div
             key={f.title}
             className="group relative rounded-2xl border border-white/[0.06] bg-white/[0.02]
