@@ -3,13 +3,15 @@
 A Go-based backend for tracking crypto prices, wallet activity, and future alerting workflows. The project is still in its early stages.
 
 Right now, the service includes:
-- Wallet tracking across chains such as SOL, ETH, TRX, ADA, and BTC
+- Wallet tracking across chains such as SOL, ETH, TRX, ADA, BTC
     using these sdk:
     ```
     github.com/btcsuite/btcd
     github.com/ethereum/go-ethereum
     github.com/fbsobreira/gotron-sdk
     github.com/gagliardetto/solana-go
+    github.com/blinklabs-io/gouroboros
+    github.com/blinklabs-io/cardano-node-api
     ```
 - Background price ingestion for the top 250 coins from CoinGecko
 - Redis and PostgreSQL caching/persistence for recent price snapshots and metadata
