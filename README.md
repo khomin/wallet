@@ -1,4 +1,4 @@
-## Crypto Wallet Tracker
+### Crypto Wallet Tracker
 
 A Go-based backend for tracking crypto prices, wallet activity, and future alerting workflows. The project is still in its early stages.
 
@@ -20,13 +20,7 @@ Right now, the service includes:
 
 ### Tech stack
 
-- Go
-- Gin Web Framework
-- PostgreSQL
-- Redis
-- Docker Compose
-- Viper for configuration
-- Logrus for logging
+- Gin, PostgreSQL, Keycloak, Redis, Docker Compose, Viper
 
 ### Prerequisites
 
