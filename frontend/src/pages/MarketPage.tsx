@@ -43,16 +43,22 @@ export default function MarketPage() {
 
   const allCoins = coinsData?.coins ?? [];
 
+  // Build a lookup map: symbol → image_url
+  const coinImageMap: Record<string, string> = {};
+  for (const c of allCoins) {
+    coinImageMap[c.symbol.toLowerCase()] = c.image_url;
+  }
+
   // Filter coins by search input, or show defaults
   const displayedSymbols =
     search.trim().length > 0
       ? allCoins
-          .filter(
-            (c) =>
-              c.symbol.toLowerCase().includes(search.toLowerCase()) ||
-              c.name.toLowerCase().includes(search.toLowerCase()),
-          )
-          .map((c) => c.symbol)
+        .filter(
+          (c) =>
+            c.symbol.toLowerCase().includes(search.toLowerCase()) ||
+            c.name.toLowerCase().includes(search.toLowerCase()),
+        )
+        .map((c) => c.symbol)
       : DEFAULT_SYMBOLS;
 
   const {
@@ -120,14 +126,22 @@ export default function MarketPage() {
               </thead>
               <tbody>
                 {prices.map((coin, i) => (
-                  <tr
-                    key={coin.symbol}
-                    className="border-b border-white/[0.02] hover:bg-white/[0.02] transition-colors"
-                  >
+                  <tr key={coin.symbol}
+                    className="border-b border-white/[0.02] hover:bg-white/[0.02] transition-colors">
                     <td className="py-3 pr-4 text-gray-500 text-xs">{i + 1}</td>
                     <td className="py-3 pr-4">
-                      <span className="font-medium text-white">{coin.symbol.toUpperCase()}</span>
-                      <span className="text-xs text-gray-500 ml-2">{coin.name}</span>
+                      <div className="flex items-center gap-2">
+                        <img
+                          src={coinImageMap[coin.symbol.toLowerCase()]}
+                          alt={coin.symbol}
+                          className="w-5 h-5 rounded-full"
+                          onError={(e) => {
+                            (e.currentTarget as HTMLImageElement).style.display = 'none';
+                          }}
+                        />
+                        <span className="font-medium text-white">{coin.symbol.toUpperCase()}</span>
+                        <span className="text-xs text-gray-500">{coin.name}</span>
+                      </div>
                     </td>
                     <td className="py-3 pr-4 text-gray-200 font-mono text-xs">
                       {fmtUSD(coin.price_usd)}

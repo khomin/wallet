@@ -2,8 +2,7 @@
 // Full wallet management: stats row, wallet table, add/delete modals.
 
 import { useState } from 'react';
-import { useWallets, useCreateWallet, useDeleteWallet } from '../hooks/useApi';
-import { SUPPORTED_CHAINS, type CreateWalletRequest } from '../types/api';
+import { useWallets, useCreateWallet, useDeleteWallet, useCoins } from '../hooks/useApi';
 import { StatCard, Modal, Field, Spinner, ErrorBlock, EmptyBlock } from '../components/ui';
 
 // ─── Formatting helpers ──────────────────────────────────────────────────
@@ -32,6 +31,13 @@ export default function WalletsPage() {
 
   const createWallet = useCreateWallet();
   const deleteWallet = useDeleteWallet();
+  const { data: coinsData } = useCoins();
+
+  // Build a lookup map: symbol → image_url
+  const coinImageMap: Record<string, string> = {};
+  for (const c of coinsData?.coins ?? []) {
+    coinImageMap[c.symbol.toLowerCase()] = c.image_url;
+  }
 
   // ── Modal state ───────────────────────────────────────────────────────
   const [showAddModal, setShowAddModal] = useState(false);
@@ -150,7 +156,17 @@ export default function WalletsPage() {
                       </span>
                     </td>
                     <td className="py-3 pr-4">
-                      <span className="text-gray-200 font-medium">{wallet.token_symbol}</span>
+                      <div className="flex items-center gap-1.5">
+                        <img
+                          src={coinImageMap[wallet.token_symbol.toLowerCase()]}
+                          alt={wallet.token_symbol}
+                          className="w-5 h-5 rounded-full"
+                          onError={(e) => {
+                            (e.currentTarget as HTMLImageElement).style.display = 'none';
+                          }}
+                        />
+                        <span className="text-gray-200 font-medium">{wallet.token_symbol}</span>
+                      </div>
                     </td>
                     <td className="py-3 pr-4 text-gray-200 font-mono text-xs">
                       {fmtCrypto(wallet.balance_crypto)}
