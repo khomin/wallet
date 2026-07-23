@@ -25,6 +25,8 @@ type WalletResponse struct {
 	BalanceCrypto    float64   `json:"balance_crypto"`
 	BalanceUsd       float64   `json:"balance_usd"`
 	Change24hPercent float64   `json:"change_24h_percent"`
+	HasError         bool      `json:"has_error,omitempty"`
+	ErrorMsg         string    `json:"error_msg,omitempty"`
 }
 
 type CreateWalletRequest struct {
@@ -75,6 +77,8 @@ func ToWalletResponse(walletPortfolio *core.WalletPortfolioItem) WalletResponse 
 		Change24hPercent: walletPortfolio.Price.PriceChangePercentage_24h,
 		BalanceCrypto:    walletPortfolio.Balance,
 		BalanceUsd:       walletPortfolio.BalanceUSD,
+		HasError:         walletPortfolio.HasError,
+		ErrorMsg:         walletPortfolio.ErrorMsg,
 	}
 }
 

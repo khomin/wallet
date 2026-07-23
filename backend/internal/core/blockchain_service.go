@@ -92,7 +92,6 @@ func (s *BlockchainService) GetBalance(ctx context.Context, chain string, addres
 		if err != nil {
 			return nil, err
 		}
-
 		return &AddressBalance{
 			Chain:   chain,
 			Address: token.Address,

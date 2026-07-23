@@ -15,6 +15,7 @@ type TronClient struct {
 	client  *client.GrpcClient
 }
 
+// TODO: TRON: github.com/fbsobreira/gotron-sdk
 func NewTronClient(grpcURL, apiKey string) *TronClient {
 	if grpcURL == "" {
 		grpcURL = "grpc.trongrid.io:50051"

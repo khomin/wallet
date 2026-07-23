@@ -12,6 +12,8 @@ export interface WalletResponse {
   balance_crypto: number;
   balance_usd: number;
   change_24h_percent: number;
+  has_error: boolean;
+  error_msg: string;
 }
 
 export interface WalletsResponse {

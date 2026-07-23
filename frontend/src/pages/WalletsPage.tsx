@@ -4,6 +4,7 @@
 import { useState } from 'react';
 import { useWallets, useCreateWallet, useDeleteWallet, useCoins } from '../hooks/useApi';
 import { StatCard, Modal, Field, Spinner, ErrorBlock, EmptyBlock } from '../components/ui';
+import { SUPPORTED_CHAINS, type CreateWalletRequest } from '../types/api';
 
 // ─── Formatting helpers ──────────────────────────────────────────────────
 

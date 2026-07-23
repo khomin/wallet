@@ -57,10 +57,10 @@ export default function DashboardPage() {
   const weightedChange24h =
     wallets.length > 0 && totalBalance > 0
       ? wallets.reduce(
-          (acc, w) =>
-            acc + w.change_24h_percent * (w.balance_usd / totalBalance),
-          0,
-        )
+        (acc, w) =>
+          acc + w.change_24h_percent * (w.balance_usd / totalBalance),
+        0,
+      )
       : 0;
 
   const topWallets = [...wallets]

@@ -8,6 +8,7 @@ import (
 	"tracker/internal/db/models"
 
 	"github.com/google/uuid"
+	"github.com/sirupsen/logrus"
 )
 
 var (
@@ -21,6 +22,8 @@ type WalletPortfolioItem struct {
 	Price      models.CoinPrice
 	Balance    float64
 	BalanceUSD float64
+	HasError   bool
+	ErrorMsg   string
 }
 
 type WalletRepository interface {
@@ -102,36 +105,26 @@ func (s *WalletService) DeleteWallet(ctx context.Context, userID string, id uuid
 }
 
 func (s *WalletService) getWalletPortfolio(ctx context.Context, wallet *models.Wallet) (*WalletPortfolioItem, error) {
+	priceSymbol := wallet.Symbol
 	if wallet.Chain == wallet.Symbol {
-		price, err := s.priceService.GetPrice(ctx, wallet.Chain)
-		if err != nil {
-			return nil, fmt.Errorf("cannot pull wallet native price: %s", wallet.Chain)
-		}
-		balance, err := s.blockchainService.GetBalance(ctx, wallet.Chain, wallet.Address, wallet.Symbol)
-		if err != nil {
-			return nil, fmt.Errorf("cannot pull wallet native balance: %s", wallet.Chain)
-		}
-		return &WalletPortfolioItem{
-			Wallet:     *wallet,
-			Price:      *price,
-			Balance:    balance.Balance,
-			BalanceUSD: balance.Balance * price.CurrentPrice,
-		}, nil
-	} else {
-		price, err := s.priceService.GetPrice(ctx, wallet.Symbol)
-		if err != nil {
-			return nil, fmt.Errorf("cannot pull wallet price: %s", wallet.Chain)
-		}
-		balance, err := s.blockchainService.GetBalance(ctx, wallet.Chain, wallet.Address, wallet.Symbol)
-		if err != nil {
-			return nil, fmt.Errorf("cannot pull wallet balance: %s", wallet.Chain)
-		}
-		return &WalletPortfolioItem{
-			Wallet:     *wallet,
-			Price:      *price,
-			Balance:    balance.Balance,
-			BalanceUSD: balance.Balance * price.CurrentPrice,
-		}, nil
+		priceSymbol = wallet.Chain
 	}
-
+	price, err := s.priceService.GetPrice(ctx, priceSymbol)
+	if err != nil {
+		return nil, fmt.Errorf("getting price for %s: %w", priceSymbol, err)
+	}
+	item := &WalletPortfolioItem{
+		Wallet: *wallet,
+		Price:  *price,
+	}
+	balance, err := s.blockchainService.GetBalance(ctx, wallet.Chain, wallet.Address, wallet.Symbol)
+	if err != nil {
+		logrus.Warnf("failed to pull balance for %s on %s: %v", wallet.Address, wallet.Chain, err)
+		item.HasError = true
+		item.ErrorMsg = "Unable to fetch live balance"
+		return item, nil
+	}
+	item.Balance = balance.Balance
+	item.BalanceUSD = balance.Balance * price.CurrentPrice
+	return item, nil
 }

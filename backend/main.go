@@ -119,7 +119,6 @@ func main() {
 		v1.GET("/coins/:id", priceHandler.GetCoin)
 		v1.GET("/prices", priceHandler.GetPrices)
 		v1.GET("/prices/:id", priceHandler.GetPrice)
-		// protected wallets
 		protected := v1.Group("").Use(middleware.Auth(verifier))
 		protected.GET("/wallets", walletHandler.ListWallets)
 		protected.POST("/wallets", walletHandler.AddWallet)
@@ -133,12 +132,6 @@ func main() {
 			"timestamp": time.Now().UTC().Format(time.RFC3339),
 		})
 	})
-
-	// TODO: sdk
-	// Bitcoin: github.com/btcsuite/btcd/rpcclient
-	// TRON: github.com/fbsobreira/gotron-sdk
-	// rubblelabs/ripple
-	// blinklabs-io/gouroboros
 
 	server := &http.Server{
 		Addr:    fmt.Sprintf(":%d", app.Cfg.Server.Port),
