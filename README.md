@@ -29,6 +29,21 @@ Right now, the service includes:
 - Go 1.26+
 - Docker and Docker Compose
 
+### Configuration
+
+The backend configuration is in [backend/config.yaml](backend/config.yaml). Before
+using TRON wallet tracking, set `blockchain.tron_api_key` to a valid TronGrid API key:
+
+```yaml
+blockchain:
+    tron_grpc: "grpc.trongrid.io:50051"
+    tron_api_key: "your-trongrid-api-key"
+```
+
+The public RPC endpoints may be rate-limited or require provider-specific access,
+so replace them with your own endpoints when needed. Bitcoin also requires a
+locally running node matching the credentials in the configuration.
+
 ### 1. Start infrastructure
 
 ```bash

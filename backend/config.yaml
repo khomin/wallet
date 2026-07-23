@@ -36,7 +36,7 @@ blockchain:
   bitcoin_rpc_user: "satoshi_admin"
   bitcoin_rpc_pass: "super_secret_rpc_password"
   tron_grpc: "grpc.trongrid.io:50051"
-  tron_api_key: "11111111-2222-3333-4444-555555555555"
+  tron_api_key: ""
 
 token_registry:
   ETH:
@@ -201,5 +201,13 @@ token_registry:
       symbol: "CRCLx"
       name: "Circle xStock"
       address: "XsueG8BtpquVJX9LVLLEGuViXUungE6WmK5YZ3p3bd1"
+      decimals: 18
+      is_native: false
+
+  TRX:
+    - id: "usdt_tron"
+      symbol: "USDT"
+      name: "USDT TRON"
+      address: "TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t"
       decimals: 18
       is_native: false

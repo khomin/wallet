@@ -3,6 +3,9 @@ package tron
 import (
 	"context"
 	"errors"
+	"fmt"
+	"math"
+	"math/big"
 
 	"github.com/fbsobreira/gotron-sdk/pkg/client"
 	"google.golang.org/grpc"
@@ -15,12 +18,11 @@ type TronClient struct {
 	client  *client.GrpcClient
 }
 
-// TODO: TRON: github.com/fbsobreira/gotron-sdk
 func NewTronClient(grpcURL, apiKey string) *TronClient {
-	if grpcURL == "" {
-		grpcURL = "grpc.trongrid.io:50051"
+	return &TronClient{
+		grpcURL: grpcURL,
+		apiKey:  apiKey,
 	}
-	return &TronClient{grpcURL: grpcURL, apiKey: apiKey}
 }
 
 func (c *TronClient) Connect(ctx context.Context) error {
@@ -62,6 +64,28 @@ func (c *TronClient) GetBalance(ctx context.Context, address string) (float64, e
 }
 
 func (c *TronClient) GetTokenBalance(ctx context.Context, address, tokenAddress string) (float64, error) {
-	// TODO: tokens
-	return 0, nil
+	if err := c.Connect(ctx); err != nil {
+		return 0, err
+	}
+	if c.client == nil {
+		return 0, errors.New("tron client is not initialized")
+	}
+	// 1. Fetch raw token balance (*big.Int)
+	rawBalance, err := c.client.TRC20ContractBalance(address, tokenAddress)
+	if err != nil {
+		return 0, fmt.Errorf("failed to fetch TRC20 balance: %w", err)
+	}
+	if rawBalance == nil {
+		return 0, nil
+	}
+
+	// 2. Format balance with decimals (USDT uses 6 decimals)
+	// Note: If you support arbitrary TRC20 tokens, you should query decimals dynamically or pass them in!
+	decimals := 6.0
+
+	balanceFloat := new(big.Float).SetInt(rawBalance)
+	divisor := new(big.Float).SetFloat64(math.Pow(10, decimals))
+	finalBalance, _ := new(big.Float).Quo(balanceFloat, divisor).Float64()
+
+	return finalBalance, nil
 }

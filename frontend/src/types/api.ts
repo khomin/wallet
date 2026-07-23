@@ -75,6 +75,8 @@ export interface ErrorResponse {
 
 // ─── Supported Chains (matches backend token_registry keys) ──────────────────
 
+// TODO: pull from API
+
 export const SUPPORTED_CHAINS = [
   { value: 'ETH', label: 'Ethereum', icon: 'Ξ' },
   { value: 'ARB', label: 'Arbitrum', icon: '🔷' },

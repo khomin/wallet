@@ -171,8 +171,8 @@ export default function WalletsPage() {
                     </td>
                     <td className="py-3 pr-4 font-mono text-xs">
                       {wallet.has_error ? (
-                        <span className="text-amber-500/80 cursor-help" title={wallet.error_msg}>
-                          ⚠ —
+                        <span className="text-amber-500/80 text-3xl" title={wallet.error_msg}>
+                          ⚠
                         </span>
                       ) : (
                         <span className="text-gray-200">{fmtCrypto(wallet.balance_crypto)}</span>
@@ -180,8 +180,8 @@ export default function WalletsPage() {
                     </td>
                     <td className="py-3 pr-4 font-mono text-xs">
                       {wallet.has_error ? (
-                        <span className="text-amber-500/80 cursor-help" title={wallet.error_msg}>
-                          ⚠ —
+                        <span className="text-amber-500/80 text-3xl" title={wallet.error_msg}>
+                          ⚠
                         </span>
                       ) : (
                         <span className="text-gray-200">{fmtUSD(wallet.balance_usd)}</span>
