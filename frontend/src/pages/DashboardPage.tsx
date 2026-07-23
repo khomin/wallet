@@ -262,11 +262,23 @@ export default function DashboardPage() {
                         <span className="text-xs text-gray-500">({wallet.chain})</span>
                       </div>
                     </td>
-                    <td className="py-3 pr-4 text-gray-200 font-mono text-xs">
-                      {fmtCryptoCompact(wallet.balance_crypto)}
+                    <td className="py-3 pr-4 font-mono text-xs">
+                      {wallet.has_error ? (
+                        <span className="text-amber-500/80 cursor-help" title={wallet.error_msg}>
+                          ⚠ —
+                        </span>
+                      ) : (
+                        <span className="text-gray-200">{fmtCryptoCompact(wallet.balance_crypto)}</span>
+                      )}
                     </td>
-                    <td className="py-3 pr-4 text-gray-200 font-mono text-xs">
-                      {fmtUSD(wallet.balance_usd)}
+                    <td className="py-3 pr-4 font-mono text-xs">
+                      {wallet.has_error ? (
+                        <span className="text-amber-500/80 cursor-help" title={wallet.error_msg}>
+                          ⚠ —
+                        </span>
+                      ) : (
+                        <span className="text-gray-200">{fmtUSD(wallet.balance_usd)}</span>
+                      )}
                     </td>
                     <td className="py-3">
                       <span

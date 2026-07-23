@@ -169,11 +169,23 @@ export default function WalletsPage() {
                         <span className="text-gray-200 font-medium">{wallet.token_symbol}</span>
                       </div>
                     </td>
-                    <td className="py-3 pr-4 text-gray-200 font-mono text-xs">
-                      {fmtCrypto(wallet.balance_crypto)}
+                    <td className="py-3 pr-4 font-mono text-xs">
+                      {wallet.has_error ? (
+                        <span className="text-amber-500/80 cursor-help" title={wallet.error_msg}>
+                          ⚠ —
+                        </span>
+                      ) : (
+                        <span className="text-gray-200">{fmtCrypto(wallet.balance_crypto)}</span>
+                      )}
                     </td>
-                    <td className="py-3 pr-4 text-gray-200 font-mono text-xs">
-                      {fmtUSD(wallet.balance_usd)}
+                    <td className="py-3 pr-4 font-mono text-xs">
+                      {wallet.has_error ? (
+                        <span className="text-amber-500/80 cursor-help" title={wallet.error_msg}>
+                          ⚠ —
+                        </span>
+                      ) : (
+                        <span className="text-gray-200">{fmtUSD(wallet.balance_usd)}</span>
+                      )}
                     </td>
                     <td className="py-3 pr-4">
                       <span className={wallet.change_24h_percent >= 0 ? 'text-green-400' : 'text-red-400'}>
@@ -201,6 +213,7 @@ export default function WalletsPage() {
                           />
                         </svg>
                       </button>
+
                     </td>
                   </tr>
                 ))}
@@ -208,8 +221,8 @@ export default function WalletsPage() {
             </table>
           </div>
         )}
-      </div>
 
+      </div>
       {/* ── Add Wallet Modal ───────────────────────────────────────────── */}
       {showAddModal && (
         <Modal onClose={() => setShowAddModal(false)} title="Add Wallet">
