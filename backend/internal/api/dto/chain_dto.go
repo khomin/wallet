@@ -15,13 +15,13 @@ type AssetsResponse struct {
 	Assets []Coin `json:"assets"`
 }
 
-func ToAssetsResponse(chains []entity.Token) AssetsResponse {
+func ToAssetsResponse(in []entity.Asset) AssetsResponse {
 	out := []Coin{}
-	for _, chain := range chains {
+	for _, v := range in {
 		out = append(out, Coin{
-			Symbol:   chain.Symbol,
-			Name:     chain.Name,
-			ImageURL: chain.LogoURL,
+			Symbol: v.Symbol,
+			Name:   v.Name,
+			// ImageURL: v. LogoURL,
 		})
 	}
 	return AssetsResponse{
@@ -29,30 +29,3 @@ func ToAssetsResponse(chains []entity.Token) AssetsResponse {
 		Assets: out,
 	}
 }
-
-// func ToAssetssResponse(chains []entity.Token, coins []models.Coin) ChainsResponse {
-// 	out := []Chain{}
-// 	findCoin := func(symbol string) *models.Coin {
-// 		for _, i := range coins {
-// 			if strings.EqualFold(symbol, i.Symbol) {
-// 				return &i
-// 			}
-// 		}
-// 		return nil
-// 	}
-// 	for _, chain := range chains {
-// 		coin := findCoin(chain.Symbol)
-// 		if coin == nil || coin.ImageURL == "" {
-// 			continue
-// 		}
-// 		out = append(out, Chain{
-// 			Symbol:   chain.Symbol,
-// 			Name:     chain.Name,
-// 			ImageURL: coin.ImageURL,
-// 		})
-// 	}
-// 	return ChainsResponse{
-// 		Total:  len(out),
-// 		Chains: out,
-// 	}
-// }

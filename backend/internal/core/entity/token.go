@@ -3,9 +3,10 @@ package entity
 import "math/big"
 
 type Asset struct {
-	Name   Token   `json:"name"`
-	Symbol string  `json:"symbol"`
-	Tokens []Token `json:"tokens"`
+	Name    string  `json:"name"`
+	Symbol  string  `json:"symbol"`
+	Tokens  []Token `json:"tokens"`
+	LogoURL string  `json:"logo_url"`
 }
 
 type Token struct {
@@ -15,7 +16,6 @@ type Token struct {
 	Address  string `json:"address"`   // "0xA0b8..."
 	Decimals int    `json:"decimals"`  // 6
 	IsNative bool   `json:"is_native"` // false (native is ETH)
-	LogoURL  string `json:"logo_url"`
 }
 
 // TokenBalance represents a balance of a specific token

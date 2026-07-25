@@ -9,7 +9,6 @@ import (
 	"tracker/internal/client/ethereum"
 	"tracker/internal/client/solana"
 	"tracker/internal/client/tron"
-	"tracker/internal/core/entity"
 )
 
 type ChainProvider interface {
@@ -104,12 +103,4 @@ func (s *BlockchainService) GetBalance(ctx context.Context, chain string, addres
 			Balance: balance,
 		}, nil
 	}
-}
-
-func (s *BlockchainService) GetTokensByName(ctx context.Context, text string) ([]entity.Token, error) {
-	return s.tokenRegistry.GetByText(text), nil
-}
-
-func (s *BlockchainService) GetTokens(ctx context.Context) ([]entity.Token, error) {
-	return s.tokenRegistry.GetAllTokens(), nil
 }

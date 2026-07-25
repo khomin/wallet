@@ -91,7 +91,7 @@ func TestDeleteWalletReturnsDeletedWallet(t *testing.T) {
 	// 	logrus.Panicf("failed to create jwt verifier")
 	// }
 
-	svc := core.NewWalletService(walletRepo, priceService, blockchainService)
+	svc := core.NewWalletService(walletRepo, priceService, blockchainService, tokenRegistry)
 
 	userID := "34ae2787-cf90-4a4d-bcb8-e73eea5e3adc"
 

@@ -87,7 +87,7 @@ func main() {
 		logrus.WithError(err).Warn("failed to connect all blockchain clients")
 	}
 
-	walletService := core.NewWalletService(walletRepo, priceService, blockchainService)
+	walletService := core.NewWalletService(walletRepo, priceService, blockchainService, tokenRegistry)
 	walletHandler := handlers.NewWalletHandler(walletService)
 
 	go priceFetcher.StartCoinFetcher(ctx)
@@ -125,7 +125,7 @@ func main() {
 		protected.PUT("/wallets", walletHandler.EditWallet)
 		protected.GET("/wallets/balance", walletHandler.GetWalletBalance)
 		protected.DELETE("/wallets", walletHandler.DeleteWallet)
-		protected.GET("/wallets/assets", walletHandler.GetSupportedAssets)
+		protected.GET("/wallets/assets", walletHandler.GetAssets)
 		protected.GET("/wallets/assets/search", walletHandler.SearchAssets)
 	}
 	r.GET("/health", func(c *gin.Context) {

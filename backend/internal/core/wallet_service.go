@@ -39,17 +39,20 @@ type WalletService struct {
 	walletRepo        WalletRepository
 	priceService      *PriceService
 	blockchainService *BlockchainService
+	tokenRegistry     *TokenRegistry
 }
 
 func NewWalletService(
 	walletRepo WalletRepository,
 	priceService *PriceService,
 	blockchainService *BlockchainService,
+	tokenRegistry *TokenRegistry,
 ) *WalletService {
 	return &WalletService{
 		walletRepo:        walletRepo,
 		priceService:      priceService,
 		blockchainService: blockchainService,
+		tokenRegistry:     tokenRegistry,
 	}
 }
 
@@ -106,31 +109,53 @@ func (s *WalletService) DeleteWallet(ctx context.Context, userID string, id uuid
 	return s.walletRepo.DeleteWallet(ctx, userID, id)
 }
 
-func (s *WalletService) GetSupportedAssets(ctx context.Context) ([]entity.Token, error) {
-	tempTokens, err := s.blockchainService.GetTokens(ctx)
-	assets := []entity.Token{}
-	for _, i := range tempTokens {
-		coin, err := s.priceService.GetCoin(ctx, i.Symbol)
-		if err == nil {
-			i.LogoURL = coin.ImageURL
-			assets = append(assets, i)
+// a list of tokens
+func (s *WalletService) GetAssetsByMartket(ctx context.Context) ([]entity.Asset, error) {
+	assets := []entity.Asset{}
+
+	// max := 50
+
+	// get top coins
+	coins, err := s.priceService.GetCoins(ctx)
+	if err != nil {
+		return nil, err
+	}
+	// build assets from top coins copying imageURL from COIN
+	for _, coin := range coins {
+		asset, found := s.tokenRegistry.GetByChainAndSymbol(coin.Symbol, coin.Symbol)
+		if !found {
+			continue
 		}
+		// for index := range assets {
+		// asset = assets[index]
+		asset.LogoURL = coin.ImageURL
+		assets[index] = asset
+		// }
+		assets = append(assets, assets...)
 	}
 	return assets, err
 }
 
-func (s *WalletService) SearchAssets(ctx context.Context, text string) ([]entity.Token, error) {
-	tempTokens, err := s.blockchainService.GetTokensByName(ctx, text)
-	assets := []entity.Token{}
-	for _, i := range tempTokens {
-		coin, err := s.priceService.GetCoin(ctx, i.Symbol)
-		if err == nil {
-			i.LogoURL = coin.ImageURL
-			assets = append(assets, i)
-		}
-	}
-	return assets, err
+func (s *WalletService) SearchAssets(ctx context.Context, text string) ([]entity.Asset, error) {
+	// assets := []entity.Asset{}
+	assets := s.tokenRegistry.GetAssetsByText(text)
+	// assets = s.assingIcon(ctx, assets)
+	return assets, nil
 }
+
+// func (s *WalletService) assingIcon(ctx context.Context, in []entity.Asset) []entity.Asset {
+// 	assets := []entity.Asset{}
+// 	for _, i := range in {
+// 		for _, token := range i.Tokens {
+// 			coin, err := s.priceService.GetCoin(ctx, token.Symbol)
+// 			if err == nil {
+// 				token.LogoURL = coin.ImageURL
+// 			}
+// 		}
+// 		// assets = append(assets, )
+// 	}
+// 	return assets
+// }
 
 func (s *WalletService) getWalletPortfolio(ctx context.Context, wallet *models.Wallet) (*WalletPortfolioItem, error) {
 	priceSymbol := wallet.Symbol

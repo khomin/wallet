@@ -135,13 +135,13 @@ func (h *WalletHandler) GetWalletBalance(c *gin.Context) {
 	c.JSON(http.StatusOK, dto.ToGetWalletBalanceResponse(wallet))
 }
 
-func (h *WalletHandler) GetSupportedAssets(c *gin.Context) {
-	tokens, err := h.walletService.GetSupportedAssets(c.Request.Context())
+func (h *WalletHandler) GetAssets(c *gin.Context) {
+	assets, err := h.walletService.GetAssetsByMartket(c.Request.Context())
 	if err != nil {
 		dto.InternallError(c)
 		return
 	}
-	c.JSON(http.StatusOK, dto.ToAssetsResponse(tokens))
+	c.JSON(http.StatusOK, dto.ToAssetsResponse(assets))
 }
 
 func (h *WalletHandler) SearchAssets(c *gin.Context) {
