@@ -1,5 +1,5 @@
 info:
-  name: get-api-prices
+  name: get-prices
   type: http
   seq: 4
 

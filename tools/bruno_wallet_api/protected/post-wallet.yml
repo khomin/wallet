@@ -1,7 +1,7 @@
 info:
   name: post-wallet
   type: http
-  seq: 7
+  seq: 8
 
 http:
   method: POST
@@ -12,7 +12,7 @@ http:
       {
         "chain": "sol",
         "address": "CFMQzGS8M8wpvcWs1udJ2XgzXEmVf31bmYxBwtgPBLRg",
-        "token_symbol": "XAUt",
+        "token_symbol": "XAUT",
         "label": "test some XAUt0"
       }
   auth: inherit

@@ -1,20 +1,22 @@
 package dto
 
-import "tracker/internal/db/models"
+import (
+	"tracker/internal/db/models"
+)
 
 type CoinsResponse struct {
-	Total int            `json:"total"`
-	Coins []CoinResponse `json:"coins"`
+	Total int    `json:"total"`
+	Coins []Coin `json:"coins"`
 }
 
-type CoinResponse struct {
+type Coin struct {
 	Symbol   string `json:"symbol"`
 	Name     string `json:"name"`
 	ImageURL string `json:"image_url"`
 }
 
 func ToCoinsResponse(coins []models.Coin) CoinsResponse {
-	coins_ := make([]CoinResponse, len(coins))
+	coins_ := make([]Coin, len(coins))
 	for i, coin := range coins {
 		coins_[i] = ToCoinResponse(&coin)
 	}
@@ -24,8 +26,8 @@ func ToCoinsResponse(coins []models.Coin) CoinsResponse {
 	}
 }
 
-func ToCoinResponse(coin *models.Coin) CoinResponse {
-	return CoinResponse{
+func ToCoinResponse(coin *models.Coin) Coin {
+	return Coin{
 		Symbol:   coin.Symbol,
 		Name:     coin.Name,
 		ImageURL: coin.ImageURL,

@@ -32,7 +32,7 @@ Right now, the service includes:
 ### Configuration
 
 The backend configuration is in [backend/config.yaml](backend/config.yaml). Before
-using TRON wallet tracking, set `blockchain.tron_api_key` to a valid TronGrid API key:
+using TRON wallet tracking, set `blockchain.tron_api_key` to a valid TronGrid API key (trongrid.io):
 
 ```yaml
 blockchain:

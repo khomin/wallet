@@ -73,9 +73,13 @@ export interface ErrorResponse {
   message: string;
 }
 
+// TODO: edit wallet comment
+
 // ─── Supported Chains (matches backend token_registry keys) ──────────────────
 
 // TODO: pull from API
+
+// btc 3LYJfcfHPXYJreMsASk2jkn69LWEYKzexb
 
 export const SUPPORTED_CHAINS = [
   { value: 'ETH', label: 'Ethereum', icon: 'Ξ' },

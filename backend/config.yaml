@@ -32,11 +32,11 @@ blockchain:
   polygon_mainnet: "https://polygon.gateway.tenderly.co"
   bnb: "https://bsc-mainnet.public.blastapi.io"
   solana_rpc: "https://api.mainnet-beta.solana.com"
-  bitcoin_rpc_host: "127.0.0.1:8332"
-  bitcoin_rpc_user: "satoshi_admin"
-  bitcoin_rpc_pass: "super_secret_rpc_password"
+  bitcoin_rpc_host: "https://rpc.bitcoincode.technology"
+  bitcoin_rpc_user: ""
+  bitcoin_rpc_pass: ""
   tron_grpc: "grpc.trongrid.io:50051"
-  tron_api_key: ""
+  tron_api_key: "38bcc631-6749-4afb-9626-45afafd2af13"
 
 token_registry:
   ETH:
@@ -69,7 +69,7 @@ token_registry:
       is_native: false
 
     - id: "xaut_ethereum"
-      symbol: "XAUT"
+      symbol: "XAUt"
       name: "Tether Gold"
       address: "0x68749665FF8D2d112Fa859AA293F07A622782F38"
       decimals: 6
@@ -112,6 +112,13 @@ token_registry:
       is_native: false
 
   ARB:
+    - id: "arbitrum"
+      symbol: "ARB"
+      name: "Arbitrum"
+      address: "native"
+      decimals: 18
+      is_native: true
+
     - id: "aaplx_arbitrum"
       symbol: "AAPLx"
       name: "Apple xStock"
@@ -127,8 +134,15 @@ token_registry:
       is_native: false
 
   SOL:
-    - id: "xaut_sol"
-      symbol: "XAUt"
+    - id: "sol_native"
+      symbol: "SOL"
+      name: "SOL"
+      address: "native"
+      decimals: 18
+      is_native: true
+
+    - id: "xaut0_sol"
+      symbol: "XAUt0"
       name: "Tether Gold"
       address: "AymATz4TCL9sWNEEV9Kvyz45CHVhDZ6kUgjTJPzLpU9P"
       decimals: 18
@@ -205,9 +219,18 @@ token_registry:
       is_native: false
 
   TRX:
+    - id: "tron_native"
+      symbol: "TRX"
+      name: "Tron"
+      address: "native"
+      decimals: 18
+      is_native: true
+
     - id: "usdt_tron"
       symbol: "USDT"
       name: "USDT TRON"
       address: "TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t"
       decimals: 18
       is_native: false
+
+##  TODO: BSC

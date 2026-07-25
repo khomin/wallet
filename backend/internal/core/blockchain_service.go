@@ -9,6 +9,7 @@ import (
 	"tracker/internal/client/ethereum"
 	"tracker/internal/client/solana"
 	"tracker/internal/client/tron"
+	"tracker/internal/core/entity"
 )
 
 type ChainProvider interface {
@@ -42,19 +43,24 @@ func NewBlockchainService(
 	walletRepo WalletRepository,
 	tokenRegistry *TokenRegistry,
 ) *BlockchainService {
+	providers := map[string]ChainProvider{}
+	add := func(chain string, p ChainProvider) {
+		if p != nil {
+			providers[chain] = p
+		}
+	}
+	add("ETH", ethereumMainnet)
+	add("ARB", ethereumArbitrum)
+	add("BASE", ethereumBase)
+	add("POL", polygon)
+	add("BNB", bnb)
+	add("BSC", bnb)
+	add("SOL", sol)
+	add("TRX", tron)
 	return &BlockchainService{
-		providers: map[string]ChainProvider{
-			"ETH":     ethereumMainnet,
-			"ARB":     ethereumArbitrum,
-			"BASE":    ethereumBase,
-			"POLYGON": polygon,
-			"BNB":     bnb,
-			"BSC":     bnb,
-			"SOL":     sol,
-			"TRX":     tron,
-		},
 		walletRepo:    walletRepo,
 		tokenRegistry: tokenRegistry,
+		providers:     providers,
 	}
 }
 
@@ -99,3 +105,35 @@ func (s *BlockchainService) GetBalance(ctx context.Context, chain string, addres
 		}, nil
 	}
 }
+
+func (s *BlockchainService) GetTokens(ctx context.Context) ([]entity.Token, error) {
+	return s.tokenRegistry.GetAllTokens(), nil
+}
+
+func (s *BlockchainService) GetTokensByName(ctx context.Context, name string) ([]entity.Token, error) {
+	tokens := []entity.Token{}
+	for key := range s.providers {
+		token, found := s.tokenRegistry.GetNative(key)
+		if found {
+			tokens = append(tokens, token)
+		}
+		s.tokenRegistry.GetAllTokens()
+	}
+	return tokens, nil
+}
+
+// func (s *BlockchainService) GetChains(ctx context.Context) ([]entity.ChainTokens, error) {
+// 	tokens := []entity.ChainTokens{}
+// 	for key := range s.providers {
+// 		tokensByChain := s.tokenRegistry.GetAllByChain(key)
+// 		if len(tokensByChain) == 0 {
+// 			continue
+// 		}
+// 		chainToken := entity.ChainTokens{Chain: key}
+// 		for _, token := range tokensByChain {
+// 			chainToken.Tokens = append(chainToken.Tokens, token)
+// 		}
+// 		tokens = append(tokens, chainToken)
+// 	}
+// 	return tokens, nil
+// }

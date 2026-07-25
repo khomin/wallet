@@ -1,11 +1,11 @@
 info:
-  name: get-api-price
+  name: get-coin
   type: http
-  seq: 3
+  seq: 2
 
 http:
   method: GET
-  url: "{{url}}/api/v1/prices/eth"
+  url: "{{url}}/api/v1/coins/xaut"
   auth: inherit
 
 settings:

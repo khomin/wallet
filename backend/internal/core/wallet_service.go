@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 
+	"tracker/internal/core/entity"
 	"tracker/internal/db/models"
 
 	"github.com/google/uuid"
@@ -77,6 +78,7 @@ func (s *WalletService) GetWallet(ctx context.Context, userID string, id uuid.UU
 }
 
 func (s *WalletService) AddWallet(ctx context.Context, userID string, chain string, address string, symbol string, label string) (*WalletPortfolioItem, error) {
+	// TODO: add validation
 	wallet, err := s.walletRepo.CreateWallet(ctx, userID, chain, address, symbol, label)
 	if err != nil {
 		return nil, err
@@ -102,6 +104,20 @@ func (s *WalletService) EditWallet(ctx context.Context, userID string, id uuid.U
 
 func (s *WalletService) DeleteWallet(ctx context.Context, userID string, id uuid.UUID) error {
 	return s.walletRepo.DeleteWallet(ctx, userID, id)
+}
+
+func (s *WalletService) GetSupportedAssets(ctx context.Context) ([]entity.Token, error) {
+	assets := []entity.Token{}
+	tempTokens, err := s.blockchainService.GetTokens(ctx)
+
+	for _, i := range tempTokens {
+		coin, err := s.priceService.GetCoin(ctx, i.Symbol)
+		if err == nil {
+			i.LogoURL = coin.ImageURL
+			assets = append(assets, i)
+		}
+	}
+	return assets, err
 }
 
 func (s *WalletService) getWalletPortfolio(ctx context.Context, wallet *models.Wallet) (*WalletPortfolioItem, error) {

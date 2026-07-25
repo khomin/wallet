@@ -74,15 +74,15 @@ func main() {
 	)
 
 	priceService := core.NewPriceService(redisClient, &priceRepo, priceFetcher, priceCache)
-	priceHandler := handlers.NewPriceHandler(priceService)
 	tokenRegistry := core.DefaultTokenRegistry(app.Cfg.TokenRegistry)
 	walletRepo := repositories.NewWalletRepository(db)
-
 	blockchainService := core.NewBlockchainService(
 		ethMainnetClient, ethArbitrumClient, ethBaseClient, polygonMainnetClient, bnbClient,
 		solanaClient, bitcoinClient, tronClient,
 		walletRepo, tokenRegistry,
 	)
+	priceHandler := handlers.NewPriceHandler(priceService)
+
 	if err := blockchainService.ConnectAll(ctx); err != nil {
 		logrus.WithError(err).Warn("failed to connect all blockchain clients")
 	}
@@ -125,6 +125,8 @@ func main() {
 		protected.PUT("/wallets", walletHandler.EditWallet)
 		protected.GET("/wallets/balance", walletHandler.GetWalletBalance)
 		protected.DELETE("/wallets", walletHandler.DeleteWallet)
+		protected.GET("/wallets/assets", walletHandler.GetSupportedAssets)
+		protected.GET("/wallets/assets/search", walletHandler.SearchAssets)
 	}
 	r.GET("/health", func(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{

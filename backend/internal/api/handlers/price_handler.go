@@ -16,7 +16,9 @@ type PriceHandler struct {
 	log          *logrus.Entry
 }
 
-func NewPriceHandler(priceService *core.PriceService) *PriceHandler {
+func NewPriceHandler(
+	priceService *core.PriceService,
+) *PriceHandler {
 	return &PriceHandler{
 		priceService: priceService,
 		log:          logrus.WithField("component", "PriceHandler"),
@@ -48,7 +50,7 @@ func (h *PriceHandler) GetCoin(c *gin.Context) {
 
 func (h *PriceHandler) GetPrices(c *gin.Context) {
 	symbolsParam := c.Query("symbols")
-	symbols := strings.Split(strings.ToLower(symbolsParam), ",")
+	symbols := strings.Split(strings.ToUpper(symbolsParam), ",")
 	if len(symbols) == 0 {
 		dto.InvalidParametersMessage(c, "symbols parameter is required")
 		return

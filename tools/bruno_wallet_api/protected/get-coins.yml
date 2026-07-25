@@ -1,5 +1,5 @@
 info:
-  name: get-api-coins
+  name: get-coins
   type: http
   seq: 1
 
