@@ -24,19 +24,19 @@ func NewTokenRegistry() *TokenRegistry {
 func DefaultTokenRegistry(tokens map[string][]config.TokenRegistry) *TokenRegistry {
 	registry := NewTokenRegistry()
 
-	for chain, v := range tokens {
-		for _, token := range v {
-			registry.Register(entity.Token{
-				ID:       token.ID,
-				Chain:    strings.ToUpper(chain),
-				Symbol:   token.Symbol,
-				Name:     token.Name,
-				Address:  token.Address,
-				Decimals: token.Decimals,
-				IsNative: token.IsNative,
-			})
-		}
-	}
+	// for chain, v := range tokens {
+	// 	for _, token := range v {
+	// 		registry.Register(entity.Token{
+	// 			ID:       token.ID,
+	// 			Chain:    strings.ToUpper(chain),
+	// 			Symbol:   token.Symbol,
+	// 			Name:     token.Name,
+	// 			Address:  token.Address,
+	// 			Decimals: token.Decimals,
+	// 			IsNative: token.IsNative,
+	// 		})
+	// 	}
+	// }
 	return registry
 }
 

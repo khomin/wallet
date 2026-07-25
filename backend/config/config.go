@@ -66,9 +66,15 @@ type BlockchainConfig struct {
 }
 
 type TokenRegistry struct {
-	ID       string `mapstructure:"id" yaml:"id"`
+	ID     string      `mapstructure:"id" yaml:"id"`
+	Name   string      `mapstructure:"name" yaml:"name"`
+	Symbol string      `mapstructure:"symbol" yaml:"symbol"`
+	Items  []AssetItem `mapstructure:"items" yaml:"items"`
+}
+
+type AssetItem struct {
+	Chain    string `mapstructure:"chain" yaml:"chain"`
 	Symbol   string `mapstructure:"symbol" yaml:"symbol"`
-	Name     string `mapstructure:"name" yaml:"name"`
 	Address  string `mapstructure:"address" yaml:"address"`
 	Decimals int    `mapstructure:"decimals" yaml:"decimals"`
 	IsNative bool   `mapstructure:"is_native" yaml:"is_native"`
