@@ -8,14 +8,17 @@ import (
 )
 
 type Config struct {
-	Server        ServerConfig               `mapstructure:"server"`
-	Authorization Authorization              `mapstructure:"authorization"`
-	Database      DatabaseConfig             `mapstructure:"database"`
-	Redis         RedisConfig                `mapstructure:"redis"`
-	Alchemy       AlchemyConfig              `mapstructure:"alchemy"`
-	CoinGecko     CoinGeckoConfig            `mapstructure:"coingecko"`
-	Blockchain    BlockchainConfig           `mapstructure:"blockchain"`
+	Server        ServerConfig     `mapstructure:"server"`
+	Authorization Authorization    `mapstructure:"authorization"`
+	Database      DatabaseConfig   `mapstructure:"database"`
+	Redis         RedisConfig      `mapstructure:"redis"`
+	Alchemy       AlchemyConfig    `mapstructure:"alchemy"`
+	CoinGecko     CoinGeckoConfig  `mapstructure:"coingecko"`
+	Blockchain    BlockchainConfig `mapstructure:"blockchain"`
+	// TokenRegistry TokenRegistry    `mapstructure:"token_registry"`
 	TokenRegistry map[string][]TokenRegistry `mapstructure:"token_registry"`
+	// TokenRegistry Assets `mapstructure:"assets"`
+	// Assets Assets `mapstructure:"assets" yaml:"assets"`
 }
 
 type ServerConfig struct {
@@ -85,6 +88,7 @@ func NewConfig() *Config {
 	viper.SetConfigName("config")
 	viper.SetConfigType("yaml")
 	viper.AddConfigPath(".")
+	viper.AddConfigPath("..")
 
 	err := viper.ReadInConfig()
 	if err != nil {

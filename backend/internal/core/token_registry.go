@@ -21,22 +21,28 @@ func NewTokenRegistry() *TokenRegistry {
 	}
 }
 
-func DefaultTokenRegistry(tokens map[string][]config.TokenRegistry) *TokenRegistry {
+func DefaultTokenRegistry(config map[string][]config.TokenRegistry) *TokenRegistry {
 	registry := NewTokenRegistry()
 
-	// for chain, v := range tokens {
-	// 	for _, token := range v {
-	// 		registry.Register(entity.Token{
-	// 			ID:       token.ID,
-	// 			Chain:    strings.ToUpper(chain),
-	// 			Symbol:   token.Symbol,
-	// 			Name:     token.Name,
-	// 			Address:  token.Address,
-	// 			Decimals: token.Decimals,
-	// 			IsNative: token.IsNative,
-	// 		})
-	// 	}
-	// }
+	assets, found := config["assets"]
+	if found {
+		for _, asset := range assets {
+			for _, item := range asset.Items {
+				symbol := asset.Symbol
+				if item.Symbol != "" {
+					symbol = item.Symbol
+				}
+				registry.Register(entity.Token{
+					Name:     asset.Name,
+					Symbol:   symbol,
+					Chain:    strings.ToUpper(item.Chain),
+					Address:  item.Address,
+					Decimals: item.Decimals,
+					IsNative: item.IsNative,
+				})
+			}
+		}
+	}
 	return registry
 }
 
@@ -57,14 +63,6 @@ func (r *TokenRegistry) Register(token entity.Token) {
 	r.tokensByChainSymbol[symbolKey] = token
 }
 
-func (r *TokenRegistry) GetByAddress(chain, address string) (entity.Token, bool) {
-	r.mu.RLock()
-	defer r.mu.RUnlock()
-
-	token, ok := r.tokensByAddress[fmt.Sprintf("%s:%s", chain, address)]
-	return token, ok
-}
-
 func (r *TokenRegistry) GetByChainAndSymbol(chain, symbol string) (entity.Token, bool) {
 	r.mu.RLock()
 	defer r.mu.RUnlock()
@@ -72,9 +70,6 @@ func (r *TokenRegistry) GetByChainAndSymbol(chain, symbol string) (entity.Token,
 	return token, ok
 }
 
-func (r *TokenRegistry) GetNative(chain string) (entity.Token, bool) {
-	return r.GetByChainAndSymbol(chain, chain)
-}
 func (r *TokenRegistry) GetAllByChain(chain string) []entity.Token {
 	r.mu.RLock()
 	defer r.mu.RUnlock()
@@ -88,13 +83,31 @@ func (r *TokenRegistry) GetAllByChain(chain string) []entity.Token {
 	return tokens
 }
 
+func (r *TokenRegistry) GetByText(text string) []entity.Token {
+	r.mu.RLock()
+	defer r.mu.RUnlock()
+
+	var tokens []entity.Token
+	for _, token := range r.tokensByChainSymbol {
+		matches := strings.Contains(token.Name, text) || strings.Contains(token.Symbol, text)
+		if matches {
+			tokens = append(tokens, token)
+		}
+	}
+	return tokens
+}
+
 func (r *TokenRegistry) GetAllTokens() []entity.Token {
 	r.mu.RLock()
 	defer r.mu.RUnlock()
 
-	tokens := make([]entity.Token, 0, len(r.tokensByChainSymbol))
+	tokenUnique := map[string]entity.Token{}
 	for _, token := range r.tokensByChainSymbol {
-		tokens = append(tokens, token)
+		tokenUnique[token.Symbol] = token
+	}
+	tokens := []entity.Token{}
+	for _, v := range tokenUnique {
+		tokens = append(tokens, v)
 	}
 	return tokens
 }

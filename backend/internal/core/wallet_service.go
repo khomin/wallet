@@ -107,9 +107,21 @@ func (s *WalletService) DeleteWallet(ctx context.Context, userID string, id uuid
 }
 
 func (s *WalletService) GetSupportedAssets(ctx context.Context) ([]entity.Token, error) {
-	assets := []entity.Token{}
 	tempTokens, err := s.blockchainService.GetTokens(ctx)
+	assets := []entity.Token{}
+	for _, i := range tempTokens {
+		coin, err := s.priceService.GetCoin(ctx, i.Symbol)
+		if err == nil {
+			i.LogoURL = coin.ImageURL
+			assets = append(assets, i)
+		}
+	}
+	return assets, err
+}
 
+func (s *WalletService) SearchAssets(ctx context.Context, text string) ([]entity.Token, error) {
+	tempTokens, err := s.blockchainService.GetTokensByName(ctx, text)
+	assets := []entity.Token{}
 	for _, i := range tempTokens {
 		coin, err := s.priceService.GetCoin(ctx, i.Symbol)
 		if err == nil {
@@ -125,9 +137,20 @@ func (s *WalletService) getWalletPortfolio(ctx context.Context, wallet *models.W
 	if wallet.Chain == wallet.Symbol {
 		priceSymbol = wallet.Chain
 	}
-	price, err := s.priceService.GetPrice(ctx, priceSymbol)
+	token, found := s.blockchainService.tokenRegistry.GetByChainAndSymbol(wallet.Chain, priceSymbol)
+	if !found {
+		return &WalletPortfolioItem{
+			Wallet: *wallet,
+			Price:  models.CoinPrice{},
+		}, fmt.Errorf("seems like unsupported token %s", priceSymbol)
+	}
+	// price, err := s.priceService.GetPrice(ctx, priceSymbol)
+	price, err := s.priceService.GetPrice(ctx, token.Symbol)
 	if err != nil {
-		return nil, fmt.Errorf("getting price for %s: %w", priceSymbol, err)
+		return &WalletPortfolioItem{
+			Wallet: *wallet,
+			Price:  models.CoinPrice{},
+		}, fmt.Errorf("getting price for %s: %w", priceSymbol, err)
 	}
 	item := &WalletPortfolioItem{
 		Wallet: *wallet,

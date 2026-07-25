@@ -106,34 +106,10 @@ func (s *BlockchainService) GetBalance(ctx context.Context, chain string, addres
 	}
 }
 
+func (s *BlockchainService) GetTokensByName(ctx context.Context, text string) ([]entity.Token, error) {
+	return s.tokenRegistry.GetByText(text), nil
+}
+
 func (s *BlockchainService) GetTokens(ctx context.Context) ([]entity.Token, error) {
 	return s.tokenRegistry.GetAllTokens(), nil
 }
-
-func (s *BlockchainService) GetTokensByName(ctx context.Context, name string) ([]entity.Token, error) {
-	tokens := []entity.Token{}
-	for key := range s.providers {
-		token, found := s.tokenRegistry.GetNative(key)
-		if found {
-			tokens = append(tokens, token)
-		}
-		s.tokenRegistry.GetAllTokens()
-	}
-	return tokens, nil
-}
-
-// func (s *BlockchainService) GetChains(ctx context.Context) ([]entity.ChainTokens, error) {
-// 	tokens := []entity.ChainTokens{}
-// 	for key := range s.providers {
-// 		tokensByChain := s.tokenRegistry.GetAllByChain(key)
-// 		if len(tokensByChain) == 0 {
-// 			continue
-// 		}
-// 		chainToken := entity.ChainTokens{Chain: key}
-// 		for _, token := range tokensByChain {
-// 			chainToken.Tokens = append(chainToken.Tokens, token)
-// 		}
-// 		tokens = append(tokens, chainToken)
-// 	}
-// 	return tokens, nil
-// }

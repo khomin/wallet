@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"strings"
 	"tracker/internal/api/dto"
+	"tracker/internal/core/domain"
 
 	"github.com/coreos/go-oidc/v3/oidc"
 	"github.com/gin-gonic/gin"
@@ -28,24 +29,12 @@ func Auth(verifier *oidc.IDTokenVerifier) gin.HandlerFunc {
 			dto.UnauthorizedErrorMessage(c, fmt.Sprintf("Invalid token: %v", err))
 			return
 		}
-		var claims map[string]interface{}
+		var claims domain.JwtClaims
 		if err := idToken.Claims(&claims); err != nil {
 			dto.UnauthorizedErrorMessage(c, "Failed to parse token claims")
 			return
 		}
-		c.Set("claims", claims)
-		c.Set("user_id", claims["sub"])
-		c.Set("email", claims["email"])
+		SetOAUTH(c, &claims)
 		c.Next()
 	}
-}
-
-func UserIDFromContext(c *gin.Context) (string, bool) {
-	value, exists := c.Get("user_id")
-	if !exists {
-		return "", false
-	}
-
-	userID, ok := value.(string)
-	return userID, ok
 }

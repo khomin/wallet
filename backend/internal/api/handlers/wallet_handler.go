@@ -26,12 +26,12 @@ func NewWalletHandler(
 }
 
 func (h *WalletHandler) ListWallets(c *gin.Context) {
-	userID, ok := middleware.UserIDFromContext(c)
+	user, ok := middleware.GetOAUTH(c)
 	if !ok {
 		dto.UnauthorizedError(c)
 		return
 	}
-	wallet, err := h.walletService.ListWallets(c.Request.Context(), userID)
+	wallet, err := h.walletService.ListWallets(c.Request.Context(), user.Subject)
 	if err != nil {
 		dto.InternallError(c)
 		return
@@ -45,12 +45,12 @@ func (h *WalletHandler) AddWallet(c *gin.Context) {
 		dto.InvalidParameters(c)
 		return
 	}
-	userID, ok := middleware.UserIDFromContext(c)
+	user, ok := middleware.GetOAUTH(c)
 	if !ok {
 		dto.UnauthorizedError(c)
 		return
 	}
-	wallet, err := h.walletService.AddWallet(c.Request.Context(), userID, req.Chain, req.Address, req.TokenSymbol, req.Label)
+	wallet, err := h.walletService.AddWallet(c.Request.Context(), user.Subject, req.Chain, req.Address, req.TokenSymbol, req.Label)
 	if err != nil {
 		if errors.Is(err, core.ErrWalletAlreadyExists) {
 			dto.AlreadyExistsError(c)
@@ -68,12 +68,12 @@ func (h *WalletHandler) DeleteWallet(c *gin.Context) {
 		dto.InvalidParameters(c)
 		return
 	}
-	userID, ok := middleware.UserIDFromContext(c)
+	user, ok := middleware.GetOAUTH(c)
 	if !ok {
 		dto.UnauthorizedError(c)
 		return
 	}
-	err := h.walletService.DeleteWallet(c.Request.Context(), userID, req.ID)
+	err := h.walletService.DeleteWallet(c.Request.Context(), user.Subject, req.ID)
 	if err != nil {
 		if errors.Is(err, core.ErrWalletNotFound) {
 			dto.NotFoundErrorMessage(c, "wallet not found")
@@ -93,12 +93,12 @@ func (h *WalletHandler) EditWallet(c *gin.Context) {
 		dto.InvalidParameters(c)
 		return
 	}
-	userID, ok := middleware.UserIDFromContext(c)
+	user, ok := middleware.GetOAUTH(c)
 	if !ok {
 		dto.UnauthorizedError(c)
 		return
 	}
-	wallet, err := h.walletService.EditWallet(c.Request.Context(), userID, req.ID, req.Label)
+	wallet, err := h.walletService.EditWallet(c.Request.Context(), user.Subject, req.ID, req.Label)
 	if err != nil {
 		if errors.Is(err, core.ErrWalletNotFound) {
 			dto.NotFoundErrorMessage(c, "wallet not found")
@@ -118,12 +118,12 @@ func (h *WalletHandler) GetWalletBalance(c *gin.Context) {
 		dto.InvalidParameters(c)
 		return
 	}
-	userID, ok := middleware.UserIDFromContext(c)
+	user, ok := middleware.GetOAUTH(c)
 	if !ok {
 		dto.UnauthorizedError(c)
 		return
 	}
-	wallet, err := h.walletService.GetWallet(c.Request.Context(), userID, req.ID)
+	wallet, err := h.walletService.GetWallet(c.Request.Context(), user.Subject, req.ID)
 	if err != nil {
 		if errors.Is(err, core.ErrWalletNotFound) {
 			dto.NotFoundErrorMessage(c, "wallet not found")
@@ -145,5 +145,15 @@ func (h *WalletHandler) GetSupportedAssets(c *gin.Context) {
 }
 
 func (h *WalletHandler) SearchAssets(c *gin.Context) {
-
+	user, ok := middleware.GetOAUTH(c)
+	if !ok {
+		dto.UnauthorizedError(c)
+		return
+	}
+	tokens, err := h.walletService.SearchAssets(c.Request.Context(), user.Subject)
+	if err != nil {
+		dto.InternallError(c)
+		return
+	}
+	c.JSON(http.StatusOK, dto.ToAssetsResponse(tokens))
 }

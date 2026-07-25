@@ -2,8 +2,13 @@ package entity
 
 import "math/big"
 
+type Asset struct {
+	Name   Token   `json:"name"`
+	Symbol string  `json:"symbol"`
+	Tokens []Token `json:"tokens"`
+}
+
 type Token struct {
-	ID       string `json:"id"`        // "usdc_ethereum"
 	Chain    string `json:"chain"`     // "ethereum"
 	Symbol   string `json:"symbol"`    // "USDC"
 	Name     string `json:"name"`      // "USD Coin"
@@ -11,12 +16,6 @@ type Token struct {
 	Decimals int    `json:"decimals"`  // 6
 	IsNative bool   `json:"is_native"` // false (native is ETH)
 	LogoURL  string `json:"logo_url"`
-}
-
-type ChainTokens struct {
-	Chain  string  `json:"chain"`
-	Native Token   `json:"native"` // ETH, BNB, MATIC, etc.
-	Tokens []Token `json:"tokens"` // All ERC20 tokens
 }
 
 // TokenBalance represents a balance of a specific token
