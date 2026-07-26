@@ -2,20 +2,12 @@
 
 A Go-based backend for tracking crypto prices, wallet activity, and future alerting workflows. The project is still in its early stages.
 
-Right now, the service includes:
-- Wallet tracking across chains such as SOL, ETH, TRX, ADA, BTC
-    using these sdk:
-    ```
-    github.com/btcsuite/btcd
-    github.com/ethereum/go-ethereum
-    github.com/fbsobreira/gotron-sdk
-    github.com/gagliardetto/solana-go
-    github.com/blinklabs-io/gouroboros
-    github.com/blinklabs-io/cardano-node-api
-    ```
-- Background price ingestion for the top 250 coins from CoinGecko
-- Redis and PostgreSQL caching/persistence for recent price snapshots and metadata
-- Docker Compose support for local infrastructure
+The service includes wallet tracking across chains such as:
+    `SOL, ETH, TRX, ADA, BTC`
+
+It also supports configured token assets from the registry in [backend/config.yaml](backend/config.yaml), including major tokens such as `USDC`, `USDT`, `WBTC`, `PAXG`, and other chain-specific assets.
+
+Note: Bitcoin wallet tracking is wired to the preconfigured Bitcoin Core node already defined in docker-compose.yml, so starting the infrastructure brings up the node automatically. Keycloak also comes with a preloaded realm configuration imported from [backend/deploy/keycloak/realm-export.json](backend/deploy/keycloak/realm-export.json).
 
 ### Dasboard previews
 ![1](/resources/demo.png)
@@ -23,6 +15,17 @@ Right now, the service includes:
 ### Tech stack
 
 - Gin, PostgreSQL, Keycloak, Redis, Docker Compose, Viper
+
+- SDK used:
+
+```
+    github.com/btcsuite/btcd
+    github.com/ethereum/go-ethereum
+    github.com/fbsobreira/gotron-sdk
+    github.com/gagliardetto/solana-go
+    github.com/blinklabs-io/gouroboros
+    github.com/blinklabs-io/cardano-node-api
+```
 
 ### Prerequisites
 
@@ -49,8 +52,6 @@ locally running node matching the credentials in the configuration.
 ```bash
 docker compose up -d
 ```
-
-Note: Bitcoin wallet tracking is wired to the preconfigured Bitcoin Core node already defined in the Docker Compose setup, so starting the infrastructure brings up the node automatically. Keycloak also comes with a preloaded realm configuration imported from [backend/deploy/keycloak/realm-export.json](backend/deploy/keycloak/realm-export.json).
 
 ### 2. Run the app
 
