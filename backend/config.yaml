@@ -32,14 +32,24 @@ blockchain:
   polygon_mainnet: "https://polygon.gateway.tenderly.co"
   bnb: "https://bsc-mainnet.public.blastapi.io"
   solana_rpc: "https://api.mainnet-beta.solana.com"
-  bitcoin_rpc_host: "https://rpc.bitcoincode.technology"
-  bitcoin_rpc_user: ""
-  bitcoin_rpc_pass: ""
   tron_grpc: "grpc.trongrid.io:50051"
   tron_api_key: "38bcc631-6749-4afb-9626-45afafd2af13"
+  bitcoin:
+    host: "localhost:8332"
+    user: "admin"
+    pass: "secretpassword"
 
 token_registry:
   assets:
+    - id: "btc-native"
+      name: "Bitcoin"
+      symbol: "BTC"
+      items:
+        - chain: "BTC"
+          address: native
+          decimals: 18
+          is_native: true
+
     - id: "eth-native"
       name: "Ethereum"
       symbol: "ETH"
@@ -256,4 +266,4 @@ token_registry:
           decimals: 18
           is_native: false
 
-# ##  TODO: BSC
+# ##  TODO: BSC, ripple

@@ -43,7 +43,7 @@ func TestDeleteWalletReturnsDeletedWallet(t *testing.T) {
 		UserID:  "user-1",
 	}
 
-	svc := NewWalletService(&fakeWalletRepo{deleted: want}, &PriceService{}, &BlockchainService{}, &TokenRegistry{})
+	svc := NewWalletService(&fakeWalletRepo{deleted: want}, &AssetService{}, &BlockchainService{}, &TokenRegistry{})
 	err := svc.DeleteWallet(context.Background(), want.UserID, want.ID)
 	if err != nil {
 		t.Fatalf("DeleteWallet returned unexpected error: %v", err)

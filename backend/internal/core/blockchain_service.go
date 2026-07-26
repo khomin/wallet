@@ -48,6 +48,7 @@ func NewBlockchainService(
 			providers[chain] = p
 		}
 	}
+	add("BTC", btc)
 	add("ETH", ethereumMainnet)
 	add("ARB", ethereumArbitrum)
 	add("BASE", ethereumBase)

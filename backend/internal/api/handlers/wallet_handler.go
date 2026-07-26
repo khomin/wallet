@@ -134,26 +134,3 @@ func (h *WalletHandler) GetWalletBalance(c *gin.Context) {
 	}
 	c.JSON(http.StatusOK, dto.ToGetWalletBalanceResponse(wallet))
 }
-
-func (h *WalletHandler) GetAssets(c *gin.Context) {
-	assets, err := h.walletService.GetAssetsByMartket(c.Request.Context())
-	if err != nil {
-		dto.InternallError(c)
-		return
-	}
-	c.JSON(http.StatusOK, dto.ToAssetsResponse(assets))
-}
-
-func (h *WalletHandler) SearchAssets(c *gin.Context) {
-	user, ok := middleware.GetOAUTH(c)
-	if !ok {
-		dto.UnauthorizedError(c)
-		return
-	}
-	tokens, err := h.walletService.SearchAssets(c.Request.Context(), user.Subject)
-	if err != nil {
-		dto.InternallError(c)
-		return
-	}
-	c.JSON(http.StatusOK, dto.ToAssetsResponse(tokens))
-}

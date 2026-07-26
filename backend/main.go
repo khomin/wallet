@@ -54,7 +54,7 @@ func main() {
 	polygonMainnetClient := ethereum.NewEthereumClient(app.Cfg.Blockchain.PolygonMainnet)
 	bnbClient := ethereum.NewEthereumClient(app.Cfg.Blockchain.Bnb)
 	solanaClient := solana.NewSolanaClient(app.Cfg.Blockchain.SolanaRPC)
-	bitcoinClient := bitcoin.NewBitcoinClient(app.Cfg.Blockchain.BitcoinRPCHost, app.Cfg.Blockchain.BitcoinRPCUser, app.Cfg.Blockchain.BitcoinRPCPass)
+	bitcoinClient := bitcoin.NewBitcoinClient(app.Cfg.Blockchain.Bitcoin.Host, app.Cfg.Blockchain.Bitcoin.User, app.Cfg.Blockchain.Bitcoin.Pass)
 	tronClient := tron.NewTronClient(app.Cfg.Blockchain.TronGRPC, app.Cfg.Blockchain.TronAPIKey)
 
 	// Create a context that can be cancelled for graceful shutdown
@@ -73,15 +73,15 @@ func main() {
 		10*time.Second,
 	)
 
-	priceService := core.NewPriceService(redisClient, &priceRepo, priceFetcher, priceCache)
 	tokenRegistry := core.DefaultTokenRegistry(app.Cfg.TokenRegistry)
+	priceService := core.NewPriceService(redisClient, &priceRepo, priceFetcher, priceCache, tokenRegistry)
 	walletRepo := repositories.NewWalletRepository(db)
 	blockchainService := core.NewBlockchainService(
 		ethMainnetClient, ethArbitrumClient, ethBaseClient, polygonMainnetClient, bnbClient,
 		solanaClient, bitcoinClient, tronClient,
 		walletRepo, tokenRegistry,
 	)
-	priceHandler := handlers.NewPriceHandler(priceService)
+	assetsHandler := handlers.NewAssetsHandler(priceService)
 
 	if err := blockchainService.ConnectAll(ctx); err != nil {
 		logrus.WithError(err).Warn("failed to connect all blockchain clients")
@@ -94,7 +94,7 @@ func main() {
 
 	verifier, err := middleware.NewTokenVerifier(ctx, app.Cfg.Authorization.IssuerURL, app.Cfg.Authorization.ClientID)
 	if err != nil {
-		logrus.Panicf("failed to create jwt verifier")
+		logrus.Fatalf("failed to create jwt verifier %s", err.Error())
 	}
 
 	r := gin.Default()
@@ -115,18 +115,17 @@ func main() {
 
 	v1 := r.Group("/api/v1")
 	{
-		v1.GET("/coins", priceHandler.GetCoins)
-		v1.GET("/coins/:id", priceHandler.GetCoin)
-		v1.GET("/prices", priceHandler.GetPrices)
-		v1.GET("/prices/:id", priceHandler.GetPrice)
 		protected := v1.Group("").Use(middleware.Auth(verifier))
+		v1.GET("/coins", assetsHandler.GetCoins)
+		v1.GET("/coins/:id", assetsHandler.GetCoin)
+		v1.GET("/coins/search", assetsHandler.SearchCoin)
+		v1.GET("/prices", assetsHandler.GetPrices)
+		v1.GET("/prices/:id", assetsHandler.GetPrice)
 		protected.GET("/wallets", walletHandler.ListWallets)
 		protected.POST("/wallets", walletHandler.AddWallet)
 		protected.PUT("/wallets", walletHandler.EditWallet)
 		protected.GET("/wallets/balance", walletHandler.GetWalletBalance)
 		protected.DELETE("/wallets", walletHandler.DeleteWallet)
-		protected.GET("/wallets/assets", walletHandler.GetAssets)
-		protected.GET("/wallets/assets/search", walletHandler.SearchAssets)
 	}
 	r.GET("/health", func(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{

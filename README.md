@@ -47,8 +47,10 @@ locally running node matching the credentials in the configuration.
 ### 1. Start infrastructure
 
 ```bash
-docker compose up -d postgres redis
+docker compose up -d
 ```
+
+Note: Bitcoin wallet tracking is wired to the preconfigured Bitcoin Core node already defined in the Docker Compose setup, so starting the infrastructure brings up the node automatically. Keycloak also comes with a preloaded realm configuration imported from [backend/deploy/keycloak/realm-export.json](backend/deploy/keycloak/realm-export.json).
 
 ### 2. Run the app
 

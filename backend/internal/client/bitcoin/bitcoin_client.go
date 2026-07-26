@@ -14,7 +14,6 @@ type BitcoinClient struct {
 	client *rpcclient.Client
 }
 
-// TODO: sdk Bitcoin: github.com/btcsuite/btcd/rpcclient
 func NewBitcoinClient(host, user, password string) *BitcoinClient {
 	return &BitcoinClient{
 		cfg: rpcclient.ConnConfig{
@@ -22,6 +21,7 @@ func NewBitcoinClient(host, user, password string) *BitcoinClient {
 			User:         user,
 			Pass:         password,
 			HTTPPostMode: true,
+			DisableTLS:   true,
 		},
 	}
 }

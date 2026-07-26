@@ -6,6 +6,8 @@ import (
 	"sync"
 	"tracker/config"
 	"tracker/internal/core/entity"
+
+	"github.com/sirupsen/logrus"
 )
 
 type TokenRegistry struct {
@@ -39,27 +41,6 @@ func DefaultTokenRegistry(config map[string][]config.TokenRegistry) *TokenRegist
 					Decimals: item.Decimals,
 					IsNative: item.IsNative,
 				})
-				// entity.Token{
-				// 	Name:     asset.Name,
-				// 	Symbol:   symbol,
-				// 	Chain:    strings.ToUpper(item.Chain),
-				// 	Address:  item.Address,
-				// 	Decimals: item.Decimals,
-				// 	IsNative: item.IsNative,
-				// }
-
-				// symbol := asset.Symbol
-				// if item.Symbol != "" {
-				// 	symbol = item.Symbol
-				// }
-				// registry.Register(entity.Token{
-				// 	Name:     asset.Name,
-				// 	Symbol:   symbol,
-				// 	Chain:    strings.ToUpper(item.Chain),
-				// 	Address:  item.Address,
-				// 	Decimals: item.Decimals,
-				// 	IsNative: item.IsNative,
-				// })
 			}
 			registry.Register(out1)
 		}
@@ -89,40 +70,49 @@ func (r *TokenRegistry) Register(asset entity.Asset) {
 	// Index by name
 	r.tokensByName[asset.Name] = asset
 
-	for _, token := range asset.Tokens {
+	for idx, token := range asset.Tokens {
 		chain := strings.ToUpper(token.Chain)
-		symbol := strings.ToUpper(token.Symbol)
-		if symbol == "" {
-			symbol = strings.ToUpper(token.Symbol)
+		if token.Symbol == "" {
+			if asset.Symbol != "" {
+				token.Symbol = strings.ToUpper(asset.Symbol)
+			} else {
+				token.Symbol = chain
+			}
+			asset.Tokens[idx] = token
 		}
+		symbol := strings.ToUpper(token.Symbol)
 		// Index by chain:symbol
 		symbolKey := fmt.Sprintf("%s:%s", chain, symbol)
 		r.tokensByChainSymbol[symbolKey] = asset
 	}
 }
 
-func (r *TokenRegistry) GetByChainAndSymbol(chain, symbol string) (*entity.Token, bool) {
+func (r *TokenRegistry) GetByChainAndSymbol(chain, symbol string) (entity.Token, bool) {
 	r.mu.RLock()
 	defer r.mu.RUnlock()
-	token, ok := r.tokensByChainSymbol[fmt.Sprintf("%s:%s", chain, symbol)]
-	if len(token.Tokens) != 0 {
-		return &token.Tokens[0], ok
+	token, ok := r.tokensByChainSymbol[fmt.Sprintf("%s:%s", strings.ToUpper(chain), strings.ToUpper(symbol))]
+	if ok && len(token.Tokens) != 0 {
+		return token.Tokens[0], ok
 	}
-	return nil, ok
+	return entity.Token{}, ok
 }
 
-// func (r *TokenRegistry) GetAllByChain(chain string) []entity.Token {
-// 	r.mu.RLock()
-// 	defer r.mu.RUnlock()
-
-// 	var tokens []entity.Token
-// 	for _, token := range r.tokensByName {
-// 		if token.  Chain == chain {
-// 			tokens = append(tokens, token)
-// 		}
-// 	}
-// 	return tokens
-// }
+func (r *TokenRegistry) GetBySymbol(symbol string) (entity.Token, bool) {
+	r.mu.RLock()
+	defer r.mu.RUnlock()
+	symbol = strings.ToUpper(symbol)
+	if symbol == "XAUT" {
+		logrus.Print("ddd")
+	}
+	for _, i := range r.tokensByChainSymbol {
+		for _, token := range i.Tokens {
+			if strings.ToUpper(i.Symbol) == symbol {
+				return token, true
+			}
+		}
+	}
+	return entity.Token{}, false
+}
 
 func (r *TokenRegistry) GetAssetsByText(text string) []entity.Asset {
 	r.mu.RLock()
@@ -137,19 +127,6 @@ func (r *TokenRegistry) GetAssetsByText(text string) []entity.Asset {
 	}
 	return tokens
 }
-
-// func (r *TokenRegistry) GetAssetsBySymbol(symbol string) []entity.Asset {
-// 	r.mu.RLock()
-// 	defer r.mu.RUnlock()
-
-// 	var tokens []entity.Asset
-// 	for _, token := range r.tokensByChainSymbol {
-// 		if token.Symbol == symbol {
-// 			tokens = append(tokens, token)
-// 		}
-// 	}
-// 	return tokens
-// }
 
 func (r *TokenRegistry) GetAllTokens() []entity.Token {
 	r.mu.RLock()

@@ -67,13 +67,13 @@ type GetWalletBalanceRequest struct {
 
 func ToWalletResponse(walletPortfolio *core.WalletPortfolioItem) WalletResponse {
 	return WalletResponse{
-		ID:               walletPortfolio.Wallet.ID,
-		Address:          walletPortfolio.Wallet.Address,
-		Chain:            walletPortfolio.Wallet.Chain,
-		TokenSymbol:      walletPortfolio.Wallet.Symbol,
-		Label:            walletPortfolio.Wallet.Label,
-		CreatedAt:        walletPortfolio.Wallet.CreatedAt,
-		UpdatedAt:        walletPortfolio.Wallet.UpdatedAt,
+		// ID:               walletPortfolio.Wallet.ID,
+		Address:     walletPortfolio.Wallet.Address,
+		Chain:       walletPortfolio.Wallet.Chain,
+		TokenSymbol: walletPortfolio.Wallet.Symbol,
+		Label:       walletPortfolio.Wallet.Label,
+		// CreatedAt:        walletPortfolio.Wallet.CreatedAt,
+		// UpdatedAt:        walletPortfolio.Wallet.UpdatedAt,
 		Change24hPercent: walletPortfolio.Price.PriceChangePercentage_24h,
 		BalanceCrypto:    walletPortfolio.Balance,
 		BalanceUsd:       walletPortfolio.BalanceUSD,
@@ -96,7 +96,7 @@ func ToWalletResponses(wallets []core.WalletPortfolioItem) WalletsResponse {
 	}
 }
 
-func ToGetWalletBalanceResponse(walletPortfolio *core.WalletPortfolioItem) GetWalletBalanceResponse {
+func ToGetWalletBalanceResponse(walletPortfolio core.WalletPortfolioItem) GetWalletBalanceResponse {
 	return GetWalletBalanceResponse{
 		Chain:      walletPortfolio.Wallet.Chain,
 		Address:    walletPortfolio.Wallet.Address,

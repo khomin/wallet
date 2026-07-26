@@ -1,3 +1,5 @@
+name: whale-tracker
+
 services:
   postgres:
     image: postgres:16-alpine
@@ -11,20 +13,33 @@ services:
     volumes:
       - pgdata:/var/lib/postgresql/data
 
+  keycloak:
+    image: quay.io/keycloak/keycloak:latest
+    container_name: keycloak_server
+    command: start-dev --import-realm
+    environment:
+      KC_BOOTSTRAP_ADMIN_USERNAME: admin
+      KC_BOOTSTRAP_ADMIN_PASSWORD: admin
+      KC_DB: postgres
+      KC_DB_URL: jdbc:postgresql://keycloak-db:5432/keycloak
+      KC_DB_USERNAME: keycloak
+      KC_DB_PASSWORD: password123
+      KC_HTTP_PORT: 9090
+      KC_HTTPS_PORT: 9443
+    ports:
+      - "9090:9090"
+      - "9443:9443"
+    depends_on:
+      keycloak-db:
+        condition: service_healthy
+    volumes:
+      - ./deploy/keycloak/realm-export.json:/opt/keycloak/data/import/realm-export.json:ro
+
   redis:
     image: redis:7-alpine
     container_name: whale_tracker_cache
     ports:
       - "6379:6379"
-
-  gorush:
-    image: appleboy/gorush
-    container_name: whale_tracker_push
-    ports:
-      - "8088:8088"
-    environment:
-      - GORUSH_CORE_PORT=8088
-      - GORUSH_IOS_ENABLED=true
 
   keycloak-db:
     image: postgres:16-alpine
@@ -41,26 +56,43 @@ services:
       timeout: 5s
       retries: 5
 
-  keycloak:
-    image: quay.io/keycloak/keycloak:latest
-    container_name: keycloak_server
-    command: start-dev
-    environment:
-      KC_BOOTSTRAP_ADMIN_USERNAME: admin
-      KC_BOOTSTRAP_ADMIN_PASSWORD: admin
-      KC_DB: postgres
-      KC_DB_URL: jdbc:postgresql://keycloak-db:5432/keycloak
-      KC_DB_USERNAME: keycloak
-      KC_DB_PASSWORD: password123
-      KC_HTTP_PORT: 9090
-      KC_HTTPS_PORT: 9443
+  bitcoin:
+    image: ruimarinho/bitcoin-core:latest
+    container_name: node-bitcoin
+    restart: unless-stopped
     ports:
-      - "9090:9090"
-      - "9443:9443"
-    depends_on:
-      keycloak-db:
-        condition: service_healthy
+      - "8332:8332" # RPC
+      - "8333:8333" # P2P
+    networks:
+      - crypto-network
+    volumes:
+      - bitcoin_data:/home/bitcoin/.bitcoin
+    command:
+      - -printtoconsole
+      - -server=1
+      - -prune=2048
+      - -dbcache=2048
+      - -wallet=default
+      - -rpcuser=admin
+      - -rpcpassword=secretpassword
+      - -rpcbind=0.0.0.0
+      - -rpcallowip=0.0.0.0/0
+  # gorush:
+  #   image: appleboy/gorush
+  #   container_name: whale_tracker_push
+  #   ports:
+  #     - "8088:8088"
+  #   environment:
+  #     - GORUSH_CORE_PORT=8088
+  #     - GORUSH_IOS_ENABLED=true
 
 volumes:
   pgdata:
   postgres_data:
+  bitcoin_data:
+  litecoin_data:
+  dogecoin_data:
+
+networks:
+  crypto-network:
+    driver: bridge

@@ -48,7 +48,7 @@ func TestDeleteWalletReturnsDeletedWallet(t *testing.T) {
 	polygonMainnetClient := ethereum.NewEthereumClient(app.Cfg.Blockchain.PolygonMainnet)
 	bnbClient := ethereum.NewEthereumClient(app.Cfg.Blockchain.Bnb)
 	solanaClient := solana.NewSolanaClient(app.Cfg.Blockchain.SolanaRPC)
-	bitcoinClient := bitcoin.NewBitcoinClient(app.Cfg.Blockchain.BitcoinRPCHost, app.Cfg.Blockchain.BitcoinRPCUser, app.Cfg.Blockchain.BitcoinRPCPass)
+	bitcoinClient := bitcoin.NewBitcoinClient(app.Cfg.Blockchain.Bitcoin.Host, app.Cfg.Blockchain.Bitcoin.User, app.Cfg.Blockchain.Bitcoin.Pass)
 	tronClient := tron.NewTronClient(app.Cfg.Blockchain.TronGRPC, app.Cfg.Blockchain.TronAPIKey)
 
 	// Create a context that can be cancelled for graceful shutdown
@@ -67,8 +67,8 @@ func TestDeleteWalletReturnsDeletedWallet(t *testing.T) {
 		10*time.Second,
 	)
 
-	priceService := core.NewPriceService(redisClient, &priceRepo, priceFetcher, priceCache)
 	tokenRegistry := core.DefaultTokenRegistry(app.Cfg.TokenRegistry)
+	priceService := core.NewPriceService(redisClient, &priceRepo, priceFetcher, priceCache, tokenRegistry)
 	walletRepo := repositories.NewWalletRepository(db)
 	blockchainService := core.NewBlockchainService(
 		ethMainnetClient, ethArbitrumClient, ethBaseClient, polygonMainnetClient, bnbClient,
@@ -88,14 +88,20 @@ func TestDeleteWalletReturnsDeletedWallet(t *testing.T) {
 
 	// verifier, err := middleware.NewTokenVerifier(ctx, app.Cfg.Authorization.IssuerURL, app.Cfg.Authorization.ClientID)
 	// if err != nil {
-	// 	logrus.Panicf("failed to create jwt verifier")
+	// 	logrus.Fatal("failed to create jwt verifier")
 	// }
 
 	svc := core.NewWalletService(walletRepo, priceService, blockchainService, tokenRegistry)
 
-	userID := "34ae2787-cf90-4a4d-bcb8-e73eea5e3adc"
+	userID := "test-user"
 
 	tokens := []entity.Token{}
+
+	tokens = append(tokens, entity.Token{
+		Chain:   "BTC",
+		Symbol:  "BTC",
+		Address: "bc1qyyfjmtl9s8s6wn3llt2ltzze978l5szfj7hr79",
+	})
 
 	tokens = append(tokens, entity.Token{
 		Chain:   "SOL",

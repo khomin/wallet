@@ -11,21 +11,21 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-type PriceHandler struct {
-	priceService *core.PriceService
+type AssetsHandler struct {
+	priceService *core.AssetService
 	log          *logrus.Entry
 }
 
-func NewPriceHandler(
-	priceService *core.PriceService,
-) *PriceHandler {
-	return &PriceHandler{
-		priceService: priceService,
-		log:          logrus.WithField("component", "PriceHandler"),
+func NewAssetsHandler(
+	assetService *core.AssetService,
+) *AssetsHandler {
+	return &AssetsHandler{
+		priceService: assetService,
+		log:          logrus.WithField("component", "AssetsHandler"),
 	}
 }
 
-func (h *PriceHandler) GetCoins(c *gin.Context) {
+func (h *AssetsHandler) GetCoins(c *gin.Context) {
 	coins, err := h.priceService.GetCoins(c)
 	if err != nil {
 		dto.InternallError(c)
@@ -34,7 +34,7 @@ func (h *PriceHandler) GetCoins(c *gin.Context) {
 	c.JSON(http.StatusOK, dto.ToCoinsResponse(coins))
 }
 
-func (h *PriceHandler) GetCoin(c *gin.Context) {
+func (h *AssetsHandler) GetCoin(c *gin.Context) {
 	id := c.Param("id")
 	if id == "" {
 		dto.InvalidParametersMessage(c, "id parameter is required")
@@ -48,7 +48,27 @@ func (h *PriceHandler) GetCoin(c *gin.Context) {
 	c.JSON(http.StatusOK, dto.ToCoinResponse(coin))
 }
 
-func (h *PriceHandler) GetPrices(c *gin.Context) {
+func (h *AssetsHandler) SearchCoin(c *gin.Context) {
+	// FIXME: search coins
+	// var req dto.SearchCoins
+	// if err := c.ShouldBindJSON(&req); err != nil {
+	// 	dto.InvalidParameters(c)
+	// 	return
+	// }
+	// user, ok := middleware.GetOAUTH(c)
+	// if !ok {
+	// 	dto.UnauthorizedError(c)
+	// 	return
+	// }
+	// tokens, err := h.priceService.SearchCoins(c.Request.Context(), user.Subject)
+	// if err != nil {
+	// 	dto.InternallError(c)
+	// 	return
+	// }
+	// c.JSON(http.StatusOK, dto.ToAssetsResponse(tokens))
+}
+
+func (h *AssetsHandler) GetPrices(c *gin.Context) {
 	symbolsParam := c.Query("symbols")
 	symbols := strings.Split(strings.ToUpper(symbolsParam), ",")
 	if len(symbols) == 0 {
@@ -63,7 +83,7 @@ func (h *PriceHandler) GetPrices(c *gin.Context) {
 	c.JSON(http.StatusOK, dto.ToPricesResponse(prices))
 }
 
-func (h *PriceHandler) GetPrice(c *gin.Context) {
+func (h *AssetsHandler) GetPrice(c *gin.Context) {
 	id := c.Param("id")
 	if id == "" {
 		dto.InvalidParametersMessage(c, "id parameter is required")

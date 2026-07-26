@@ -13,7 +13,6 @@ request:
     credentials:
       clientId: "{{client-id}}"
       placement: body
-    scope: whale-tracker-audience
     pkce: {}
     tokenConfig:
       id: whale-tracker-app
@@ -22,4 +21,4 @@ request:
       source: access_token
     settings:
       autoFetchToken: true
-      autoRefreshToken: false
+      autoRefreshToken: true

@@ -19,8 +19,8 @@ var (
 )
 
 type WalletPortfolioItem struct {
-	Wallet     models.Wallet
-	Price      models.CoinPrice
+	Wallet     entity.Wallet
+	Price      entity.TokenPrice
 	Balance    float64
 	BalanceUSD float64
 	HasError   bool
@@ -37,14 +37,14 @@ type WalletRepository interface {
 
 type WalletService struct {
 	walletRepo        WalletRepository
-	priceService      *PriceService
+	priceService      *AssetService
 	blockchainService *BlockchainService
 	tokenRegistry     *TokenRegistry
 }
 
 func NewWalletService(
 	walletRepo WalletRepository,
-	priceService *PriceService,
+	priceService *AssetService,
 	blockchainService *BlockchainService,
 	tokenRegistry *TokenRegistry,
 ) *WalletService {
@@ -57,27 +57,27 @@ func NewWalletService(
 }
 
 func (s *WalletService) ListWallets(ctx context.Context, userID string) ([]WalletPortfolioItem, error) {
+	res := []WalletPortfolioItem{}
 	wallets, err := s.walletRepo.ListWallets(ctx, userID)
 	if err != nil {
 		return nil, err
 	}
-	res := []WalletPortfolioItem{}
 	for _, wallet := range wallets {
-		portfolio, err := s.getWalletPortfolio(ctx, &wallet)
+		portfolio, err := s.getWalletPortfolio(ctx, walletDbToEntity(wallet))
 		if err != nil {
 			continue
 		}
-		res = append(res, *portfolio)
+		res = append(res, portfolio)
 	}
 	return res, nil
 }
 
-func (s *WalletService) GetWallet(ctx context.Context, userID string, id uuid.UUID) (*WalletPortfolioItem, error) {
+func (s *WalletService) GetWallet(ctx context.Context, userID string, id uuid.UUID) (WalletPortfolioItem, error) {
 	wallet, err := s.walletRepo.GetWallet(ctx, userID, id)
 	if err != nil {
-		return nil, err
+		return WalletPortfolioItem{}, err
 	}
-	return s.getWalletPortfolio(ctx, wallet)
+	return s.getWalletPortfolio(ctx, walletDbToEntity(*wallet))
 }
 
 func (s *WalletService) AddWallet(ctx context.Context, userID string, chain string, address string, symbol string, label string) (*WalletPortfolioItem, error) {
@@ -86,11 +86,11 @@ func (s *WalletService) AddWallet(ctx context.Context, userID string, chain stri
 	if err != nil {
 		return nil, err
 	}
-	portfolio, err := s.getWalletPortfolio(ctx, wallet)
+	portfolio, err := s.getWalletPortfolio(ctx, walletDbToEntity(*wallet))
 	if err != nil {
 		return nil, err
 	}
-	return portfolio, nil
+	return &portfolio, nil
 }
 
 func (s *WalletService) EditWallet(ctx context.Context, userID string, id uuid.UUID, label string) (*WalletPortfolioItem, error) {
@@ -98,11 +98,11 @@ func (s *WalletService) EditWallet(ctx context.Context, userID string, id uuid.U
 	if err != nil {
 		return nil, err
 	}
-	portfolio, err := s.getWalletPortfolio(ctx, wallet)
+	portfolio, err := s.getWalletPortfolio(ctx, walletDbToEntity(*wallet))
 	if err != nil {
 		return nil, err
 	}
-	return portfolio, nil
+	return &portfolio, nil
 }
 
 func (s *WalletService) DeleteWallet(ctx context.Context, userID string, id uuid.UUID) error {
@@ -110,38 +110,31 @@ func (s *WalletService) DeleteWallet(ctx context.Context, userID string, id uuid
 }
 
 // a list of tokens
-func (s *WalletService) GetAssetsByMartket(ctx context.Context) ([]entity.Asset, error) {
-	assets := []entity.Asset{}
+// func (s *WalletService) GetAssetsByMartket(ctx context.Context) ([]entity.Asset, error) {
+// 	assets := []entity.Asset{}
 
-	// max := 50
+// 	// max := 50
 
-	// get top coins
-	coins, err := s.priceService.GetCoins(ctx)
-	if err != nil {
-		return nil, err
-	}
-	// build assets from top coins copying imageURL from COIN
-	for _, coin := range coins {
-		asset, found := s.tokenRegistry.GetByChainAndSymbol(coin.Symbol, coin.Symbol)
-		if !found {
-			continue
-		}
-		// for index := range assets {
-		// asset = assets[index]
-		asset.LogoURL = coin.ImageURL
-		assets[index] = asset
-		// }
-		assets = append(assets, assets...)
-	}
-	return assets, err
-}
-
-func (s *WalletService) SearchAssets(ctx context.Context, text string) ([]entity.Asset, error) {
-	// assets := []entity.Asset{}
-	assets := s.tokenRegistry.GetAssetsByText(text)
-	// assets = s.assingIcon(ctx, assets)
-	return assets, nil
-}
+// 	// get top coins
+// 	coins, err := s.priceService.GetCoins(ctx)
+// 	if err != nil {
+// 		return nil, err
+// 	}
+// 	// build assets from top coins copying imageURL from COIN
+// 	for _, coin := range coins {
+// 		asset, found := s.tokenRegistry.GetByChainAndSymbol(coin.Symbol, coin.Symbol)
+// 		if !found {
+// 			continue
+// 		}
+// 		// for index := range assets {
+// 		// asset = assets[index]
+// 		asset.LogoURL = coin.ImageURL
+// 		assets[index] = asset
+// 		// }
+// 		assets = append(assets, assets...)
+// 	}
+// 	return assets, err
+// }
 
 // func (s *WalletService) assingIcon(ctx context.Context, in []entity.Asset) []entity.Asset {
 // 	assets := []entity.Asset{}
@@ -157,29 +150,28 @@ func (s *WalletService) SearchAssets(ctx context.Context, text string) ([]entity
 // 	return assets
 // }
 
-func (s *WalletService) getWalletPortfolio(ctx context.Context, wallet *models.Wallet) (*WalletPortfolioItem, error) {
+func (s *WalletService) getWalletPortfolio(ctx context.Context, wallet entity.Wallet) (WalletPortfolioItem, error) {
 	priceSymbol := wallet.Symbol
 	if wallet.Chain == wallet.Symbol {
 		priceSymbol = wallet.Chain
 	}
 	token, found := s.blockchainService.tokenRegistry.GetByChainAndSymbol(wallet.Chain, priceSymbol)
 	if !found {
-		return &WalletPortfolioItem{
-			Wallet: *wallet,
-			Price:  models.CoinPrice{},
+		return WalletPortfolioItem{
+			Wallet: wallet,
+			Price:  entity.TokenPrice{},
 		}, fmt.Errorf("seems like unsupported token %s", priceSymbol)
 	}
-	// price, err := s.priceService.GetPrice(ctx, priceSymbol)
 	price, err := s.priceService.GetPrice(ctx, token.Symbol)
 	if err != nil {
-		return &WalletPortfolioItem{
-			Wallet: *wallet,
-			Price:  models.CoinPrice{},
+		return WalletPortfolioItem{
+			Wallet: wallet,
+			Price:  entity.TokenPrice{},
 		}, fmt.Errorf("getting price for %s: %w", priceSymbol, err)
 	}
-	item := &WalletPortfolioItem{
-		Wallet: *wallet,
-		Price:  *price,
+	item := WalletPortfolioItem{
+		Wallet: wallet,
+		Price:  price,
 	}
 	balance, err := s.blockchainService.GetBalance(ctx, wallet.Chain, wallet.Address, wallet.Symbol)
 	if err != nil {
@@ -191,4 +183,15 @@ func (s *WalletService) getWalletPortfolio(ctx context.Context, wallet *models.W
 	item.Balance = balance.Balance
 	item.BalanceUSD = balance.Balance * price.CurrentPrice
 	return item, nil
+}
+
+func walletDbToEntity(in models.Wallet) entity.Wallet {
+	return entity.Wallet{
+		ID:      in.ID.String(),
+		Address: in.Address,
+		Chain:   in.Chain,
+		Label:   in.Label,
+		Symbol:  in.Symbol,
+		UserID:  in.UserID,
+	}
 }

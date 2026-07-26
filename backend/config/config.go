@@ -8,17 +8,14 @@ import (
 )
 
 type Config struct {
-	Server        ServerConfig     `mapstructure:"server"`
-	Authorization Authorization    `mapstructure:"authorization"`
-	Database      DatabaseConfig   `mapstructure:"database"`
-	Redis         RedisConfig      `mapstructure:"redis"`
-	Alchemy       AlchemyConfig    `mapstructure:"alchemy"`
-	CoinGecko     CoinGeckoConfig  `mapstructure:"coingecko"`
-	Blockchain    BlockchainConfig `mapstructure:"blockchain"`
-	// TokenRegistry TokenRegistry    `mapstructure:"token_registry"`
+	Server        ServerConfig               `mapstructure:"server"`
+	Authorization Authorization              `mapstructure:"authorization"`
+	Database      DatabaseConfig             `mapstructure:"database"`
+	Redis         RedisConfig                `mapstructure:"redis"`
+	Alchemy       AlchemyConfig              `mapstructure:"alchemy"`
+	CoinGecko     CoinGeckoConfig            `mapstructure:"coingecko"`
+	Blockchain    BlockchainConfig           `mapstructure:"blockchain"`
 	TokenRegistry map[string][]TokenRegistry `mapstructure:"token_registry"`
-	// TokenRegistry Assets `mapstructure:"assets"`
-	// Assets Assets `mapstructure:"assets" yaml:"assets"`
 }
 
 type ServerConfig struct {
@@ -55,17 +52,15 @@ type CoinGeckoConfig struct {
 }
 
 type BlockchainConfig struct {
-	EthereumMainnet  string `mapstructure:"ethereum_mainnet_rpc"`
-	EthereumArbitrum string `mapstructure:"ethereum_arbitrum_rpc"`
-	EthereumBase     string `mapstructure:"ethereum_base_rpc"`
-	PolygonMainnet   string `mapstructure:"polygon_mainnet"`
-	Bnb              string `mapstructure:"bnb"`
-	SolanaRPC        string `mapstructure:"solana_rpc"`
-	BitcoinRPCHost   string `mapstructure:"bitcoin_rpc_host"`
-	BitcoinRPCUser   string `mapstructure:"bitcoin_rpc_user"`
-	BitcoinRPCPass   string `mapstructure:"bitcoin_rpc_pass"`
-	TronGRPC         string `mapstructure:"tron_grpc"`
-	TronAPIKey       string `mapstructure:"tron_api_key"`
+	EthereumMainnet  string    `mapstructure:"ethereum_mainnet_rpc"`
+	EthereumArbitrum string    `mapstructure:"ethereum_arbitrum_rpc"`
+	EthereumBase     string    `mapstructure:"ethereum_base_rpc"`
+	PolygonMainnet   string    `mapstructure:"polygon_mainnet"`
+	Bnb              string    `mapstructure:"bnb"`
+	SolanaRPC        string    `mapstructure:"solana_rpc"`
+	TronGRPC         string    `mapstructure:"tron_grpc"`
+	TronAPIKey       string    `mapstructure:"tron_api_key"`
+	Bitcoin          RPCConfig `mapstructure:"bitcoin"`
 }
 
 type TokenRegistry struct {
@@ -81,6 +76,12 @@ type AssetItem struct {
 	Address  string `mapstructure:"address" yaml:"address"`
 	Decimals int    `mapstructure:"decimals" yaml:"decimals"`
 	IsNative bool   `mapstructure:"is_native" yaml:"is_native"`
+}
+
+type RPCConfig struct {
+	Host string `mapstructure:"host"`
+	User string `mapstructure:"user"`
+	Pass string `mapstructure:"pass"`
 }
 
 func NewConfig() *Config {
