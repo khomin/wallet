@@ -6,8 +6,6 @@ import (
 	"sync"
 	"tracker/config"
 	"tracker/internal/core/entity"
-
-	"github.com/sirupsen/logrus"
 )
 
 type TokenRegistry struct {
@@ -87,23 +85,25 @@ func (r *TokenRegistry) Register(asset entity.Asset) {
 	}
 }
 
-func (r *TokenRegistry) GetByChainAndSymbol(chain, symbol string) (entity.Token, bool) {
+func (r *TokenRegistry) GetByChainAndSymbol(chain, symbol string) (string, entity.Token, bool) {
 	r.mu.RLock()
 	defer r.mu.RUnlock()
 	token, ok := r.tokensByChainSymbol[fmt.Sprintf("%s:%s", strings.ToUpper(chain), strings.ToUpper(symbol))]
 	if ok && len(token.Tokens) != 0 {
-		return token.Tokens[0], ok
+		for _, i := range token.Tokens {
+			if i.Chain == chain {
+				return token.Symbol, i, true
+			}
+		}
+		return token.Symbol, token.Tokens[0], ok
 	}
-	return entity.Token{}, ok
+	return "", entity.Token{}, false
 }
 
 func (r *TokenRegistry) GetBySymbol(symbol string) (entity.Token, bool) {
 	r.mu.RLock()
 	defer r.mu.RUnlock()
 	symbol = strings.ToUpper(symbol)
-	if symbol == "XAUT" {
-		logrus.Print("ddd")
-	}
 	for _, i := range r.tokensByChainSymbol {
 		for _, token := range i.Tokens {
 			if strings.ToUpper(i.Symbol) == symbol {

@@ -50,7 +50,7 @@ class KeycloakService {
     const params = new URLSearchParams({
       response_type: 'code',
       client_id: KEYCLOAK_CONFIG.clientId,
-      redirect_uri: REDIRECT_URI, // http://localhost:5173/callback
+      redirect_uri: REDIRECT_URI,
       scope: 'openid profile email',
       state,
       code_challenge: challenge,
@@ -79,7 +79,7 @@ class KeycloakService {
       redirect_uri: REDIRECT_URI,
       code: code,
       code_verifier: codeVerifier,
-      scope: 'whale-tracker-audience'
+      scope: "openid profile email",
     });
     try {
       console.log(`code: ${code}`)

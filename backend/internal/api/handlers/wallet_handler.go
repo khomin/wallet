@@ -8,6 +8,7 @@ import (
 	"tracker/internal/core"
 
 	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
 	"github.com/sirupsen/logrus"
 )
 
@@ -23,6 +24,34 @@ func NewWalletHandler(
 		walletService: walletService,
 		log:           logrus.WithField("component", "WalletHandler"),
 	}
+}
+
+func (h *WalletHandler) GetWallet(c *gin.Context) {
+	id := c.Param("id")
+	if id == "" {
+		dto.InvalidParametersMessage(c, "id parameter is required")
+		return
+	}
+	uuid, err := uuid.Parse(id)
+	if err != nil {
+		dto.InvalidParametersMessage(c, "id parameter is required")
+		return
+	}
+	user, ok := middleware.GetOAUTH(c)
+	if !ok {
+		dto.UnauthorizedError(c)
+		return
+	}
+	wallet, err := h.walletService.GetWallet(c.Request.Context(), user.Subject, uuid)
+	if err != nil {
+		if errors.Is(err, core.ErrWalletNotFound) {
+			dto.NotFoundErrorMessage(c, "wallet not found")
+			return
+		}
+		dto.InternallError(c)
+		return
+	}
+	c.JSON(http.StatusOK, dto.ToWalletResponse(&wallet))
 }
 
 func (h *WalletHandler) ListWallets(c *gin.Context) {
@@ -110,27 +139,4 @@ func (h *WalletHandler) EditWallet(c *gin.Context) {
 	c.JSON(http.StatusOK, dto.EditWalletResponse{
 		WalletResponse: dto.ToWalletResponse(wallet),
 	})
-}
-
-func (h *WalletHandler) GetWalletBalance(c *gin.Context) {
-	var req dto.GetWalletBalanceRequest
-	if err := c.ShouldBindJSON(&req); err != nil {
-		dto.InvalidParameters(c)
-		return
-	}
-	user, ok := middleware.GetOAUTH(c)
-	if !ok {
-		dto.UnauthorizedError(c)
-		return
-	}
-	wallet, err := h.walletService.GetWallet(c.Request.Context(), user.Subject, req.ID)
-	if err != nil {
-		if errors.Is(err, core.ErrWalletNotFound) {
-			dto.NotFoundErrorMessage(c, "wallet not found")
-			return
-		}
-		dto.InternallError(c)
-		return
-	}
-	c.JSON(http.StatusOK, dto.ToGetWalletBalanceResponse(wallet))
 }

@@ -93,7 +93,7 @@ func TestDeleteWalletReturnsDeletedWallet(t *testing.T) {
 
 	svc := core.NewWalletService(walletRepo, priceService, blockchainService, tokenRegistry)
 
-	userID := "test-user"
+	userID := "ad4abec0-8bae-462a-8ea3-8502048f3071"
 
 	tokens := []entity.Token{}
 

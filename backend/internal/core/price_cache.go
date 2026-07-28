@@ -30,7 +30,7 @@ func (p *PriceCache) GetPriceBySymbol(ctx context.Context, symbol string) *model
 
 func (p *PriceCache) SetPrices(ctx context.Context, prices []models.CoinPrice) error {
 	for _, price := range prices {
-		if err := p.cache.SetJSON(ctx, fmt.Sprintf("prices:%s", strings.ToUpper(price.Symbol)), price, 60*time.Second); err != nil {
+		if err := p.cache.SetJSON(ctx, fmt.Sprintf("prices:%s", strings.ToUpper(price.Symbol)), price, 1*time.Hour); err != nil {
 			return err
 		}
 	}
@@ -38,7 +38,7 @@ func (p *PriceCache) SetPrices(ctx context.Context, prices []models.CoinPrice) e
 }
 
 func (p *PriceCache) SetPrice(ctx context.Context, symbol string, price models.CoinPrice) error {
-	return p.cache.SetJSON(ctx, fmt.Sprintf("prices:%s", strings.ToUpper(symbol)), price, 60*time.Second)
+	return p.cache.SetJSON(ctx, fmt.Sprintf("prices:%s", strings.ToUpper(symbol)), price, 1*time.Hour)
 }
 
 func (p *PriceCache) GetCoins(ctx context.Context) ([]models.Coin, error) {

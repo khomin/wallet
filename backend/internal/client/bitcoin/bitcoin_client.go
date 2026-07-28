@@ -3,101 +3,76 @@ package bitcoin
 import (
 	"context"
 	"encoding/json"
-	"errors"
 	"fmt"
-
-	btcaddress "github.com/btcsuite/btcd/address/v2"
-	"github.com/btcsuite/btcd/chaincfg/v2"
-	"github.com/btcsuite/btcd/rpcclient"
+	"net/http"
+	"time"
 )
 
 type BitcoinClient struct {
-	cfg    rpcclient.ConnConfig
-	client *rpcclient.Client
+	baseURL    string
+	httpClient *http.Client
+}
+
+type EsploraAddressStats struct {
+	FundedTxoSum int64 `json:"funded_txo_sum"`
+	SpentTxoSum  int64 `json:"spent_txo_sum"`
+}
+
+type EsploraAddressResponse struct {
+	Address      string              `json:"address"`
+	ChainStats   EsploraAddressStats `json:"chain_stats"`
+	MempoolStats EsploraAddressStats `json:"mempool_stats"`
 }
 
 func NewBitcoinClient(host, user, password string) *BitcoinClient {
 	return &BitcoinClient{
-		cfg: rpcclient.ConnConfig{
-			Host:         host,
-			User:         user,
-			Pass:         password,
-			HTTPPostMode: true,
-			DisableTLS:   true,
+		baseURL: host,
+		httpClient: &http.Client{
+			Timeout: 10 * time.Second,
 		},
 	}
 }
 
 func (c *BitcoinClient) Connect(ctx context.Context) error {
-	if c.client != nil {
-		return nil
-	}
-	if c.cfg.Host == "" {
-		return errors.New("bitcoin rpc host is not configured")
-	}
-	client, err := rpcclient.New(&c.cfg, nil)
-	if err != nil {
-		return err
-	}
-	c.client = client
 	return nil
 }
 
 func (c *BitcoinClient) Close() {
-	if c.client != nil {
-		c.client.Shutdown()
-	}
+
 }
 
 func (c *BitcoinClient) GetBalance(ctx context.Context, address string) (float64, error) {
-	if c.client == nil {
-		return 0, errors.New("bitcoin client is not initialized")
-	}
-	if err := c.Connect(ctx); err != nil {
-		return 0, err
-	}
-	err := c.EnsureWalletLoaded(ctx)
+	url := fmt.Sprintf("%s/address/%s", c.baseURL, address)
+
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
 	if err != nil {
-		return 0, err
+		return 0, fmt.Errorf("failed to create request: %w", err)
 	}
-	addr, err := btcaddress.DecodeAddress(address, &chaincfg.MainNetParams)
+
+	resp, err := c.httpClient.Do(req)
 	if err != nil {
-		return 0, err
+		return 0, fmt.Errorf("failed to execute request: %w", err)
 	}
-	amount, err := c.client.GetReceivedByAddress(addr)
-	if err != nil {
-		return 0, err
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		return 0, fmt.Errorf("esplora API returned status code: %d", resp.StatusCode)
 	}
-	return amount.ToBTC(), nil
+
+	var data EsploraAddressResponse
+	if err := json.NewDecoder(resp.Body).Decode(&data); err != nil {
+		return 0, fmt.Errorf("failed to decode response: %w", err)
+	}
+
+	// Calculate net balance: (Total Received - Total Spent) across chain + mempool
+	funded := data.ChainStats.FundedTxoSum + data.MempoolStats.FundedTxoSum
+	spent := data.ChainStats.SpentTxoSum + data.MempoolStats.SpentTxoSum
+	satsBalance := funded - spent
+
+	// Convert satoshis to BTC (1 BTC = 100,000,000 sats)
+	return float64(satsBalance) / 1e8, nil
 }
 
 func (c *BitcoinClient) GetTokenBalance(ctx context.Context, address, tokenAddress string) (float64, error) {
 	return 0, nil
-}
-
-func (c *BitcoinClient) EnsureWalletLoaded(ctx context.Context) error {
-	if c.client == nil {
-		return fmt.Errorf("bitcoin client is nil")
-	}
-	// 1. Call `listwallets` to see if a wallet is already active
-	resp, err := c.client.RawRequest("listwallets", nil)
-	if err == nil {
-		var wallets []string
-		if err := json.Unmarshal(resp, &wallets); err == nil && len(wallets) > 0 {
-			return nil // Wallet is already loaded!
-		}
-	}
-	// 2. Try `loadwallet` in case "default" exists on disk
-	walletNameParam, _ := json.Marshal("default")
-	_, err = c.client.RawRequest("loadwallet", []json.RawMessage{walletNameParam})
-	if err == nil {
-		return nil // Loaded successfully!
-	}
-	// 3. If loading failed (doesn't exist yet), create it via `createwallet`
-	// Parameters: [wallet_name, disable_private_keys, blank, passphrase, avoid_reuse, descriptors, load_on_startup]
-	_, err = c.client.RawRequest("createwallet", []json.RawMessage{walletNameParam})
-	if err != nil {
-		return fmt.Errorf("failed to create wallet 'default': %w", err)
-	}
-	return nil
 }

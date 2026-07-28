@@ -55,28 +55,6 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
-
-  bitcoin:
-    image: ruimarinho/bitcoin-core:latest
-    container_name: node-bitcoin
-    restart: unless-stopped
-    ports:
-      - "8332:8332" # RPC
-      - "8333:8333" # P2P
-    networks:
-      - crypto-network
-    volumes:
-      - bitcoin_data:/home/bitcoin/.bitcoin
-    command:
-      - -printtoconsole
-      - -server=1
-      - -prune=2048
-      - -dbcache=2048
-      - -wallet=default
-      - -rpcuser=admin
-      - -rpcpassword=secretpassword
-      - -rpcbind=0.0.0.0
-      - -rpcallowip=0.0.0.0/0
   # gorush:
   #   image: appleboy/gorush
   #   container_name: whale_tracker_push
@@ -89,10 +67,3 @@ services:
 volumes:
   pgdata:
   postgres_data:
-  bitcoin_data:
-  litecoin_data:
-  dogecoin_data:
-
-networks:
-  crypto-network:
-    driver: bridge

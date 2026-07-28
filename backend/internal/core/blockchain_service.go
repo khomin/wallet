@@ -90,7 +90,7 @@ func (s *BlockchainService) GetBalance(ctx context.Context, chain string, addres
 			Balance: balance,
 		}, nil
 	} else {
-		token, ok := s.tokenRegistry.GetByChainAndSymbol(chain, tokenSymbol)
+		_, token, ok := s.tokenRegistry.GetByChainAndSymbol(chain, tokenSymbol)
 		if !ok {
 			return nil, fmt.Errorf("token not found %s", tokenSymbol)
 		}

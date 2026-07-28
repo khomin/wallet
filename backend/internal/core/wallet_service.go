@@ -18,7 +18,7 @@ var (
 	ErrWalletInternalError = errors.New("internal error")
 )
 
-type WalletPortfolioItem struct {
+type WalletPortfolio struct {
 	Wallet     entity.Wallet
 	Price      entity.TokenPrice
 	Balance    float64
@@ -56,8 +56,16 @@ func NewWalletService(
 	}
 }
 
-func (s *WalletService) ListWallets(ctx context.Context, userID string) ([]WalletPortfolioItem, error) {
-	res := []WalletPortfolioItem{}
+func (s *WalletService) GetWallet(ctx context.Context, userID string, id uuid.UUID) (WalletPortfolio, error) {
+	wallet, err := s.walletRepo.GetWallet(ctx, userID, id)
+	if err != nil {
+		return WalletPortfolio{}, err
+	}
+	return s.getWalletPortfolio(ctx, walletDbToEntity(*wallet))
+}
+
+func (s *WalletService) ListWallets(ctx context.Context, userID string) ([]WalletPortfolio, error) {
+	res := []WalletPortfolio{}
 	wallets, err := s.walletRepo.ListWallets(ctx, userID)
 	if err != nil {
 		return nil, err
@@ -72,15 +80,7 @@ func (s *WalletService) ListWallets(ctx context.Context, userID string) ([]Walle
 	return res, nil
 }
 
-func (s *WalletService) GetWallet(ctx context.Context, userID string, id uuid.UUID) (WalletPortfolioItem, error) {
-	wallet, err := s.walletRepo.GetWallet(ctx, userID, id)
-	if err != nil {
-		return WalletPortfolioItem{}, err
-	}
-	return s.getWalletPortfolio(ctx, walletDbToEntity(*wallet))
-}
-
-func (s *WalletService) AddWallet(ctx context.Context, userID string, chain string, address string, symbol string, label string) (*WalletPortfolioItem, error) {
+func (s *WalletService) AddWallet(ctx context.Context, userID string, chain string, address string, symbol string, label string) (*WalletPortfolio, error) {
 	// TODO: add validation
 	wallet, err := s.walletRepo.CreateWallet(ctx, userID, chain, address, symbol, label)
 	if err != nil {
@@ -93,7 +93,7 @@ func (s *WalletService) AddWallet(ctx context.Context, userID string, chain stri
 	return &portfolio, nil
 }
 
-func (s *WalletService) EditWallet(ctx context.Context, userID string, id uuid.UUID, label string) (*WalletPortfolioItem, error) {
+func (s *WalletService) EditWallet(ctx context.Context, userID string, id uuid.UUID, label string) (*WalletPortfolio, error) {
 	wallet, err := s.walletRepo.EditWallet(ctx, userID, id, label)
 	if err != nil {
 		return nil, err
@@ -150,26 +150,26 @@ func (s *WalletService) DeleteWallet(ctx context.Context, userID string, id uuid
 // 	return assets
 // }
 
-func (s *WalletService) getWalletPortfolio(ctx context.Context, wallet entity.Wallet) (WalletPortfolioItem, error) {
+func (s *WalletService) getWalletPortfolio(ctx context.Context, wallet entity.Wallet) (WalletPortfolio, error) {
 	priceSymbol := wallet.Symbol
 	if wallet.Chain == wallet.Symbol {
 		priceSymbol = wallet.Chain
 	}
-	token, found := s.blockchainService.tokenRegistry.GetByChainAndSymbol(wallet.Chain, priceSymbol)
+	primarySymbol, _, found := s.blockchainService.tokenRegistry.GetByChainAndSymbol(wallet.Chain, priceSymbol)
 	if !found {
-		return WalletPortfolioItem{
+		return WalletPortfolio{
 			Wallet: wallet,
 			Price:  entity.TokenPrice{},
 		}, fmt.Errorf("seems like unsupported token %s", priceSymbol)
 	}
-	price, err := s.priceService.GetPrice(ctx, token.Symbol)
+	price, err := s.priceService.GetPrice(ctx, primarySymbol)
 	if err != nil {
-		return WalletPortfolioItem{
+		return WalletPortfolio{
 			Wallet: wallet,
 			Price:  entity.TokenPrice{},
 		}, fmt.Errorf("getting price for %s: %w", priceSymbol, err)
 	}
-	item := WalletPortfolioItem{
+	item := WalletPortfolio{
 		Wallet: wallet,
 		Price:  price,
 	}

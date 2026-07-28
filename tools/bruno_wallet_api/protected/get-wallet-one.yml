@@ -1,0 +1,15 @@
+info:
+  name: get-wallet-one
+  type: http
+  seq: 5
+
+http:
+  method: GET
+  url: "{{url}}/api/v1/wallets/5a1376bc-5aa6-495b-a0e0-3be09d5475cc"
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

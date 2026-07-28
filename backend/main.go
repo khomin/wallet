@@ -68,7 +68,7 @@ func main() {
 		coingeckoClient,
 		alchemyClient,
 		&priceRepo,
-		priceCache,
+		priceCache, // TODO: config?
 		60*time.Second,
 		10*time.Second,
 	)
@@ -121,10 +121,10 @@ func main() {
 		v1.GET("/coins/search", assetsHandler.SearchCoin)
 		v1.GET("/prices", assetsHandler.GetPrices)
 		v1.GET("/prices/:id", assetsHandler.GetPrice)
+		protected.GET("/wallets/:id", walletHandler.GetWallet)
 		protected.GET("/wallets", walletHandler.ListWallets)
 		protected.POST("/wallets", walletHandler.AddWallet)
 		protected.PUT("/wallets", walletHandler.EditWallet)
-		protected.GET("/wallets/balance", walletHandler.GetWalletBalance)
 		protected.DELETE("/wallets", walletHandler.DeleteWallet)
 	}
 	r.GET("/health", func(c *gin.Context) {
