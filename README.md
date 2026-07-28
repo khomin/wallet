@@ -47,17 +47,31 @@ The public RPC endpoints may be rate-limited or require provider-specific access
 so replace them with your own endpoints when needed. Bitcoin also requires a
 locally running node matching the credentials in the configuration.
 
-### 1. Start infrastructure
+### Launch the services
+
+Start the supporting infrastructure from the backend workspace:
 
 ```bash
+cd ./backend
 docker compose up -d
 ```
 
-### 2. Run the app
+Run the backend API in a separate terminal:
 
 ```bash
+cd ./backend
 go run .
 ```
+
+Launch the frontend client in another terminal:
+
+```bash
+cd ./frontend
+npm install
+npm run dev
+```
+
+This brings up the Go backend alongside the Vite-based frontend so both layers of the application can be used locally.
 
 #### Public endpoints
 

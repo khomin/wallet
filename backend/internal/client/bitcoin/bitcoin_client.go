@@ -2,7 +2,9 @@ package bitcoin
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
+	"fmt"
 
 	btcaddress "github.com/btcsuite/btcd/address/v2"
 	"github.com/btcsuite/btcd/chaincfg/v2"
@@ -48,11 +50,15 @@ func (c *BitcoinClient) Close() {
 }
 
 func (c *BitcoinClient) GetBalance(ctx context.Context, address string) (float64, error) {
+	if c.client == nil {
+		return 0, errors.New("bitcoin client is not initialized")
+	}
 	if err := c.Connect(ctx); err != nil {
 		return 0, err
 	}
-	if c.client == nil {
-		return 0, errors.New("bitcoin client is not initialized")
+	err := c.EnsureWalletLoaded(ctx)
+	if err != nil {
+		return 0, err
 	}
 	addr, err := btcaddress.DecodeAddress(address, &chaincfg.MainNetParams)
 	if err != nil {
@@ -67,4 +73,31 @@ func (c *BitcoinClient) GetBalance(ctx context.Context, address string) (float64
 
 func (c *BitcoinClient) GetTokenBalance(ctx context.Context, address, tokenAddress string) (float64, error) {
 	return 0, nil
+}
+
+func (c *BitcoinClient) EnsureWalletLoaded(ctx context.Context) error {
+	if c.client == nil {
+		return fmt.Errorf("bitcoin client is nil")
+	}
+	// 1. Call `listwallets` to see if a wallet is already active
+	resp, err := c.client.RawRequest("listwallets", nil)
+	if err == nil {
+		var wallets []string
+		if err := json.Unmarshal(resp, &wallets); err == nil && len(wallets) > 0 {
+			return nil // Wallet is already loaded!
+		}
+	}
+	// 2. Try `loadwallet` in case "default" exists on disk
+	walletNameParam, _ := json.Marshal("default")
+	_, err = c.client.RawRequest("loadwallet", []json.RawMessage{walletNameParam})
+	if err == nil {
+		return nil // Loaded successfully!
+	}
+	// 3. If loading failed (doesn't exist yet), create it via `createwallet`
+	// Parameters: [wallet_name, disable_private_keys, blank, passphrase, avoid_reuse, descriptors, load_on_startup]
+	_, err = c.client.RawRequest("createwallet", []json.RawMessage{walletNameParam})
+	if err != nil {
+		return fmt.Errorf("failed to create wallet 'default': %w", err)
+	}
+	return nil
 }
