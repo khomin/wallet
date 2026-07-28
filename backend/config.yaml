@@ -35,9 +35,9 @@ blockchain:
   tron_grpc: "grpc.trongrid.io:50051"
   tron_api_key: ""
   bitcoin:
-    host: "localhost:8332"
-    user: "admin"
-    pass: "secretpassword"
+    host: "https://mempool.space/api"
+    user: ""
+    pass: ""
 
 token_registry:
   assets:
