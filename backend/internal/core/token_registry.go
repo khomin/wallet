@@ -119,10 +119,15 @@ func (r *TokenRegistry) GetAssetsByText(text string) []entity.Asset {
 	defer r.mu.RUnlock()
 
 	var tokens []entity.Asset
-	for _, token := range r.tokensByChainSymbol {
-		matches := strings.Contains(token.Name, text) || strings.Contains(token.Symbol, text)
-		if matches {
-			tokens = append(tokens, token)
+	if text != "" {
+		for _, token := range r.tokensByChainSymbol {
+			name := strings.ToUpper(token.Name)
+			symbol := strings.ToUpper(token.Symbol)
+			text = strings.ToUpper(text)
+			matches := strings.Contains(name, text) || strings.Contains(symbol, text)
+			if matches {
+				tokens = append(tokens, token)
+			}
 		}
 	}
 	return tokens

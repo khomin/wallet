@@ -5,7 +5,7 @@ info:
 
 http:
   method: GET
-  url: "{{url}}/api/v1/wallets/5a1376bc-5aa6-495b-a0e0-3be09d5475cc"
+  url: "{{url}}/api/v1/wallets/0635daa4-584e-42ce-a122-b9c7f807442a"
   auth: inherit
 
 settings:

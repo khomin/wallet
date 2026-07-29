@@ -126,12 +126,12 @@ export default function WalletsPage() {
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b border-white/5 text-left">
-                  <th className="pb-3 text-xs font-medium text-gray-500 uppercase tracking-wider">Label</th>
-                  <th className="pb-3 text-xs font-medium text-gray-500 uppercase tracking-wider">Chain</th>
                   <th className="pb-3 text-xs font-medium text-gray-500 uppercase tracking-wider">Token</th>
-                  <th className="pb-3 text-xs font-medium text-gray-500 uppercase tracking-wider">Balance</th>
                   <th className="pb-3 text-xs font-medium text-gray-500 uppercase tracking-wider">USD Value</th>
+                  <th className="pb-3 text-xs font-medium text-gray-500 uppercase tracking-wider">Balance</th>
                   <th className="pb-3 text-xs font-medium text-gray-500 uppercase tracking-wider">24h</th>
+                  <th className="pb-3 text-xs font-medium text-gray-500 uppercase tracking-wider">Chain</th>
+                  <th className="pb-3 text-xs font-medium text-gray-500 uppercase tracking-wider">Label</th>
                   <th className="pb-3 text-xs font-medium text-gray-500 uppercase tracking-wider"></th>
                 </tr>
               </thead>
@@ -141,21 +141,6 @@ export default function WalletsPage() {
                     key={wallet.id}
                     className="border-b border-white/[0.02] hover:bg-white/[0.02] transition-colors"
                   >
-                    <td className="py-3 pr-4">
-                      <div className="flex flex-col">
-                        <span className="font-medium text-white">
-                          {wallet.label || '—'}
-                        </span>
-                        <span className="text-xs text-gray-600 font-mono truncate max-w-[120px]">
-                          {wallet.address.slice(0, 6)}...{wallet.address.slice(-4)}
-                        </span>
-                      </div>
-                    </td>
-                    <td className="py-3 pr-4">
-                      <span className="inline-flex items-center gap-1.5 rounded-full border border-white/10 bg-white/5 px-2.5 py-0.5 text-xs text-gray-300">
-                        {wallet.chain}
-                      </span>
-                    </td>
                     <td className="py-3 pr-4">
                       <div className="flex items-center gap-1.5">
                         <img
@@ -169,15 +154,7 @@ export default function WalletsPage() {
                         <span className="text-gray-200 font-medium">{wallet.token_symbol}</span>
                       </div>
                     </td>
-                    <td className="py-3 pr-4 font-mono text-xs">
-                      {wallet.has_error ? (
-                        <span className="text-amber-500/80 text-3xl" title={wallet.error_msg}>
-                          ⚠
-                        </span>
-                      ) : (
-                        <span className="text-gray-200">{fmtCrypto(wallet.balance_crypto)}</span>
-                      )}
-                    </td>
+
                     <td className="py-3 pr-4 font-mono text-xs">
                       {wallet.has_error ? (
                         <span className="text-amber-500/80 text-3xl" title={wallet.error_msg}>
@@ -187,12 +164,41 @@ export default function WalletsPage() {
                         <span className="text-gray-200">{fmtUSD(wallet.balance_usd)}</span>
                       )}
                     </td>
+
+                    <td className="py-3 pr-4 font-mono text-xs">
+                      {wallet.has_error ? (
+                        <span className="text-amber-500/80 text-3xl" title={wallet.error_msg}>
+                          ⚠
+                        </span>
+                      ) : (
+                        <span className="text-gray-200">{fmtCrypto(wallet.balance_crypto)}</span>
+                      )}
+                    </td>
+
                     <td className="py-3 pr-4">
                       <span className={wallet.change_24h_percent >= 0 ? 'text-green-400' : 'text-red-400'}>
                         {fmtPct(wallet.change_24h_percent)}
                       </span>
                     </td>
-                    <td className="py-3 text-right">
+
+                    <td className="py-3 pr-4">
+                      <span className="inline-flex items-center gap-1.5 rounded-full border border-white/10 bg-white/5 px-2.5 py-0.5 text-xs text-gray-300">
+                        {wallet.chain}
+                      </span>
+                    </td>
+
+                    <td className="py-3 pr-4">
+                      <div className="flex flex-col">
+                        <span className="font-medium text-white">
+                          {wallet.label || '—'}
+                        </span>
+                        <span className="text-xs text-gray-600 font-mono truncate max-w-[120px]">
+                          {wallet.address.slice(0, 6)}...{wallet.address.slice(-4)}
+                        </span>
+                      </div>
+                    </td>
+
+                    <td className="py-3 pr-3 text-right">
                       <button
                         onClick={() => setDeleteConfirmId(wallet.id)}
                         className="text-gray-600 hover:text-red-400 transition-colors cursor-pointer"
@@ -213,7 +219,6 @@ export default function WalletsPage() {
                           />
                         </svg>
                       </button>
-
                     </td>
                   </tr>
                 ))}

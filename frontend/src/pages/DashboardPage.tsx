@@ -213,19 +213,19 @@ export default function DashboardPage() {
               <thead>
                 <tr className="border-b border-white/5 text-left">
                   <th className="pb-3 text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Label
-                  </th>
-                  <th className="pb-3 text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Token
-                  </th>
-                  <th className="pb-3 text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Balance
                   </th>
                   <th className="pb-3 text-xs font-medium text-gray-500 uppercase tracking-wider">
                     USD Value
                   </th>
                   <th className="pb-3 text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Balance
+                  </th>
+                  <th className="pb-3 text-xs font-medium text-gray-500 uppercase tracking-wider">
                     24h
+                  </th>
+                  <th className="pb-3 text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Label
                   </th>
                 </tr>
               </thead>
@@ -235,17 +235,7 @@ export default function DashboardPage() {
                     key={wallet.id}
                     className="border-b border-white/[0.02] hover:bg-white/[0.02] transition-colors"
                   >
-                    <td className="py-3 pr-4">
-                      <div className="flex flex-col">
-                        <span className="font-medium text-white">
-                          {wallet.label || '—'}
-                        </span>
-                        <span className="text-xs text-gray-600 font-mono">
-                          {wallet.address.slice(0, 6)}...
-                          {wallet.address.slice(-4)}
-                        </span>
-                      </div>
-                    </td>
+
                     <td className="py-3 pr-4">
                       <div className="flex items-center gap-1.5">
                         <img
@@ -262,15 +252,7 @@ export default function DashboardPage() {
                         <span className="text-xs text-gray-500">({wallet.chain})</span>
                       </div>
                     </td>
-                    <td className="py-3 pr-4 font-mono text-xs">
-                      {wallet.has_error ? (
-                        <span className="text-amber-500/80 text-3xl" title={wallet.error_msg}>
-                          ⚠
-                        </span>
-                      ) : (
-                        <span className="text-gray-200">{fmtCryptoCompact(wallet.balance_crypto)}</span>
-                      )}
-                    </td>
+
                     <td className="py-3 pr-4 font-mono text-xs">
                       {wallet.has_error ? (
                         <span className="text-amber-500/80 text-3xl" title={wallet.error_msg}>
@@ -280,6 +262,17 @@ export default function DashboardPage() {
                         <span className="text-gray-200">{fmtUSD(wallet.balance_usd)}</span>
                       )}
                     </td>
+
+                    <td className="py-3 pr-4 font-mono text-xs">
+                      {wallet.has_error ? (
+                        <span className="text-amber-500/80 text-3xl" title={wallet.error_msg}>
+                          ⚠
+                        </span>
+                      ) : (
+                        <span className="text-gray-200">{fmtCryptoCompact(wallet.balance_crypto)}</span>
+                      )}
+                    </td>
+
                     <td className="py-3">
                       <span
                         className={
@@ -290,6 +283,17 @@ export default function DashboardPage() {
                       >
                         {fmtPct(wallet.change_24h_percent)}
                       </span>
+                    </td>
+                    <td className="py-3 pr-4">
+                      <div className="flex flex-col">
+                        <span className="font-medium text-white">
+                          {wallet.label || '—'}
+                        </span>
+                        <span className="text-xs text-gray-600 font-mono">
+                          {wallet.address.slice(0, 6)}...
+                          {wallet.address.slice(-4)}
+                        </span>
+                      </div>
                     </td>
                   </tr>
                 ))}

@@ -20,6 +20,10 @@ type AssetsResponse struct {
 	Assets []Token `json:"assets"`
 }
 
+type SearchCoins struct {
+	Text string `json:"text"`
+}
+
 func ToCoinsResponse(coins []entity.Token) CoinsResponse {
 	coins_ := make([]Token, len(coins))
 	for i, coin := range coins {

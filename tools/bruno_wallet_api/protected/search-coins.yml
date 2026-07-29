@@ -1,17 +1,16 @@
 info:
-  name: put-wallet
+  name: search-coins
   type: http
-  seq: 9
+  seq: 3
 
 http:
-  method: PUT
-  url: "{{url}}/api/v1/wallets"
+  method: GET
+  url: "{{url}}/api/v1/coins/search"
   body:
     type: json
     data: |-
       {
-        "id": "0ed0bf89-c4a8-4aa2-9c90-821009a70644",
-        "label": "sol-edit-1"
+        "text": "xau"
       }
   auth: inherit
 

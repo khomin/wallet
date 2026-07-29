@@ -13,9 +13,9 @@ request:
     credentials:
       clientId: "{{client-id}}"
       placement: body
+    scope: openid profile email
     pkce: {}
     tokenConfig:
-      id: whale-tracker-app
       placement:
         header: Bearer
       source: access_token

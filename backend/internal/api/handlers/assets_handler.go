@@ -48,24 +48,19 @@ func (h *AssetsHandler) GetCoin(c *gin.Context) {
 	c.JSON(http.StatusOK, dto.ToCoinResponse(coin))
 }
 
+// FIXME: search coins
 func (h *AssetsHandler) SearchCoin(c *gin.Context) {
-	// FIXME: search coins
-	// var req dto.SearchCoins
-	// if err := c.ShouldBindJSON(&req); err != nil {
-	// 	dto.InvalidParameters(c)
-	// 	return
-	// }
-	// user, ok := middleware.GetOAUTH(c)
-	// if !ok {
-	// 	dto.UnauthorizedError(c)
-	// 	return
-	// }
-	// tokens, err := h.priceService.SearchCoins(c.Request.Context(), user.Subject)
-	// if err != nil {
-	// 	dto.InternallError(c)
-	// 	return
-	// }
-	// c.JSON(http.StatusOK, dto.ToAssetsResponse(tokens))
+	var req dto.SearchCoins
+	if err := c.ShouldBindJSON(&req); err != nil {
+		dto.InvalidParameters(c)
+		return
+	}
+	tokens, err := h.priceService.SearchCoins(c.Request.Context(), req.Text)
+	if err != nil {
+		dto.InternallError(c)
+		return
+	}
+	c.JSON(http.StatusOK, dto.ToCoinsResponse(tokens))
 }
 
 func (h *AssetsHandler) GetPrices(c *gin.Context) {

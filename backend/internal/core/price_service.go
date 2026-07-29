@@ -71,18 +71,36 @@ func (s *AssetService) GetCoin(ctx context.Context, id string) (entity.Token, er
 	return entity.Token{}, ErrPriceNotFound
 }
 
-func (s *AssetService) SearchCoins(ctx context.Context, text string) ([]entity.Asset, error) {
-	// assets := []entity.Asset{}
+func (s *AssetService) SearchCoins(ctx context.Context, text string) ([]entity.Token, error) {
+	tokens := []entity.Token{}
 	assets := s.tokenRegistry.GetAssetsByText(text)
-	// assets = s.assingIcon(ctx, assets)
-	return assets, nil
+	for _, asset := range assets {
+		for _, token := range asset.Tokens {
+			symbol := token.Symbol
+			if symbol == "" {
+				symbol = asset.Symbol
+			}
+			token, found := s.tokenRegistry.GetBySymbol(symbol)
+			if found {
+				token.AddImageURL(token.ImageURL)
+				tokens = append(tokens, token)
+			}
+		}
+	}
+
+	// coins, err := s.priceCache.GetCoins(ctx)
+	// if err != nil {
+	// 	return nil, err
+	// }
+
+	return tokens, nil
 }
 
 func (s *AssetService) GetPrices(ctx context.Context, symbols []string) ([]entity.TokenPrice, error) {
 	// keep only supported symbols
 	symbols = slices.DeleteFunc(symbols, func(symbol string) bool {
 		_, found := s.tokenRegistry.GetBySymbol(symbol)
-		return found
+		return !found
 	})
 	// get prices
 	prices := []entity.TokenPrice{}
