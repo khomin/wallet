@@ -13,7 +13,7 @@ import (
 	"tracker/internal/client/solana"
 	"tracker/internal/client/tron"
 	"tracker/internal/core"
-	"tracker/internal/core/entity"
+	"tracker/internal/core/domain"
 	"tracker/internal/db"
 	"tracker/internal/db/repositories"
 
@@ -95,35 +95,35 @@ func TestDeleteWalletReturnsDeletedWallet(t *testing.T) {
 
 	userID := "ad4abec0-8bae-462a-8ea3-8502048f3071"
 
-	tokens := []entity.Token{}
+	tokens := []domain.Token{}
 
-	tokens = append(tokens, entity.Token{
+	tokens = append(tokens, domain.Token{
 		Chain:   "BTC",
 		Symbol:  "BTC",
 		Address: "bc1qyyfjmtl9s8s6wn3llt2ltzze978l5szfj7hr79",
 	})
 
-	tokens = append(tokens, entity.Token{
+	tokens = append(tokens, domain.Token{
 		Chain:   "SOL",
 		Symbol:  "GOOGLX",
 		Address: "DDcdDmDPYw595wAR1jYNHZQTFNi8BGisd2bVa3WH3XbE",
 	})
-	tokens = append(tokens, entity.Token{
+	tokens = append(tokens, domain.Token{
 		Chain:   "SOL",
 		Symbol:  "XAUT0",
 		Address: "CFMQzGS8M8wpvcWs1udJ2XgzXEmVf31bmYxBwtgPBLRg",
 	})
-	tokens = append(tokens, entity.Token{
+	tokens = append(tokens, domain.Token{
 		Chain:   "SOL",
 		Symbol:  "SOL",
 		Address: "CFMQzGS8M8wpvcWs1udJ2XgzXEmVf31bmYxBwtgPBLRg",
 	})
-	tokens = append(tokens, entity.Token{
+	tokens = append(tokens, domain.Token{
 		Chain:   "TRX",
 		Symbol:  "TRX",
 		Address: "TF6MrLnLa72U6PGZcx4pXhs8hSvsAgQ78t",
 	})
-	tokens = append(tokens, entity.Token{
+	tokens = append(tokens, domain.Token{
 		Chain:   "TRX",
 		Symbol:  "USDT",
 		Address: "TF6MrLnLa72U6PGZcx4pXhs8hSvsAgQ78t",

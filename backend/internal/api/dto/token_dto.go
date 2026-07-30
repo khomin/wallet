@@ -1,8 +1,6 @@
 package dto
 
-import (
-	"tracker/internal/core/entity"
-)
+import "tracker/internal/core/domain"
 
 type CoinsResponse struct {
 	Total int     `json:"total"`
@@ -24,7 +22,7 @@ type SearchCoins struct {
 	Text string `json:"text"`
 }
 
-func ToCoinsResponse(coins []entity.Token) CoinsResponse {
+func ToCoinsResponse(coins []domain.Token) CoinsResponse {
 	coins_ := make([]Token, len(coins))
 	for i, coin := range coins {
 		coins_[i] = ToCoinResponse(coin)
@@ -35,7 +33,7 @@ func ToCoinsResponse(coins []entity.Token) CoinsResponse {
 	}
 }
 
-func ToCoinResponse(coin entity.Token) Token {
+func ToCoinResponse(coin domain.Token) Token {
 	return Token{
 		Symbol:   coin.Symbol,
 		Name:     coin.Name,
@@ -43,7 +41,7 @@ func ToCoinResponse(coin entity.Token) Token {
 	}
 }
 
-func ToAssetsResponse(in []entity.Asset) AssetsResponse {
+func ToAssetsResponse(in []domain.Asset) AssetsResponse {
 	out := []Token{}
 	for _, v := range in {
 		out = append(out, Token{

@@ -1,4 +1,4 @@
--- Create a lightweight coin catalog table for metadata and identity.
+-- Create a lightweight coin catalog table for metadata and iddomain.
 CREATE TABLE IF NOT EXISTS coins (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     coin_id TEXT NOT NULL UNIQUE,

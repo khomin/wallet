@@ -2,7 +2,7 @@ package dto
 
 import (
 	"time"
-	"tracker/internal/core/entity"
+	"tracker/internal/core/domain"
 )
 
 type PricesResponse struct {
@@ -25,7 +25,7 @@ type PriceResponse struct {
 	LastUpdated                    time.Time `json:"last_updated"`
 }
 
-func ToPricesResponse(prices []entity.TokenPrice) PricesResponse {
+func ToPricesResponse(prices []domain.TokenPrice) PricesResponse {
 	prices_ := make([]PriceResponse, len(prices))
 	for i, v := range prices {
 		prices_[i] = ToPriceResponse(v)
@@ -36,7 +36,7 @@ func ToPricesResponse(prices []entity.TokenPrice) PricesResponse {
 	}
 }
 
-func ToPriceResponse(price entity.TokenPrice) PriceResponse {
+func ToPriceResponse(price domain.TokenPrice) PriceResponse {
 	return PriceResponse{
 		Symbol:                         price.Symbol,
 		Name:                           price.Name,

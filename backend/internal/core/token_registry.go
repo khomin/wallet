@@ -5,19 +5,19 @@ import (
 	"strings"
 	"sync"
 	"tracker/config"
-	"tracker/internal/core/entity"
+	"tracker/internal/core/domain"
 )
 
 type TokenRegistry struct {
 	mu                  sync.RWMutex
-	tokensByName        map[string]entity.Asset
-	tokensByChainSymbol map[string]entity.Asset
+	tokensByName        map[string]domain.Asset
+	tokensByChainSymbol map[string]domain.Asset
 }
 
 func NewTokenRegistry() *TokenRegistry {
 	return &TokenRegistry{
-		tokensByName:        make(map[string]entity.Asset),
-		tokensByChainSymbol: make(map[string]entity.Asset),
+		tokensByName:        make(map[string]domain.Asset),
+		tokensByChainSymbol: make(map[string]domain.Asset),
 	}
 }
 
@@ -27,11 +27,11 @@ func DefaultTokenRegistry(config map[string][]config.TokenRegistry) *TokenRegist
 	assets, found := config["assets"]
 	if found {
 		for _, asset := range assets {
-			out1 := entity.Asset{}
+			out1 := domain.Asset{}
 			for _, item := range asset.Items {
 				out1.Symbol = asset.Symbol
 				out1.Name = asset.Name
-				out1.Tokens = append(out1.Tokens, entity.Token{
+				out1.Tokens = append(out1.Tokens, domain.Token{
 					Name:     asset.Name,
 					Symbol:   item.Symbol,
 					Chain:    strings.ToUpper(item.Chain),
@@ -46,7 +46,7 @@ func DefaultTokenRegistry(config map[string][]config.TokenRegistry) *TokenRegist
 	return registry
 }
 
-func (r *TokenRegistry) Register(asset entity.Asset) {
+func (r *TokenRegistry) Register(asset domain.Asset) {
 	r.mu.Lock()
 	defer r.mu.Unlock()
 
@@ -85,7 +85,7 @@ func (r *TokenRegistry) Register(asset entity.Asset) {
 	}
 }
 
-func (r *TokenRegistry) GetByChainAndSymbol(chain, symbol string) (string, entity.Token, bool) {
+func (r *TokenRegistry) GetByChainAndSymbol(chain, symbol string) (string, domain.Token, bool) {
 	r.mu.RLock()
 	defer r.mu.RUnlock()
 	token, ok := r.tokensByChainSymbol[fmt.Sprintf("%s:%s", strings.ToUpper(chain), strings.ToUpper(symbol))]
@@ -97,10 +97,10 @@ func (r *TokenRegistry) GetByChainAndSymbol(chain, symbol string) (string, entit
 		}
 		return token.Symbol, token.Tokens[0], ok
 	}
-	return "", entity.Token{}, false
+	return "", domain.Token{}, false
 }
 
-func (r *TokenRegistry) GetBySymbol(symbol string) (entity.Token, bool) {
+func (r *TokenRegistry) GetBySymbol(symbol string) (domain.Token, bool) {
 	r.mu.RLock()
 	defer r.mu.RUnlock()
 	symbol = strings.ToUpper(symbol)
@@ -111,14 +111,14 @@ func (r *TokenRegistry) GetBySymbol(symbol string) (entity.Token, bool) {
 			}
 		}
 	}
-	return entity.Token{}, false
+	return domain.Token{}, false
 }
 
-func (r *TokenRegistry) GetAssetsByText(text string) []entity.Asset {
+func (r *TokenRegistry) GetAssetsByText(text string) []domain.Asset {
 	r.mu.RLock()
 	defer r.mu.RUnlock()
 
-	var tokens []entity.Asset
+	var tokens []domain.Asset
 	if text != "" {
 		for _, token := range r.tokensByChainSymbol {
 			name := strings.ToUpper(token.Name)
@@ -133,17 +133,17 @@ func (r *TokenRegistry) GetAssetsByText(text string) []entity.Asset {
 	return tokens
 }
 
-func (r *TokenRegistry) GetAllTokens() []entity.Token {
+func (r *TokenRegistry) GetAllTokens() []domain.Token {
 	r.mu.RLock()
 	defer r.mu.RUnlock()
 
-	tokenUnique := map[string]entity.Token{}
+	tokenUnique := map[string]domain.Token{}
 	for _, asset := range r.tokensByChainSymbol {
 		for _, token := range asset.Tokens {
 			tokenUnique[asset.Symbol] = token
 		}
 	}
-	tokens := []entity.Token{}
+	tokens := []domain.Token{}
 	for _, v := range tokenUnique {
 		tokens = append(tokens, v)
 	}

@@ -5,7 +5,7 @@ import (
 	"errors"
 	"fmt"
 
-	"tracker/internal/core/entity"
+	"tracker/internal/core/domain"
 	"tracker/internal/db/models"
 
 	"github.com/google/uuid"
@@ -19,8 +19,8 @@ var (
 )
 
 type WalletPortfolio struct {
-	Wallet     entity.Wallet
-	Price      entity.TokenPrice
+	Wallet     domain.Wallet
+	Price      domain.TokenPrice
 	Balance    float64
 	BalanceUSD float64
 	HasError   bool
@@ -110,8 +110,8 @@ func (s *WalletService) DeleteWallet(ctx context.Context, userID string, id uuid
 }
 
 // a list of tokens
-// func (s *WalletService) GetAssetsByMartket(ctx context.Context) ([]entity.Asset, error) {
-// 	assets := []entity.Asset{}
+// func (s *WalletService) GetAssetsByMartket(ctx context.Context) ([]domain.Asset, error) {
+// 	assets := []domain.Asset{}
 
 // 	// max := 50
 
@@ -136,8 +136,8 @@ func (s *WalletService) DeleteWallet(ctx context.Context, userID string, id uuid
 // 	return assets, err
 // }
 
-// func (s *WalletService) assingIcon(ctx context.Context, in []entity.Asset) []entity.Asset {
-// 	assets := []entity.Asset{}
+// func (s *WalletService) assingIcon(ctx context.Context, in []domain.Asset) []domain.Asset {
+// 	assets := []domain.Asset{}
 // 	for _, i := range in {
 // 		for _, token := range i.Tokens {
 // 			coin, err := s.priceService.GetCoin(ctx, token.Symbol)
@@ -150,7 +150,7 @@ func (s *WalletService) DeleteWallet(ctx context.Context, userID string, id uuid
 // 	return assets
 // }
 
-func (s *WalletService) getWalletPortfolio(ctx context.Context, wallet entity.Wallet) (WalletPortfolio, error) {
+func (s *WalletService) getWalletPortfolio(ctx context.Context, wallet domain.Wallet) (WalletPortfolio, error) {
 	priceSymbol := wallet.Symbol
 	if wallet.Chain == wallet.Symbol {
 		priceSymbol = wallet.Chain
@@ -159,14 +159,14 @@ func (s *WalletService) getWalletPortfolio(ctx context.Context, wallet entity.Wa
 	if !found {
 		return WalletPortfolio{
 			Wallet: wallet,
-			Price:  entity.TokenPrice{},
+			Price:  domain.TokenPrice{},
 		}, fmt.Errorf("seems like unsupported token %s", priceSymbol)
 	}
 	price, err := s.priceService.GetPrice(ctx, primarySymbol)
 	if err != nil {
 		return WalletPortfolio{
 			Wallet: wallet,
-			Price:  entity.TokenPrice{},
+			Price:  domain.TokenPrice{},
 		}, fmt.Errorf("getting price for %s: %w", priceSymbol, err)
 	}
 	item := WalletPortfolio{
@@ -185,8 +185,8 @@ func (s *WalletService) getWalletPortfolio(ctx context.Context, wallet entity.Wa
 	return item, nil
 }
 
-func walletDbToEntity(in models.Wallet) entity.Wallet {
-	return entity.Wallet{
+func walletDbToEntity(in models.Wallet) domain.Wallet {
+	return domain.Wallet{
 		ID:      in.ID.String(),
 		Address: in.Address,
 		Chain:   in.Chain,

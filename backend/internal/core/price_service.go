@@ -5,7 +5,7 @@ import (
 	"errors"
 	"slices"
 	"tracker/internal/cache"
-	"tracker/internal/core/entity"
+	"tracker/internal/core/domain"
 	"tracker/internal/db/models"
 )
 
@@ -42,12 +42,12 @@ func NewPriceService(
 	}
 }
 
-func (s *AssetService) GetCoins(ctx context.Context) ([]entity.Token, error) {
+func (s *AssetService) GetCoins(ctx context.Context) ([]domain.Token, error) {
 	coins, err := s.priceCache.GetCoins(ctx)
 	if err != nil {
 		return nil, err
 	}
-	tokens := []entity.Token{}
+	tokens := []domain.Token{}
 	for _, coin := range coins {
 		token, found := s.tokenRegistry.GetBySymbol(coin.Symbol)
 		if found {
@@ -58,21 +58,21 @@ func (s *AssetService) GetCoins(ctx context.Context) ([]entity.Token, error) {
 	return tokens, nil
 }
 
-func (s *AssetService) GetCoin(ctx context.Context, id string) (entity.Token, error) {
+func (s *AssetService) GetCoin(ctx context.Context, id string) (domain.Token, error) {
 	coin := s.priceCache.GetCoinBySymbol(ctx, id)
 	if coin == nil {
-		return entity.Token{}, ErrPriceNotFound
+		return domain.Token{}, ErrPriceNotFound
 	}
 	token, found := s.tokenRegistry.GetBySymbol(coin.Symbol)
 	if found {
 		token.AddImageURL(coin.ImageURL)
 		return token, nil
 	}
-	return entity.Token{}, ErrPriceNotFound
+	return domain.Token{}, ErrPriceNotFound
 }
 
-func (s *AssetService) SearchCoins(ctx context.Context, text string) ([]entity.Token, error) {
-	tokens := []entity.Token{}
+func (s *AssetService) SearchCoins(ctx context.Context, text string) ([]domain.Token, error) {
+	tokens := []domain.Token{}
 	assets := s.tokenRegistry.GetAssetsByText(text)
 	for _, asset := range assets {
 		for _, token := range asset.Tokens {
@@ -87,23 +87,21 @@ func (s *AssetService) SearchCoins(ctx context.Context, text string) ([]entity.T
 			}
 		}
 	}
-
 	// coins, err := s.priceCache.GetCoins(ctx)
 	// if err != nil {
 	// 	return nil, err
 	// }
-
 	return tokens, nil
 }
 
-func (s *AssetService) GetPrices(ctx context.Context, symbols []string) ([]entity.TokenPrice, error) {
+func (s *AssetService) GetPrices(ctx context.Context, symbols []string) ([]domain.TokenPrice, error) {
 	// keep only supported symbols
 	symbols = slices.DeleteFunc(symbols, func(symbol string) bool {
 		_, found := s.tokenRegistry.GetBySymbol(symbol)
 		return !found
 	})
 	// get prices
-	prices := []entity.TokenPrice{}
+	prices := []domain.TokenPrice{}
 	for _, symbol := range symbols {
 		price := s.priceCache.GetPriceBySymbol(ctx, symbol)
 		if price != nil {
@@ -115,19 +113,19 @@ func (s *AssetService) GetPrices(ctx context.Context, symbols []string) ([]entit
 	return prices, nil
 }
 
-func (s *AssetService) GetPrice(ctx context.Context, symbol string) (entity.TokenPrice, error) {
+func (s *AssetService) GetPrice(ctx context.Context, symbol string) (domain.TokenPrice, error) {
 	price := s.priceCache.GetPriceBySymbol(ctx, symbol)
 	if price != nil {
 		s.priceCache.AddPricesToWatch(ctx, []string{symbol})
 		return dbPriceToEntity(price), nil
 	}
-	return entity.TokenPrice{}, ErrPriceNotFound
+	return domain.TokenPrice{}, ErrPriceNotFound
 }
 
-func dbCoinsToEntity(in []models.Coin) []entity.Token {
-	out := []entity.Token{}
+func dbCoinsToEntity(in []models.Coin) []domain.Token {
+	out := []domain.Token{}
 	for _, i := range in {
-		out = append(out, entity.Token{
+		out = append(out, domain.Token{
 			Chain:    i.Symbol,
 			Symbol:   i.Symbol,
 			Name:     i.Name,
@@ -139,8 +137,8 @@ func dbCoinsToEntity(in []models.Coin) []entity.Token {
 	return out
 }
 
-func dbPriceToEntity(in *models.CoinPrice) entity.TokenPrice {
-	return entity.TokenPrice{
+func dbPriceToEntity(in *models.CoinPrice) domain.TokenPrice {
+	return domain.TokenPrice{
 		ID:                             in.ID,
 		CoinID:                         in.CoinID,
 		Name:                           in.Name,
