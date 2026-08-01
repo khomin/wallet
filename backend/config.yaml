@@ -24,6 +24,7 @@ alchemy:
 
 coingecko:
    api_key: ""
+   price_fetcher: "60s"
 
 blockchain:
   ethereum_mainnet_rpc: "https://eth.drpc.org"
@@ -40,230 +41,128 @@ blockchain:
     pass: ""
 
 token_registry:
-  assets:
-    - id: "btc-native"
-      name: "Bitcoin"
-      symbol: "BTC"
-      items:
-        - chain: "BTC"
-          address: native
-          decimals: 18
-          is_native: true
+  tokens:
+      - symbol: "BTC"
+        name: "Bitcoin"
+        native: { chain: "BTC", decimals: 8 }
 
-    - id: "eth-native"
-      name: "Ethereum"
-      symbol: "ETH"
-      items:
-        - chain: "ETH"
-          address: native
-          decimals: 18
-          is_native: true
+      - symbol: "ETH"
+        name: "Ethereum"
+        native: { chain: "ETH", decimals: 18 }
 
-    - id: "arbitrum"
-      name: "Arbitrum"
-      symbol: "ARB"
-      items:
-        - chain: "ARB"
-          address: "native"
-          decimals: 18
-          is_native: true
+      - symbol: "ARB"
+        name: "Arbitrum"
+        native: { chain: "ARB", decimals: 18 }
 
-    - id: "sol"
-      name: "SOL"
-      symbol: "SOL"
-      items:
-        - chain: "SOL"
-          address: "native"
-          decimals: 18
-          is_native: true
+      - symbol: "SOL"
+        name: "Solana"
+        native: { chain: "SOL", decimals: 18 }
 
-    - id: "tron"
-      symbol: "TRX"
-      name: "Tron"
-      items:
-        - chain: "TRX"
-          address: "native"
-          decimals: 18
-          is_native: true
+      - symbol: "TRX"
+        name: "Tron"
+        native: { chain: "TRX", decimals: 18 }
 
-    - id: "pol_polygon"
-      symbol: "POL"
-      name: "Polygon"
-      items:
-        - chain: "POL"
-          address: "native"
-          decimals: 18
-          is_native: true
+      - symbol: "POL"
+        name: "Polygon"
+        native: { chain: "POL", decimals: 18 }
 
-    - id: "tether-gold"
-      name: "Tether Gold"
-      symbol: "XAUt"
-      items:
-        - chain: "ETH"
-          symbol: "XAUt"
-          address: "0x68749665FF8D2d112Fa859AA293F07A622782F38"
-          decimals: 6
-          is_native: false
-        - chain: "SOL"
-          symbol: "XAUt0"
-          address: "AymATz4TCL9sWNEEV9Kvyz45CHVhDZ6kUgjTJPzLpU9P"
-          decimals: 18
-          is_native: false
+      - symbol: "BNB"
+        name: "BNB Chain Native"
+        native: { chain: "BSC", decimals: 18 }
+
+      - symbol: "XRP"
+        name: "XRP Ledger Native"
+        native: { chain: "XRPL", decimals: 6 }
+
+      - symbol: "XAUt"
+        name: "Tether Gold"
+        deployments:
+          ETH: { address: "0x68749665FF8D2d112Fa859AA293F07A622782F38", decimals: 18 }
+          SOL: { address: "AymATz4TCL9sWNEEV9Kvyz45CHVhDZ6kUgjTJPzLpU9P", decimals: 9 }
       
-    - id: "paxg"
-      symbol: "PAXG"
-      name: "Paxos Gold"
-      items:
-        - chain: "ETH"
-          address: "0x45804880De22913dAFE09f4980848ECE6EcbAf78"
-          decimals: 18
-          is_native: false
+      - symbol: "PAXG"
+        name: "Paxos Gold"
+        deployments:
+          ETH: { address: "0x45804880De22913dAFE09f4980848ECE6EcbAf78", decimals: 18 }
 
-    - id: "usdc"
-      name: "USDC"
-      symbol: "USDC"
-      items:
-        - chain: "ETH" 
-          address: "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48"
-          decimals: 6
-          is_native: false          
-        - chain: "POL"
-          address: "0x3c499c542cEF5E3811e1192ce70d8cC03d5c3359"
-          decimals: 6
-          is_native: false
+      - symbol: "USDC"
+        name: "USDC"
+        deployments:
+          ETH: { address: "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48", decimals: 18 }
+          POL: { address: "0x3c499c542cEF5E3811e1192ce70d8cC03d5c3359", decimals: 6 }
 
-    - id: "usdt"
-      name: "Tether USD"
-      symbol: "USDT"
-      items: 
-        - chain: "TRX"
-          address: "TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t"
-          decimals: 6
-          is_native: false
-        - chain: "ETH"
-          address: "0xdAC17F958D2ee523a2206206994597C13D831ec7"
-          decimals: 6
-          is_native: false
+      - symbol: "USDT"
+        name: "Tether USD"
+        deployments:
+          ETH: { address: "0xdAC17F958D2ee523a2206206994597C13D831ec7", decimals: 18 }
+          TRX: { address: "TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t", decimals: 6 }
 
-    - id: "wbtc_ethereum"
-      name: "Wrapped Bitcoin"
-      symbol: "WBTC"
-      items:
-        - chain: "ETH"
-          address: "0x2260FAC5E5542a773Aa44fBCfeDf7C193bc2C599"
-          decimals: 8
-          is_native: false
+      - symbol: "RLUSD"
+        name: "Ripple USD"
+        deployments:
+          ETH: { address: "0x0A2A1e2336D08FA5F61E2e89640954b0CD8C380d", decimals: 18 }
+          XRPL: { issuer: "rMxLiXwSbf1icmAn39wR45yAnq3s122o2u", currency: "RLUSD", decimals: 15 }
 
-    - id: "aaplx"
-      symbol: "AAPLx"
-      name: "Apple xStock"
-      items:
-        - chain: "ETH"
-          address: "0xE5f6d3b2405ABdfE6F660e63202B25D23763160d"
-          decimals: 18
-          is_native: false
-        - chain: "ARB"
-          address: "0xE5f6d3b2405ABdfE6F660e63202B25D23763160d"
-          decimals: 18
-          is_native: false
-        - chain: "SOL"
-          address: "XsbEhLAtcf6HdfpFZ5xEMdqW8nfAvcsP5bdudRLJzJp"
-          decimals: 18
-          is_native: false
+      - symbol: "WBTC"
+        name: "Wrapped Bitcoin"
+        deployments:
+          ETH: { address: "0x2260FAC5E5542a773Aa44fBCfeDf7C193bc2C599", decimals: 8 }
 
-    - id: "gldx"
-      symbol: "GLDx"
-      name: "Gold xStock"
-      items:
-        - chain: "ETH"
-          address: "0x2380F2673C640fB67E2d6B55B44C62F0E0e69DA9"
-          decimals: 18
-          is_native: false
+      - symbol: "AAPLx"
+        name: "Apple xStock"
+        deployments:
+          ETH: { address: "0xE5f6d3b2405ABdfE6F660e63202B25D23763160d", decimals: 18 }
+          ARB: { address: "0xE5f6d3b2405ABdfE6F660e63202B25D23763160d", decimals: 18 }
+          SOL: { address: "XsbEhLAtcf6HdfpFZ5xEMdqW8nfAvcsP5bdudRLJzJp", decimals: 9 }
 
-    - id: "googlx"
-      name: "Alphabet xStock"
-      symbol: "GOOGLx"
-      items:
-        - chain: "ARB"
-          address: "0xe92f673Ca36C5E2Efd2DE7628f815f84807e803F"
-          decimals: 18
-          is_native: false
-        - chain: "SOL"
-          address: "XsCPL9dNWBMvFtTmwcCA5v3xWPSMEBCszbQdiLLq6aN"
-          decimals: 18
-          is_native: false
+      - symbol: "GLDx"
+        name: "Gold xStock"
+        deployments:
+          ETH: { address: "0x2380F2673C640fB67E2d6B55B44C62F0E0e69DA9", decimals: 18 }
 
+      - symbol: "GOOGLx"
+        name: "Alphabet xStock"
+        deployments:
+          ETH: { address: "0xe92f673Ca36C5E2Efd2DE7628f815f84807e803F", decimals: 18 }
+          ARB: { address: "0xe92f673Ca36C5E2Efd2DE7628f815f84807e803F", decimals: 18 }
+          SOL: { address: "XsCPL9dNWBMvFtTmwcCA5v3xWPSMEBCszbQdiLLq6aN", decimals: 9 }
       
-    - id: "tslax"
-      symbol: "TSLAx"
-      name: "Tesla xStock"
-      items:
-        - chain: "SOL"
-          address: "XsDoVfqeBukxuZHWhdvWHBhgEHjGNst4MLodqsJHzoB"
-          decimals: 18
-          is_native: false
+      - symbol: "TSLAx"
+        name: "Tesla xStock"
+        deployments:
+          SOL: { address: "XsDoVfqeBukxuZHWhdvWHBhgEHjGNst4MLodqsJHzoB", decimals: 9 }
 
-    - id: "spyx"
-      symbol: "SPYx"
-      name: "S&P500 ETF xStock"
-      items:
-        - chain: "SOL"
-          address: "XsoCS1TfEyfFhfvj8EtZ528L3CaKBDBRqRapnBbDF2W"
-          decimals: 18
-          is_native: false
+      - symbol: "SPYx"
+        name: "S&P500 ETF xStock"
+        deployments:
+          SOL: { address: "XsoCS1TfEyfFhfvj8EtZ528L3CaKBDBRqRapnBbDF2W", decimals: 9 }
 
-    - id: "qqqx"
-      symbol: "QQQx"
-      name: "Nasdaq ETF xStock"
-      items:
-        - chain: "SOL"
-          address: "Xs8S1uUs1zvS2p7iwtsG3b6fkhpvmwz4GYU3gWAmWHZ"
-          decimals: 18
-          is_native: false
+      - symbol: "QQQx"
+        name: "Nasdaq ETF xStock"
+        deployments:
+          SOL: { address: "Xs8S1uUs1zvS2p7iwtsG3b6fkhpvmwz4GYU3gWAmWHZ", decimals: 9 }
 
-    - id: "nvdax"
-      symbol: "NVDAx"
-      name: "NVIDIA xStock"
-      items:
-        - chain: "SOL"
-          address: "Xsc9qvGR1efVDFGLrVsmkzv3qi45LTBjeUKSPmx9qEh"
-          decimals: 18
-          is_native: false
+      - symbol: "NVDAx"
+        name: "NVIDIA xStock"
+        deployments:
+          SOL: { address: "Xsc9qvGR1efVDFGLrVsmkzv3qi45LTBjeUKSPmx9qEh", decimals: 9 }
 
-    - id: "mstrx"
-      symbol: "MSTRx"
-      name: "MicroStrategy xStock"
-      items:
-        - chain: "SOL"
-          address: "XsP7xzNPvEHS1m6qfanPUGjNmdnmsLKEoNAnHjdxxyZ"
-          decimals: 18
-          is_native: false
+      - symbol: "MSTRx"
+        name: "MicroStrategy xStock"
+        deployments:
+          SOL: { address: "XsP7xzNPvEHS1m6qfanPUGjNmdnmsLKEoNAnHjdxxyZ", decimals: 9 }
 
-    - id: "hoodx"
-      symbol: "HOODx"
-      name: "Robinhood xStock"
-      items:
-        - chain: "SOL"
-          address: "XsvNBAYkrDRNhA7wPHQfX3ZUXZyZLdnCQDfHZ56bzpg"
-          decimals: 18
-          is_native: false
+      - symbol: "HOODx"
+        name: "Robinhood xStock"
+        deployments:
+          SOL: { address: "XsvNBAYkrDRNhA7wPHQfX3ZUXZyZLdnCQDfHZ56bzpg", decimals: 9 }
 
-    - id: "metax"
-      symbol: "METAx"
-      name: "Meta xStock"
-      items:
-        - chain: "SOL"
-          address: "Xsa62P5mvPszXL1krVUnU5ar38bBSVcWAB6fmPCo5Zu"
-          decimals: 18
-          is_native: false
+      - symbol: "METAx"
+        name: "Meta xStock"
+        deployments:
+          SOL: { address: "Xsa62P5mvPszXL1krVUnU5ar38bBSVcWAB6fmPCo5Zu", decimals: 9 }
 
-    - id: "crclx"
-      symbol: "CRCLx"
-      name: "Circle xStock"
-      items:
-        - chain: "SOL"
-          address: "XsueG8BtpquVJX9LVLLEGuViXUungE6WmK5YZ3p3bd1"
-          decimals: 18
-          is_native: false
-
-# ##  TODO: BSC, ripple
+      - symbol: "CRCLx"
+        name: "Circle xStock"
+        deployments:
+          SOL: { address: "XsueG8BtpquVJX9LVLLEGuViXUungE6WmK5YZ3p3bd1", decimals: 9 }
