@@ -86,6 +86,8 @@ func main() {
 		Tron:          tronClient,
 		WalletRepo:    walletRepo,
 		TokenRegistry: tokenRegistry,
+		// Cache:         priceCache,
+		Cache: core.NewNoOpCache(),
 	})
 	assetsHandler := handlers.NewAssetsHandler(priceService)
 

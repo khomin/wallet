@@ -3,6 +3,7 @@ package core
 import (
 	"context"
 	"fmt"
+	"log/slog"
 	"strings"
 
 	"tracker/internal/client/bitcoin"
@@ -22,6 +23,7 @@ type BlockchainService struct {
 	providers     map[string]ChainProvider
 	walletRepo    WalletRepository
 	tokenRegistry *Registry
+	cache         PriceCache
 }
 
 type AddressBalance struct {
@@ -41,6 +43,7 @@ type BlockchainServiceDeps struct {
 	Tron          *tron.TronClient
 	WalletRepo    WalletRepository
 	TokenRegistry *Registry
+	Cache         PriceCache
 }
 
 func NewBlockchainService(deps BlockchainServiceDeps) *BlockchainService {
@@ -63,6 +66,7 @@ func NewBlockchainService(deps BlockchainServiceDeps) *BlockchainService {
 		walletRepo:    deps.WalletRepo,
 		tokenRegistry: deps.TokenRegistry,
 		providers:     providers,
+		cache:         deps.Cache,
 	}
 }
 
@@ -82,9 +86,19 @@ func (s *BlockchainService) GetBalance(ctx context.Context, chain string, addres
 		return nil, fmt.Errorf("unsupported chain: %s", chain)
 	}
 	if chain == tokenSymbol {
+		if val, err := s.cache.GetBalanceNative(ctx, chain, address); err == nil {
+			return &AddressBalance{
+				Chain:   chain,
+				Address: address,
+				Balance: val,
+			}, nil
+		}
 		balance, err := provider.GetBalance(ctx, address)
 		if err != nil {
 			return nil, err
+		}
+		if err = s.cache.SetBalanceNative(ctx, chain, address, balance); err != nil {
+			slog.Error("failed to cache balance", "error", err)
 		}
 		return &AddressBalance{
 			Chain:   chain,
@@ -96,9 +110,19 @@ func (s *BlockchainService) GetBalance(ctx context.Context, chain string, addres
 		if err != nil {
 			return nil, fmt.Errorf("token not found %s", tokenSymbol)
 		}
+		if val, err := s.cache.GetBalanceToken(ctx, chain, address, tokenSymbol); err == nil {
+			return &AddressBalance{
+				Chain:   chain,
+				Address: token.Address,
+				Balance: val,
+			}, nil
+		}
 		balance, err := provider.GetTokenBalance(ctx, address, token.Address)
 		if err != nil {
 			return nil, err
+		}
+		if err = s.cache.SetBalanceToken(ctx, chain, address, tokenSymbol, balance); err != nil {
+			slog.Error("failed to cache balance", "error", err)
 		}
 		return &AddressBalance{
 			Chain:   chain,

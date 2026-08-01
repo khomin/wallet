@@ -21,7 +21,7 @@ type AssetService struct {
 	cache         *cache.RedisClient
 	priceRepo     PriceRepository
 	fetcher       *PriceFetcher
-	priceCache    *PriceCache
+	priceCache    PriceCache
 	tokenRegistry *Registry
 }
 
@@ -29,7 +29,7 @@ func NewPriceService(
 	cache *cache.RedisClient,
 	priceRepo PriceRepository,
 	fetcher *PriceFetcher,
-	priceCache *PriceCache,
+	priceCache PriceCache,
 	tokenRegistry *Registry,
 ) *AssetService {
 	return &AssetService{
@@ -41,18 +41,17 @@ func NewPriceService(
 	}
 }
 
-func (s *AssetService) GetCoins(ctx context.Context) ([]domain.TokenSimple, error) {
+func (s *AssetService) GetCoins(ctx context.Context) ([]domain.TokenWithImage, error) {
 	coins, err := s.priceCache.GetCoins(ctx)
 	if err != nil {
 		return nil, err
 	}
-	tokens := []domain.TokenSimple{}
+	tokens := []domain.TokenWithImage{}
 	for _, coin := range coins {
 		token, found := s.tokenRegistry.GetBySymbol(coin.Symbol)
 		if found {
-			tokens = append(tokens, domain.TokenSimple{
-				Symbol:   token.Symbol,
-				Name:     token.Name,
+			tokens = append(tokens, domain.TokenWithImage{
+				Token:    token,
 				ImageURL: coin.ImageURL,
 			})
 		}
@@ -60,30 +59,28 @@ func (s *AssetService) GetCoins(ctx context.Context) ([]domain.TokenSimple, erro
 	return tokens, nil
 }
 
-func (s *AssetService) GetCoin(ctx context.Context, id string) (*domain.TokenSimple, error) {
+func (s *AssetService) GetCoin(ctx context.Context, id string) (*domain.TokenWithImage, error) {
 	coin := s.priceCache.GetCoinBySymbol(ctx, id)
 	if coin == nil {
 		return nil, ErrPriceNotFound
 	}
 	token, found := s.tokenRegistry.GetBySymbol(coin.Symbol)
 	if found {
-		return &domain.TokenSimple{
-			Symbol:   token.Symbol,
-			Name:     token.Name,
+		return &domain.TokenWithImage{
+			Token:    token,
 			ImageURL: coin.ImageURL,
 		}, nil
 	}
 	return nil, ErrPriceNotFound
 }
 
-func (s *AssetService) SearchCoins(ctx context.Context, text string) ([]domain.TokenSimple, error) {
-	out := []domain.TokenSimple{}
+func (s *AssetService) SearchCoins(ctx context.Context, text string) ([]domain.TokenWithImage, error) {
+	out := []domain.TokenWithImage{}
 	tokens := s.tokenRegistry.GetByQuery(text)
-	for _, i := range tokens {
-		coin := s.priceCache.GetCoinBySymbol(ctx, i.Symbol)
-		out = append(out, domain.TokenSimple{
-			Symbol:   i.Symbol,
-			Name:     i.Name,
+	for _, token := range tokens {
+		coin := s.priceCache.GetCoinBySymbol(ctx, token.Symbol)
+		out = append(out, domain.TokenWithImage{
+			Token:    token,
 			ImageURL: coin.ImageURL,
 		})
 	}

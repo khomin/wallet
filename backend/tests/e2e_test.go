@@ -79,6 +79,7 @@ func TestDeleteWalletReturnsDeletedWallet(t *testing.T) {
 		Tron:          tronClient,
 		WalletRepo:    walletRepo,
 		TokenRegistry: tokenRegistry,
+		Cache:         priceCache,
 	})
 	if err := blockchainService.ConnectAll(ctx); err != nil {
 		logrus.WithError(err).Warn("failed to connect all blockchain clients")

@@ -15,12 +15,16 @@ type Token struct {
 	IsNative bool     `json:"is_native"`
 }
 
-type TokenExactChain struct {
-	Symbol   string `json:"symbol"`  // e.g., "USDT"
-	Name     string `json:"name"`    // e.g., "Tether USD"
-	Chain    string `json:"chain"`   // e.g., "TRX"
-	Address  string `json:"address"` // "native" or "0x..."
-	IsNative bool   `json:"is_native"`
+type TokenWithImage struct {
+	Token
+	ImageURL string `json:"image_url"`
+}
+
+type TokenOnChain struct {
+	Symbol  string `json:"symbol"`  // e.g., "USDT"
+	Name    string `json:"name"`    // e.g., "Tether USD"
+	Chain   string `json:"chain"`   // e.g., "TRX"
+	Address string `json:"address"` // "native" or "0x..."
 }
 
 type TokenSimple struct {
@@ -47,7 +51,6 @@ type TokenPrice struct {
 	LastUpdated                    time.Time `json:"last_updated"`
 }
 
-// TokenBalance represents a balance of a specific token
 type TokenBalance struct {
 	Chain      string   `json:"chain"`
 	Address    string   `json:"address"`     // User's wallet address
@@ -58,7 +61,6 @@ type TokenBalance struct {
 	ValueUSD   float64  `json:"value_usd"`
 }
 
-// AddressBalance represents all balances for a wallet address
 type AddressBalance struct {
 	Chain   string         `json:"chain"`
 	Address string         `json:"address"`

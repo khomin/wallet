@@ -13,7 +13,7 @@ import (
 type PriceFetcherDeps struct {
 	CoinGeckoClient *coingecko.CoinGeckoClient
 	AlchemyClient   *alchemy.AlchemyClient
-	PriceCache      *PriceCache
+	PriceCache      PriceCache
 	Repo            PriceRepository
 	AllCoinInterval time.Duration
 }
@@ -21,7 +21,7 @@ type PriceFetcherDeps struct {
 type PriceFetcher struct {
 	coingeckoClient *coingecko.CoinGeckoClient
 	alchemyClient   *alchemy.AlchemyClient
-	priceCache      *PriceCache
+	priceCache      PriceCache
 	repo            PriceRepository
 	allCoinInterval time.Duration
 	log             *logrus.Entry
