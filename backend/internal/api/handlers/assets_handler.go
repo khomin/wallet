@@ -31,7 +31,10 @@ func (h *AssetsHandler) GetCoins(c *gin.Context) {
 		dto.InternallError(c)
 		return
 	}
-	c.JSON(http.StatusOK, dto.ToCoinsResponse(coins))
+	c.JSON(http.StatusOK, dto.CoinsResponse{
+		Total: len(coins),
+		Coins: coins,
+	})
 }
 
 func (h *AssetsHandler) GetCoin(c *gin.Context) {
@@ -45,10 +48,9 @@ func (h *AssetsHandler) GetCoin(c *gin.Context) {
 		dto.InternallError(c)
 		return
 	}
-	c.JSON(http.StatusOK, dto.ToCoinResponse(coin))
+	c.JSON(http.StatusOK, coin)
 }
 
-// FIXME: search coins
 func (h *AssetsHandler) SearchCoin(c *gin.Context) {
 	var req dto.SearchCoins
 	if err := c.ShouldBindJSON(&req); err != nil {
@@ -60,7 +62,7 @@ func (h *AssetsHandler) SearchCoin(c *gin.Context) {
 		dto.InternallError(c)
 		return
 	}
-	c.JSON(http.StatusOK, dto.ToCoinsResponse(tokens))
+	c.JSON(http.StatusOK, tokens)
 }
 
 func (h *AssetsHandler) GetPrices(c *gin.Context) {

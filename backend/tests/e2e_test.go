@@ -3,7 +3,6 @@ package tests
 import (
 	"context"
 	"testing"
-	"time"
 	"tracker/bootstrap"
 	"tracker/internal/cache"
 	"tracker/internal/client/alchemy"
@@ -42,11 +41,11 @@ func TestDeleteWalletReturnsDeletedWallet(t *testing.T) {
 	coingeckoClient := coingecko.NewCoinGeckoClient(app.Cfg.CoinGecko.APIKey)
 	alchemyClient := alchemy.NewAlchemyClient(app.Cfg.Alchemy.APIKey)
 
-	ethMainnetClient := ethereum.NewEthereumClient(app.Cfg.Blockchain.EthereumMainnet)
-	ethArbitrumClient := ethereum.NewEthereumClient(app.Cfg.Blockchain.EthereumArbitrum)
-	ethBaseClient := ethereum.NewEthereumClient(app.Cfg.Blockchain.EthereumBase)
-	polygonMainnetClient := ethereum.NewEthereumClient(app.Cfg.Blockchain.PolygonMainnet)
-	bnbClient := ethereum.NewEthereumClient(app.Cfg.Blockchain.Bnb)
+	ethMainnetClient := ethereum.NewEthereumClient(ethereum.EthConfig{RpcURL: app.Cfg.Blockchain.EthereumMainnet, Decimal: 18})
+	ethArbitrumClient := ethereum.NewEthereumClient(ethereum.EthConfig{RpcURL: app.Cfg.Blockchain.EthereumArbitrum, Decimal: 18})
+	ethBaseClient := ethereum.NewEthereumClient(ethereum.EthConfig{RpcURL: app.Cfg.Blockchain.EthereumBase, Decimal: 18})
+	polygonMainnetClient := ethereum.NewEthereumClient(ethereum.EthConfig{RpcURL: app.Cfg.Blockchain.PolygonMainnet, Decimal: 18})
+	bnbClient := ethereum.NewEthereumClient(ethereum.EthConfig{RpcURL: app.Cfg.Blockchain.Bnb, Decimal: 18})
 	solanaClient := solana.NewSolanaClient(app.Cfg.Blockchain.SolanaRPC)
 	bitcoinClient := bitcoin.NewBitcoinClient(app.Cfg.Blockchain.Bitcoin.Host, app.Cfg.Blockchain.Bitcoin.User, app.Cfg.Blockchain.Bitcoin.Pass)
 	tronClient := tron.NewTronClient(app.Cfg.Blockchain.TronGRPC, app.Cfg.Blockchain.TronAPIKey)
@@ -58,38 +57,34 @@ func TestDeleteWalletReturnsDeletedWallet(t *testing.T) {
 	priceCache := core.NewPriceCache(redisClient)
 
 	// Create the price fetcher with 60 second interval
-	priceFetcher := core.NewPriceFetcher(
-		coingeckoClient,
-		alchemyClient,
-		&priceRepo,
-		priceCache,
-		60*time.Second,
-		10*time.Second,
-	)
+	priceFetcher := core.NewPriceFetcher(core.PriceFetcherDeps{
+		CoinGeckoClient: coingeckoClient,
+		AlchemyClient:   alchemyClient,
+		PriceCache:      priceCache,
+		Repo:            &priceRepo,
+		AllCoinInterval: app.Cfg.CoinGecko.PriceFetcher,
+	})
 
 	tokenRegistry := core.DefaultTokenRegistry(app.Cfg.TokenRegistry)
 	priceService := core.NewPriceService(redisClient, &priceRepo, priceFetcher, priceCache, tokenRegistry)
 	walletRepo := repositories.NewWalletRepository(db)
-	blockchainService := core.NewBlockchainService(
-		ethMainnetClient, ethArbitrumClient, ethBaseClient, polygonMainnetClient, bnbClient,
-		solanaClient, bitcoinClient, tronClient,
-		walletRepo, tokenRegistry,
-	)
-	// priceHandler := handlers.NewPriceHandler(priceService)
-
+	blockchainService := core.NewBlockchainService(core.BlockchainServiceDeps{
+		EthMainnet:    ethMainnetClient,
+		EthArbitrum:   ethArbitrumClient,
+		EthBase:       ethBaseClient,
+		Polygon:       polygonMainnetClient,
+		BNB:           bnbClient,
+		SOL:           solanaClient,
+		BTC:           bitcoinClient,
+		Tron:          tronClient,
+		WalletRepo:    walletRepo,
+		TokenRegistry: tokenRegistry,
+	})
 	if err := blockchainService.ConnectAll(ctx); err != nil {
 		logrus.WithError(err).Warn("failed to connect all blockchain clients")
 	}
 
-	// walletService := core.NewWalletService(walletRepo, priceService, blockchainService)
-	// walletHandler := handlers.NewWalletHandler(walletService)
-
 	go priceFetcher.StartCoinFetcher(ctx)
-
-	// verifier, err := middleware.NewTokenVerifier(ctx, app.Cfg.Authorization.IssuerURL, app.Cfg.Authorization.ClientID)
-	// if err != nil {
-	// 	logrus.Fatal("failed to create jwt verifier")
-	// }
 
 	svc := core.NewWalletService(walletRepo, priceService, blockchainService, tokenRegistry)
 
@@ -98,41 +93,46 @@ func TestDeleteWalletReturnsDeletedWallet(t *testing.T) {
 	tokens := []domain.Token{}
 
 	tokens = append(tokens, domain.Token{
-		Chain:   "BTC",
-		Symbol:  "BTC",
-		Address: "bc1qyyfjmtl9s8s6wn3llt2ltzze978l5szfj7hr79",
+		Name:   "BTC",
+		Chains: []string{"BTC"},
+		Symbol: "BTC",
+		Addrs:  []string{"bc1qyyfjmtl9s8s6wn3llt2ltzze978l5szfj7hr79"},
 	})
 
 	tokens = append(tokens, domain.Token{
-		Chain:   "SOL",
-		Symbol:  "GOOGLX",
-		Address: "DDcdDmDPYw595wAR1jYNHZQTFNi8BGisd2bVa3WH3XbE",
+		Chains: []string{"SOL"},
+		Symbol: "GOOGLX",
+		Addrs:  []string{"DDcdDmDPYw595wAR1jYNHZQTFNi8BGisd2bVa3WH3XbE"},
 	})
 	tokens = append(tokens, domain.Token{
-		Chain:   "SOL",
-		Symbol:  "XAUT0",
-		Address: "CFMQzGS8M8wpvcWs1udJ2XgzXEmVf31bmYxBwtgPBLRg",
+		Chains: []string{"SOL"},
+		Symbol: "XAUT",
+		Addrs:  []string{"9Z6qhmZ2AHWMSBSM4LmA1WrCAefs2dkr1pHnkW3vmg8z"},
 	})
 	tokens = append(tokens, domain.Token{
-		Chain:   "SOL",
-		Symbol:  "SOL",
-		Address: "CFMQzGS8M8wpvcWs1udJ2XgzXEmVf31bmYxBwtgPBLRg",
+		Chains: []string{"SOL"},
+		Symbol: "SOL",
+		Addrs:  []string{"9Z6qhmZ2AHWMSBSM4LmA1WrCAefs2dkr1pHnkW3vmg8z"},
 	})
 	tokens = append(tokens, domain.Token{
-		Chain:   "TRX",
-		Symbol:  "TRX",
-		Address: "TF6MrLnLa72U6PGZcx4pXhs8hSvsAgQ78t",
+		Chains: []string{"TRX"},
+		Symbol: "TRX",
+		Addrs:  []string{"TF6MrLnLa72U6PGZcx4pXhs8hSvsAgQ78t"},
 	})
 	tokens = append(tokens, domain.Token{
-		Chain:   "TRX",
-		Symbol:  "USDT",
-		Address: "TF6MrLnLa72U6PGZcx4pXhs8hSvsAgQ78t",
+		Chains: []string{"TRX"},
+		Symbol: "USDT",
+		Addrs:  []string{"TF6MrLnLa72U6PGZcx4pXhs8hSvsAgQ78t"},
 	})
 
-	for _, i := range tokens {
-		_, err = svc.AddWallet(context.Background(), userID, i.Chain, i.Address, i.Symbol, i.Name)
-		if err != nil {
-			t.Logf("AddWallet returned unexpected error: %v", err)
+	print(tokens, svc, userID)
+
+	for _, token := range tokens {
+		for idx, chain := range token.Chains {
+			_, err = svc.AddWallet(context.Background(), userID, chain, token.Addrs[idx], token.Symbol, token.Name)
+			if err != nil {
+				t.Logf("AddWallet returned unexpected error: %v", err)
+			}
 		}
 	}
 }

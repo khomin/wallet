@@ -48,11 +48,11 @@ func main() {
 	coingeckoClient := coingecko.NewCoinGeckoClient(app.Cfg.CoinGecko.APIKey)
 	alchemyClient := alchemy.NewAlchemyClient(app.Cfg.Alchemy.APIKey)
 
-	ethMainnetClient := ethereum.NewEthereumClient(app.Cfg.Blockchain.EthereumMainnet)
-	ethArbitrumClient := ethereum.NewEthereumClient(app.Cfg.Blockchain.EthereumArbitrum)
-	ethBaseClient := ethereum.NewEthereumClient(app.Cfg.Blockchain.EthereumBase)
-	polygonMainnetClient := ethereum.NewEthereumClient(app.Cfg.Blockchain.PolygonMainnet)
-	bnbClient := ethereum.NewEthereumClient(app.Cfg.Blockchain.Bnb)
+	ethMainnetClient := ethereum.NewEthereumClient(ethereum.EthConfig{RpcURL: app.Cfg.Blockchain.EthereumMainnet, Decimal: 18})
+	ethArbitrumClient := ethereum.NewEthereumClient(ethereum.EthConfig{RpcURL: app.Cfg.Blockchain.EthereumArbitrum, Decimal: 18})
+	ethBaseClient := ethereum.NewEthereumClient(ethereum.EthConfig{RpcURL: app.Cfg.Blockchain.EthereumBase, Decimal: 18})
+	polygonMainnetClient := ethereum.NewEthereumClient(ethereum.EthConfig{RpcURL: app.Cfg.Blockchain.PolygonMainnet, Decimal: 18})
+	bnbClient := ethereum.NewEthereumClient(ethereum.EthConfig{RpcURL: app.Cfg.Blockchain.Bnb, Decimal: 18})
 	solanaClient := solana.NewSolanaClient(app.Cfg.Blockchain.SolanaRPC)
 	bitcoinClient := bitcoin.NewBitcoinClient(app.Cfg.Blockchain.Bitcoin.Host, app.Cfg.Blockchain.Bitcoin.User, app.Cfg.Blockchain.Bitcoin.Pass)
 	tronClient := tron.NewTronClient(app.Cfg.Blockchain.TronGRPC, app.Cfg.Blockchain.TronAPIKey)
@@ -64,23 +64,29 @@ func main() {
 	priceCache := core.NewPriceCache(redisClient)
 
 	// Create the price fetcher with 60 second interval
-	priceFetcher := core.NewPriceFetcher(
-		coingeckoClient,
-		alchemyClient,
-		&priceRepo,
-		priceCache, // TODO: config?
-		60*time.Second,
-		10*time.Second,
-	)
+	priceFetcher := core.NewPriceFetcher(core.PriceFetcherDeps{
+		CoinGeckoClient: coingeckoClient,
+		AlchemyClient:   alchemyClient,
+		PriceCache:      priceCache,
+		Repo:            &priceRepo,
+		AllCoinInterval: app.Cfg.CoinGecko.PriceFetcher,
+	})
 
 	tokenRegistry := core.DefaultTokenRegistry(app.Cfg.TokenRegistry)
 	priceService := core.NewPriceService(redisClient, &priceRepo, priceFetcher, priceCache, tokenRegistry)
 	walletRepo := repositories.NewWalletRepository(db)
-	blockchainService := core.NewBlockchainService(
-		ethMainnetClient, ethArbitrumClient, ethBaseClient, polygonMainnetClient, bnbClient,
-		solanaClient, bitcoinClient, tronClient,
-		walletRepo, tokenRegistry,
-	)
+	blockchainService := core.NewBlockchainService(core.BlockchainServiceDeps{
+		EthMainnet:    ethMainnetClient,
+		EthArbitrum:   ethArbitrumClient,
+		EthBase:       ethBaseClient,
+		Polygon:       polygonMainnetClient,
+		BNB:           bnbClient,
+		SOL:           solanaClient,
+		BTC:           bitcoinClient,
+		Tron:          tronClient,
+		WalletRepo:    walletRepo,
+		TokenRegistry: tokenRegistry,
+	})
 	assetsHandler := handlers.NewAssetsHandler(priceService)
 
 	if err := blockchainService.ConnectAll(ctx); err != nil {

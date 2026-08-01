@@ -5,37 +5,36 @@ import (
 	"time"
 	"tracker/internal/client/alchemy"
 	"tracker/internal/client/coingecko"
-	"tracker/internal/db/models"
+	"tracker/internal/core/domain"
 
 	"github.com/sirupsen/logrus"
 )
 
-type PriceFetcher struct {
-	coingeckoClient    *coingecko.CoinGeckoClient
-	alchemyClient      *alchemy.AlchemyClient
-	priceCache         *PriceCache
-	repo               PriceRepository
-	allCoinInterval    time.Duration
-	activeCoinInterval time.Duration
-	log                *logrus.Entry
+type PriceFetcherDeps struct {
+	CoinGeckoClient *coingecko.CoinGeckoClient
+	AlchemyClient   *alchemy.AlchemyClient
+	PriceCache      *PriceCache
+	Repo            PriceRepository
+	AllCoinInterval time.Duration
 }
 
-func NewPriceFetcher(
-	coingeckoClient *coingecko.CoinGeckoClient,
-	alchemyClient *alchemy.AlchemyClient,
-	repo PriceRepository,
-	priceCache *PriceCache,
-	allCoinInterval time.Duration,
-	activeCoinInterval time.Duration,
-) *PriceFetcher {
+type PriceFetcher struct {
+	coingeckoClient *coingecko.CoinGeckoClient
+	alchemyClient   *alchemy.AlchemyClient
+	priceCache      *PriceCache
+	repo            PriceRepository
+	allCoinInterval time.Duration
+	log             *logrus.Entry
+}
+
+func NewPriceFetcher(deps PriceFetcherDeps) *PriceFetcher {
 	return &PriceFetcher{
-		coingeckoClient:    coingeckoClient,
-		alchemyClient:      alchemyClient,
-		priceCache:         priceCache,
-		repo:               repo,
-		allCoinInterval:    allCoinInterval,
-		activeCoinInterval: activeCoinInterval,
-		log:                logrus.WithField("component", "PriceFetcher"),
+		coingeckoClient: deps.CoinGeckoClient,
+		alchemyClient:   deps.AlchemyClient,
+		priceCache:      deps.PriceCache,
+		repo:            deps.Repo,
+		allCoinInterval: deps.AllCoinInterval,
+		log:             logrus.WithField("component", "PriceFetcher"),
 	}
 }
 
@@ -100,24 +99,28 @@ func (f *PriceFetcher) fetch(ctx context.Context) {
 	}
 }
 
-func (f *PriceFetcher) fromGeckoToCoin(prices []coingecko.CoinGeckoCoin) []models.Coin {
-	res := make([]models.Coin, len(prices))
+func (f *PriceFetcher) fromGeckoToCoin(prices []coingecko.CoinGeckoCoin) []domain.TokenSimple {
+	res := make([]domain.TokenSimple, len(prices))
 	for i, p := range prices {
-		res[i] = models.Coin{
-			CoinID:      p.ID,
-			Name:        p.Name,
-			Symbol:      p.Symbol,
-			ImageURL:    p.Image,
-			LastUpdated: p.LastUpdated,
+		res[i] = domain.TokenSimple{
+			// Chains: ,
+			// Address:  "",
+			// IsNative: false,
+			// CoinID:      p.ID,
+			Name:     p.Name,
+			Symbol:   p.Symbol,
+			ImageURL: p.Image,
+			// ImageURL:    p.Image,
+			// LastUpdated: p.LastUpdated,
 		}
 	}
 	return res
 }
 
-func (f *PriceFetcher) fromGeckoToCoinPrice(prices []coingecko.CoinGeckoCoin) []models.CoinPrice {
-	res := make([]models.CoinPrice, len(prices))
+func (f *PriceFetcher) fromGeckoToCoinPrice(prices []coingecko.CoinGeckoCoin) []domain.TokenPrice {
+	res := make([]domain.TokenPrice, len(prices))
 	for i, p := range prices {
-		res[i] = models.CoinPrice{
+		res[i] = domain.TokenPrice{
 			CoinID:                         p.ID,
 			Name:                           p.Name,
 			Symbol:                         p.Symbol,

@@ -39,14 +39,14 @@ type WalletService struct {
 	walletRepo        WalletRepository
 	priceService      *AssetService
 	blockchainService *BlockchainService
-	tokenRegistry     *TokenRegistry
+	tokenRegistry     *Registry
 }
 
 func NewWalletService(
 	walletRepo WalletRepository,
 	priceService *AssetService,
 	blockchainService *BlockchainService,
-	tokenRegistry *TokenRegistry,
+	tokenRegistry *Registry,
 ) *WalletService {
 	return &WalletService{
 		walletRepo:        walletRepo,
@@ -109,60 +109,19 @@ func (s *WalletService) DeleteWallet(ctx context.Context, userID string, id uuid
 	return s.walletRepo.DeleteWallet(ctx, userID, id)
 }
 
-// a list of tokens
-// func (s *WalletService) GetAssetsByMartket(ctx context.Context) ([]domain.Asset, error) {
-// 	assets := []domain.Asset{}
-
-// 	// max := 50
-
-// 	// get top coins
-// 	coins, err := s.priceService.GetCoins(ctx)
-// 	if err != nil {
-// 		return nil, err
-// 	}
-// 	// build assets from top coins copying imageURL from COIN
-// 	for _, coin := range coins {
-// 		asset, found := s.tokenRegistry.GetByChainAndSymbol(coin.Symbol, coin.Symbol)
-// 		if !found {
-// 			continue
-// 		}
-// 		// for index := range assets {
-// 		// asset = assets[index]
-// 		asset.LogoURL = coin.ImageURL
-// 		assets[index] = asset
-// 		// }
-// 		assets = append(assets, assets...)
-// 	}
-// 	return assets, err
-// }
-
-// func (s *WalletService) assingIcon(ctx context.Context, in []domain.Asset) []domain.Asset {
-// 	assets := []domain.Asset{}
-// 	for _, i := range in {
-// 		for _, token := range i.Tokens {
-// 			coin, err := s.priceService.GetCoin(ctx, token.Symbol)
-// 			if err == nil {
-// 				token.LogoURL = coin.ImageURL
-// 			}
-// 		}
-// 		// assets = append(assets, )
-// 	}
-// 	return assets
-// }
-
 func (s *WalletService) getWalletPortfolio(ctx context.Context, wallet domain.Wallet) (WalletPortfolio, error) {
 	priceSymbol := wallet.Symbol
 	if wallet.Chain == wallet.Symbol {
 		priceSymbol = wallet.Chain
 	}
-	primarySymbol, _, found := s.blockchainService.tokenRegistry.GetByChainAndSymbol(wallet.Chain, priceSymbol)
-	if !found {
+	token, err := s.blockchainService.tokenRegistry.GetByChainAndSymbol(wallet.Chain, priceSymbol)
+	if err != nil {
 		return WalletPortfolio{
 			Wallet: wallet,
 			Price:  domain.TokenPrice{},
 		}, fmt.Errorf("seems like unsupported token %s", priceSymbol)
 	}
-	price, err := s.priceService.GetPrice(ctx, primarySymbol)
+	price, err := s.priceService.GetPrice(ctx, token.Symbol)
 	if err != nil {
 		return WalletPortfolio{
 			Wallet: wallet,

@@ -8,144 +8,152 @@ import (
 	"tracker/internal/core/domain"
 )
 
-type TokenRegistry struct {
+type Registry struct {
 	mu                  sync.RWMutex
-	tokensByName        map[string]domain.Asset
-	tokensByChainSymbol map[string]domain.Asset
+	tokensByName        map[string]config.TokenConfig
+	tokensByChainSymbol map[string]config.TokenConfig
+	tokensBySymbol      map[string]config.TokenConfig
 }
 
-func NewTokenRegistry() *TokenRegistry {
-	return &TokenRegistry{
-		tokensByName:        make(map[string]domain.Asset),
-		tokensByChainSymbol: make(map[string]domain.Asset),
+func NewTokenRegistry() *Registry {
+	return &Registry{
+		tokensByName:        make(map[string]config.TokenConfig),
+		tokensByChainSymbol: make(map[string]config.TokenConfig),
+		tokensBySymbol:      make(map[string]config.TokenConfig),
 	}
 }
 
-func DefaultTokenRegistry(config map[string][]config.TokenRegistry) *TokenRegistry {
+func DefaultTokenRegistry(conf config.TokenRegistry) *Registry {
 	registry := NewTokenRegistry()
-
-	assets, found := config["assets"]
-	if found {
-		for _, asset := range assets {
-			out1 := domain.Asset{}
-			for _, item := range asset.Items {
-				out1.Symbol = asset.Symbol
-				out1.Name = asset.Name
-				out1.Tokens = append(out1.Tokens, domain.Token{
-					Name:     asset.Name,
-					Symbol:   item.Symbol,
-					Chain:    strings.ToUpper(item.Chain),
-					Address:  item.Address,
-					Decimals: item.Decimals,
-					IsNative: item.IsNative,
-				})
-			}
-			registry.Register(out1)
-		}
+	for _, token := range conf.Tokens {
+		registry.Register(token)
 	}
 	return registry
 }
 
-func (r *TokenRegistry) Register(asset domain.Asset) {
+func (r *Registry) Register(token config.TokenConfig) {
 	r.mu.Lock()
 	defer r.mu.Unlock()
 
-	// - id: "tether-gold"
-	//   name: "Tether Gold"
-	//   symbol: "XAUt"
-	//   items:
-	//     - chain: "ETH"
-	//       symbol: "XAUt"
-	//       address: "0x68749665FF8D2d112Fa859AA293F07A622782F38"
-	//       decimals: 6
-	//       is_native: false
-	//     - chain: "SOL"
-	//       symbol: "XAUt0"
-	//       address: "AymATz4TCL9sWNEEV9Kvyz45CHVhDZ6kUgjTJPzLpU9P"
-	//       decimals: 18
-	//       is_native: false
+	// index by name
+	r.tokensByName[token.Name] = token
 
-	// Index by name
-	r.tokensByName[asset.Name] = asset
+	// index by symbol
+	r.tokensBySymbol[strings.ToUpper(token.Symbol)] = token
 
-	for idx, token := range asset.Tokens {
-		chain := strings.ToUpper(token.Chain)
-		if token.Symbol == "" {
-			if asset.Symbol != "" {
-				token.Symbol = strings.ToUpper(asset.Symbol)
-			} else {
-				token.Symbol = chain
-			}
-			asset.Tokens[idx] = token
+	// index by chain:symbol
+	if token.Native != nil {
+		symbolKey := fmt.Sprintf("%s:%s", strings.ToUpper(token.Native.Chain), strings.ToUpper(token.Symbol))
+		r.tokensByChainSymbol[symbolKey] = token
+	} else {
+		for chain := range token.Deployments {
+			symbolKey := fmt.Sprintf("%s:%s", strings.ToUpper(chain), strings.ToUpper(token.Symbol))
+			r.tokensByChainSymbol[symbolKey] = token
 		}
-		symbol := strings.ToUpper(token.Symbol)
-		// Index by chain:symbol
-		symbolKey := fmt.Sprintf("%s:%s", chain, symbol)
-		r.tokensByChainSymbol[symbolKey] = asset
 	}
 }
 
-func (r *TokenRegistry) GetByChainAndSymbol(chain, symbol string) (string, domain.Token, bool) {
+func (r *Registry) GetByChainAndSymbol(chain, symbol string) (*domain.TokenExactChain, error) {
 	r.mu.RLock()
 	defer r.mu.RUnlock()
 	token, ok := r.tokensByChainSymbol[fmt.Sprintf("%s:%s", strings.ToUpper(chain), strings.ToUpper(symbol))]
-	if ok && len(token.Tokens) != 0 {
-		for _, i := range token.Tokens {
-			if i.Chain == chain {
-				return token.Symbol, i, true
+	if ok {
+		for depChain, dep := range token.Deployments {
+			depChain = strings.ToUpper(depChain)
+			if depChain == chain {
+				return &domain.TokenExactChain{
+					Symbol:   token.Symbol,
+					Name:     token.Name,
+					Chain:    depChain,
+					Address:  dep.Address,
+					IsNative: token.Native != nil,
+				}, nil
 			}
 		}
-		return token.Symbol, token.Tokens[0], ok
+		if token.Native != nil {
+			if token.Native.Chain == chain {
+				return &domain.TokenExactChain{
+					Symbol:   token.Symbol,
+					Name:     token.Name,
+					Chain:    token.Native.Chain,
+					Address:  "",
+					IsNative: token.Native != nil,
+				}, nil
+			}
+		}
 	}
-	return "", domain.Token{}, false
+	return nil, fmt.Errorf("cannot find token")
 }
 
-func (r *TokenRegistry) GetBySymbol(symbol string) (domain.Token, bool) {
+func (r *Registry) GetBySymbol(symbol string) (domain.Token, bool) {
 	r.mu.RLock()
 	defer r.mu.RUnlock()
 	symbol = strings.ToUpper(symbol)
-	for _, i := range r.tokensByChainSymbol {
-		for _, token := range i.Tokens {
-			if strings.ToUpper(i.Symbol) == symbol {
-				return token, true
-			}
-		}
+	token, found := r.tokensBySymbol[symbol]
+	if !found {
+		return domain.Token{}, false
 	}
-	return domain.Token{}, false
+	chains := []string{}
+	address := []string{}
+	for chain, depl := range token.Deployments {
+		chains = append(chains, chain)
+		address = append(address, depl.Address)
+	}
+	return domain.Token{
+		Symbol:   token.Symbol,
+		Chains:   chains,
+		Addrs:    address,
+		IsNative: false,
+		Name:     token.Name,
+	}, true
 }
 
-func (r *TokenRegistry) GetAssetsByText(text string) []domain.Asset {
-	r.mu.RLock()
-	defer r.mu.RUnlock()
+func (r *Registry) GetByQuery(query string) []domain.Token {
+	// r.mu.RLock()
+	// defer r.mu.RUnlock()
+	var tokens []domain.Token
 
-	var tokens []domain.Asset
-	if text != "" {
+	if query != "" {
+		query = strings.ToUpper(query)
+		// token, found := r.tokensByName[text]
+		// if !found {
+		// 	return nil
+		// }
 		for _, token := range r.tokensByChainSymbol {
-			name := strings.ToUpper(token.Name)
-			symbol := strings.ToUpper(token.Symbol)
-			text = strings.ToUpper(text)
-			matches := strings.Contains(name, text) || strings.Contains(symbol, text)
+			matches := strings.Contains(token.Name, query) || strings.Contains(token.Symbol, query)
 			if matches {
-				tokens = append(tokens, token)
+				// token.Name
+				// token.Native
+				// token.Symbol
+				// token.Deployments.key
+				// token.Deployments[''].Address
+				// token.Deployments[''].Decimals
+				tokens = append(tokens, domain.Token{
+					Symbol: token.Symbol,
+					Name:   token.Name,
+					Chains: []string{""},
+					// Addrs:    token.,
+					IsNative: false,
+				})
 			}
 		}
 	}
 	return tokens
 }
 
-func (r *TokenRegistry) GetAllTokens() []domain.Token {
-	r.mu.RLock()
-	defer r.mu.RUnlock()
-
-	tokenUnique := map[string]domain.Token{}
-	for _, asset := range r.tokensByChainSymbol {
-		for _, token := range asset.Tokens {
-			tokenUnique[asset.Symbol] = token
-		}
-	}
+func (r *Registry) GetAllTokens() []domain.Token {
 	tokens := []domain.Token{}
-	for _, v := range tokenUnique {
-		tokens = append(tokens, v)
-	}
+	// r.mu.RLock()
+	// defer r.mu.RUnlock()
+
+	// tokenUnique := map[string]domain.Token{}
+	// for _, asset := range r.tokensByChainSymbol {
+	// 	for _, token := range asset.Tokens {
+	// 		tokenUnique[asset.Symbol] = token
+	// 	}
+	// }
+	// for _, v := range tokenUnique {
+	// 	tokens = append(tokens, v)
+	// }
 	return tokens
 }

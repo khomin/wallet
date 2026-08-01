@@ -3,6 +3,7 @@ package repositories
 import (
 	"context"
 	"time"
+	"tracker/internal/core/domain"
 	"tracker/internal/db"
 	"tracker/internal/db/models"
 )
@@ -15,7 +16,7 @@ func NewPriceRepository(db *db.DataBase) PriceRepository {
 	return PriceRepository{db: db}
 }
 
-func (r *PriceRepository) GetCoinSnapshot(ctx context.Context) ([]models.Coin, error) {
+func (r *PriceRepository) GetCoinSnapshot(ctx context.Context) ([]domain.TokenSimple, error) {
 	query := `SELECT
 		id,
 		coin_id,
@@ -52,11 +53,11 @@ func (r *PriceRepository) GetCoinSnapshot(ctx context.Context) ([]models.Coin, e
 	if err := rows.Err(); err != nil {
 		return nil, err
 	}
-	return snapshots, nil
+	return modelTokensToDomain(snapshots), nil
 }
 
-func (r *PriceRepository) SetCoinSnapshot(ctx context.Context, snapshots []models.Coin) error {
-	if len(snapshots) == 0 {
+func (r *PriceRepository) SetCoinSnapshot(ctx context.Context, in []domain.TokenSimple) error {
+	if len(in) == 0 {
 		return nil
 	}
 	query := `INSERT INTO coins (
@@ -78,7 +79,7 @@ func (r *PriceRepository) SetCoinSnapshot(ctx context.Context, snapshots []model
 			last_updated = EXCLUDED.last_updated,
 			snapshot_at = EXCLUDED.snapshot_at
 	`
-	for _, snapshot := range snapshots {
+	for _, snapshot := range domainTokensToModel(in) {
 		_, err := r.db.Pool.Exec(ctx, query,
 			snapshot.CoinID,
 			snapshot.Symbol,
@@ -94,7 +95,7 @@ func (r *PriceRepository) SetCoinSnapshot(ctx context.Context, snapshots []model
 	return nil
 }
 
-func (r *PriceRepository) GetPriceSnapshot(ctx context.Context) ([]models.CoinPrice, error) {
+func (r *PriceRepository) GetPriceSnapshot(ctx context.Context) ([]domain.TokenPrice, error) {
 	query := `SELECT
 		coin_id,
 		symbol,
@@ -140,11 +141,11 @@ func (r *PriceRepository) GetPriceSnapshot(ctx context.Context) ([]models.CoinPr
 	if err := rows.Err(); err != nil {
 		return nil, err
 	}
-	return snapshots, nil
+	return modelPriceToDomain(snapshots), nil
 }
 
-func (r *PriceRepository) SetPriceSnapshot(ctx context.Context, snapshots []models.CoinPrice) error {
-	if len(snapshots) == 0 {
+func (r *PriceRepository) SetPriceSnapshot(ctx context.Context, in []domain.TokenPrice) error {
+	if len(in) == 0 {
 		return nil
 	}
 	query := `INSERT INTO coin_price_snapshots (
@@ -178,7 +179,7 @@ func (r *PriceRepository) SetPriceSnapshot(ctx context.Context, snapshots []mode
 			last_updated = EXCLUDED.last_updated,
 			snapshot_at = EXCLUDED.snapshot_at
 	`
-	for _, snapshot := range snapshots {
+	for _, snapshot := range domainPriceToModel(in) {
 		_, err := r.db.Pool.Exec(ctx, query,
 			snapshot.CoinID,
 			snapshot.Symbol,
@@ -198,4 +199,56 @@ func (r *PriceRepository) SetPriceSnapshot(ctx context.Context, snapshots []mode
 		}
 	}
 	return nil
+}
+
+func modelTokensToDomain(in []models.Coin) []domain.TokenSimple {
+	out := make([]domain.TokenSimple, len(in))
+	for idx, i := range in {
+		out[idx] = domain.TokenSimple{
+			Symbol: i.Symbol,
+			Name:   i.Name,
+			// Chains: i.,
+			// Address: i.,
+		}
+	}
+	return out
+}
+
+func domainTokensToModel(in []domain.TokenSimple) []models.Coin {
+	out := make([]models.Coin, len(in))
+	for idx, i := range in {
+		out[idx] = models.Coin{
+			Symbol: i.Symbol,
+			Name:   i.Name,
+			// Chains: i.,
+			// Address: i.,
+		}
+	}
+	return out
+}
+
+func domainPriceToModel(in []domain.TokenPrice) []models.CoinPrice {
+	out := make([]models.CoinPrice, len(in))
+	for idx, i := range in {
+		out[idx] = models.CoinPrice{
+			Symbol: i.Symbol,
+			Name:   i.Name,
+			// Chains: i.,
+			// Address: i.,
+		}
+	}
+	return out
+}
+
+func modelPriceToDomain(in []models.CoinPrice) []domain.TokenPrice {
+	out := make([]domain.TokenPrice, len(in))
+	for idx, i := range in {
+		out[idx] = domain.TokenPrice{
+			Symbol: i.Symbol,
+			Name:   i.Name,
+			// Chains: i.,
+			// Address: i.,
+		}
+	}
+	return out
 }

@@ -100,6 +100,5 @@ The project is aimed at becoming a crypto monitoring platform for:
 ```
 go install -tags 'postgres' github.com/golang-migrate/migrate/v4/cmd/migrate@latest
 
-migrate -path $PWD/internal/db/migrations -database \
-"postgres://tracker_admin:super_secure_password@localhost:5432/whale_tracker?sslmode=disable" up
+migrate -path $PWD/internal/db/migrations -database "postgres://tracker_admin:super_secure_password@localhost:5432/whale_tracker?sslmode=disable" up
 ```

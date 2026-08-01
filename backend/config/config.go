@@ -2,20 +2,21 @@ package config
 
 import (
 	"fmt"
+	"time"
 
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
 )
 
 type Config struct {
-	Server        ServerConfig               `mapstructure:"server"`
-	Authorization Authorization              `mapstructure:"authorization"`
-	Database      DatabaseConfig             `mapstructure:"database"`
-	Redis         RedisConfig                `mapstructure:"redis"`
-	Alchemy       AlchemyConfig              `mapstructure:"alchemy"`
-	CoinGecko     CoinGeckoConfig            `mapstructure:"coingecko"`
-	Blockchain    BlockchainConfig           `mapstructure:"blockchain"`
-	TokenRegistry map[string][]TokenRegistry `mapstructure:"token_registry"`
+	Server        ServerConfig     `mapstructure:"server"`
+	Authorization Authorization    `mapstructure:"authorization"`
+	Database      DatabaseConfig   `mapstructure:"database"`
+	Redis         RedisConfig      `mapstructure:"redis"`
+	Alchemy       AlchemyConfig    `mapstructure:"alchemy"`
+	CoinGecko     CoinGeckoConfig  `mapstructure:"coingecko"`
+	Blockchain    BlockchainConfig `mapstructure:"blockchain"`
+	TokenRegistry TokenRegistry    `mapstructure:"token_registry"`
 }
 
 type ServerConfig struct {
@@ -48,7 +49,8 @@ type AlchemyConfig struct {
 }
 
 type CoinGeckoConfig struct {
-	APIKey string `mapstructure:"api_key"`
+	APIKey       string        `mapstructure:"api_key"`
+	PriceFetcher time.Duration `mapstructure:"price_fetcher"`
 }
 
 type BlockchainConfig struct {
@@ -63,25 +65,31 @@ type BlockchainConfig struct {
 	Bitcoin          RPCConfig `mapstructure:"bitcoin"`
 }
 
-type TokenRegistry struct {
-	ID     string      `mapstructure:"id" yaml:"id"`
-	Name   string      `mapstructure:"name" yaml:"name"`
-	Symbol string      `mapstructure:"symbol" yaml:"symbol"`
-	Items  []AssetItem `mapstructure:"items" yaml:"items"`
-}
-
-type AssetItem struct {
-	Chain    string `mapstructure:"chain" yaml:"chain"`
-	Symbol   string `mapstructure:"symbol" yaml:"symbol"`
-	Address  string `mapstructure:"address" yaml:"address"`
-	Decimals int    `mapstructure:"decimals" yaml:"decimals"`
-	IsNative bool   `mapstructure:"is_native" yaml:"is_native"`
-}
-
 type RPCConfig struct {
 	Host string `mapstructure:"host"`
 	User string `mapstructure:"user"`
 	Pass string `mapstructure:"pass"`
+}
+
+type TokenConfig struct {
+	Symbol      string                `yaml:"symbol"`
+	Name        string                `yaml:"name"`
+	Native      *NativeConfig         `yaml:"native,omitempty"`      // For L1 native gas tokens
+	Deployments map[string]Deployment `yaml:"deployments,omitempty"` // For contract deployments
+}
+
+type NativeConfig struct {
+	Chain    string `yaml:"chain"`
+	Decimals int    `yaml:"decimals"`
+}
+
+type Deployment struct {
+	Address  string `yaml:"address"`
+	Decimals int    `yaml:"decimals"`
+}
+
+type TokenRegistry struct {
+	Tokens []TokenConfig `yaml:"tokens"`
 }
 
 func NewConfig() *Config {

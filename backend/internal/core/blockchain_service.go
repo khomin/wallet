@@ -21,7 +21,7 @@ type ChainProvider interface {
 type BlockchainService struct {
 	providers     map[string]ChainProvider
 	walletRepo    WalletRepository
-	tokenRegistry *TokenRegistry
+	tokenRegistry *Registry
 }
 
 type AddressBalance struct {
@@ -30,36 +30,38 @@ type AddressBalance struct {
 	Balance float64
 }
 
-func NewBlockchainService(
-	ethereumMainnet *ethereum.EthereumClient,
-	ethereumArbitrum *ethereum.EthereumClient,
-	ethereumBase *ethereum.EthereumClient,
-	polygon *ethereum.EthereumClient,
-	bnb *ethereum.EthereumClient,
-	sol *solana.SolanaClient,
-	btc *bitcoin.BitcoinClient,
-	tron *tron.TronClient,
-	walletRepo WalletRepository,
-	tokenRegistry *TokenRegistry,
-) *BlockchainService {
+type BlockchainServiceDeps struct {
+	EthMainnet    *ethereum.EthereumClient
+	EthArbitrum   *ethereum.EthereumClient
+	EthBase       *ethereum.EthereumClient
+	Polygon       *ethereum.EthereumClient
+	BNB           *ethereum.EthereumClient
+	SOL           *solana.SolanaClient
+	BTC           *bitcoin.BitcoinClient
+	Tron          *tron.TronClient
+	WalletRepo    WalletRepository
+	TokenRegistry *Registry
+}
+
+func NewBlockchainService(deps BlockchainServiceDeps) *BlockchainService {
 	providers := map[string]ChainProvider{}
 	add := func(chain string, p ChainProvider) {
 		if p != nil {
 			providers[chain] = p
 		}
 	}
-	add("BTC", btc)
-	add("ETH", ethereumMainnet)
-	add("ARB", ethereumArbitrum)
-	add("BASE", ethereumBase)
-	add("POL", polygon)
-	add("BNB", bnb)
-	add("BSC", bnb)
-	add("SOL", sol)
-	add("TRX", tron)
+	add("BTC", deps.BTC)
+	add("ETH", deps.EthMainnet)
+	add("ARB", deps.EthArbitrum)
+	add("BASE", deps.EthBase)
+	add("POL", deps.Polygon)
+	add("BNB", deps.BNB)
+	add("BSC", deps.BNB)
+	add("SOL", deps.SOL)
+	add("TRX", deps.Tron)
 	return &BlockchainService{
-		walletRepo:    walletRepo,
-		tokenRegistry: tokenRegistry,
+		walletRepo:    deps.WalletRepo,
+		tokenRegistry: deps.TokenRegistry,
 		providers:     providers,
 	}
 }
@@ -90,8 +92,8 @@ func (s *BlockchainService) GetBalance(ctx context.Context, chain string, addres
 			Balance: balance,
 		}, nil
 	} else {
-		_, token, ok := s.tokenRegistry.GetByChainAndSymbol(chain, tokenSymbol)
-		if !ok {
+		token, err := s.tokenRegistry.GetByChainAndSymbol(chain, tokenSymbol)
+		if err != nil {
 			return nil, fmt.Errorf("token not found %s", tokenSymbol)
 		}
 		balance, err := provider.GetTokenBalance(ctx, address, token.Address)

@@ -9,7 +9,7 @@ import (
 	"strconv"
 	"strings"
 	"time"
-	"tracker/internal/db/models"
+	"tracker/internal/core/domain"
 
 	"github.com/sirupsen/logrus"
 )
@@ -28,7 +28,7 @@ func NewAlchemyClient(apiKey string) *AlchemyClient {
 	}
 }
 
-func (c *AlchemyClient) GetPrices(ctx context.Context, symbols []string) ([]models.CoinPrice, error) {
+func (c *AlchemyClient) GetPrices(ctx context.Context, symbols []string) ([]domain.TokenPrice, error) {
 	if len(symbols) > 25 {
 		return nil, fmt.Errorf("maximum 25 symbols per request")
 	}
@@ -38,7 +38,7 @@ func (c *AlchemyClient) GetPrices(ctx context.Context, symbols []string) ([]mode
 	if err != nil {
 		return nil, err
 	}
-	var prices []models.CoinPrice
+	var prices []domain.TokenPrice
 	if resp.StatusCode == http.StatusOK {
 		body, err := io.ReadAll(resp.Body)
 		if err != nil {
@@ -57,10 +57,10 @@ func (c *AlchemyClient) GetPrices(ctx context.Context, symbols []string) ([]mode
 				if strings.ToLower(p.Currency) == "usd" {
 					price, error := strconv.ParseFloat(p.Value, 2)
 					if error == nil {
-						prices = append(prices, models.CoinPrice{
+						prices = append(prices, domain.TokenPrice{
 							Symbol:       token.Symbol,
-							CoinID:       "",
-							Name:         "",
+							CoinID:       token.Symbol,
+							Name:         token.Symbol,
 							CurrentPrice: price,
 							LastUpdated:  p.LastUpdated,
 						})

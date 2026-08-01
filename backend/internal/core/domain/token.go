@@ -7,20 +7,25 @@ import (
 	"github.com/google/uuid"
 )
 
-type Asset struct {
-	Name     string  `json:"name"`
-	Symbol   string  `json:"symbol"`
-	Tokens   []Token `json:"tokens"`
-	ImageURL string  `json:"image_url"`
+type Token struct {
+	Symbol   string   `json:"symbol"`  // e.g., "USDT"
+	Name     string   `json:"name"`    // e.g., "Tether USD"
+	Chains   []string `json:"chain"`   // e.g., "TRX"
+	Addrs    []string `json:"address"` // "native" or "0x..."
+	IsNative bool     `json:"is_native"`
 }
 
-type Token struct {
-	Chain    string `json:"chain"`     // "ethereum"
-	Symbol   string `json:"symbol"`    // "USDC"
-	Name     string `json:"name"`      // "USD Coin"
-	Address  string `json:"address"`   // "0xA0b8..."
-	Decimals int    `json:"decimals"`  // 6
-	IsNative bool   `json:"is_native"` // false (native is ETH)
+type TokenExactChain struct {
+	Symbol   string `json:"symbol"`  // e.g., "USDT"
+	Name     string `json:"name"`    // e.g., "Tether USD"
+	Chain    string `json:"chain"`   // e.g., "TRX"
+	Address  string `json:"address"` // "native" or "0x..."
+	IsNative bool   `json:"is_native"`
+}
+
+type TokenSimple struct {
+	Symbol   string `json:"symbol"` // e.g., "USDT"
+	Name     string `json:"name"`   // e.g., "Tether USD"
 	ImageURL string `json:"image_url"`
 }
 
@@ -59,8 +64,4 @@ type AddressBalance struct {
 	Address string         `json:"address"`
 	Native  *TokenBalance  `json:"native"` // ETH, BNB, etc.
 	Tokens  []TokenBalance `json:"tokens"` // All ERC20 tokens
-}
-
-func (i *Token) AddImageURL(ImageURL string) {
-	i.ImageURL = ImageURL
 }

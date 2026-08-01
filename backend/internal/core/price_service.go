@@ -6,16 +6,15 @@ import (
 	"slices"
 	"tracker/internal/cache"
 	"tracker/internal/core/domain"
-	"tracker/internal/db/models"
 )
 
 var ErrPriceNotFound = errors.New("not found")
 
 type PriceRepository interface {
-	GetCoinSnapshot(ctx context.Context) ([]models.Coin, error)
-	SetCoinSnapshot(ctx context.Context, snapshots []models.Coin) error
-	GetPriceSnapshot(ctx context.Context) ([]models.CoinPrice, error)
-	SetPriceSnapshot(ctx context.Context, snapshots []models.CoinPrice) error
+	GetCoinSnapshot(ctx context.Context) ([]domain.TokenSimple, error)
+	SetCoinSnapshot(ctx context.Context, in []domain.TokenSimple) error
+	GetPriceSnapshot(ctx context.Context) ([]domain.TokenPrice, error)
+	SetPriceSnapshot(ctx context.Context, in []domain.TokenPrice) error
 }
 
 type AssetService struct {
@@ -23,7 +22,7 @@ type AssetService struct {
 	priceRepo     PriceRepository
 	fetcher       *PriceFetcher
 	priceCache    *PriceCache
-	tokenRegistry *TokenRegistry
+	tokenRegistry *Registry
 }
 
 func NewPriceService(
@@ -31,7 +30,7 @@ func NewPriceService(
 	priceRepo PriceRepository,
 	fetcher *PriceFetcher,
 	priceCache *PriceCache,
-	tokenRegistry *TokenRegistry,
+	tokenRegistry *Registry,
 ) *AssetService {
 	return &AssetService{
 		cache:         cache,
@@ -42,56 +41,53 @@ func NewPriceService(
 	}
 }
 
-func (s *AssetService) GetCoins(ctx context.Context) ([]domain.Token, error) {
+func (s *AssetService) GetCoins(ctx context.Context) ([]domain.TokenSimple, error) {
 	coins, err := s.priceCache.GetCoins(ctx)
 	if err != nil {
 		return nil, err
 	}
-	tokens := []domain.Token{}
+	tokens := []domain.TokenSimple{}
 	for _, coin := range coins {
 		token, found := s.tokenRegistry.GetBySymbol(coin.Symbol)
 		if found {
-			token.AddImageURL(coin.ImageURL)
-			tokens = append(tokens, token)
+			tokens = append(tokens, domain.TokenSimple{
+				Symbol:   token.Symbol,
+				Name:     token.Name,
+				ImageURL: coin.ImageURL,
+			})
 		}
 	}
 	return tokens, nil
 }
 
-func (s *AssetService) GetCoin(ctx context.Context, id string) (domain.Token, error) {
+func (s *AssetService) GetCoin(ctx context.Context, id string) (*domain.TokenSimple, error) {
 	coin := s.priceCache.GetCoinBySymbol(ctx, id)
 	if coin == nil {
-		return domain.Token{}, ErrPriceNotFound
+		return nil, ErrPriceNotFound
 	}
 	token, found := s.tokenRegistry.GetBySymbol(coin.Symbol)
 	if found {
-		token.AddImageURL(coin.ImageURL)
-		return token, nil
+		return &domain.TokenSimple{
+			Symbol:   token.Symbol,
+			Name:     token.Name,
+			ImageURL: coin.ImageURL,
+		}, nil
 	}
-	return domain.Token{}, ErrPriceNotFound
+	return nil, ErrPriceNotFound
 }
 
-func (s *AssetService) SearchCoins(ctx context.Context, text string) ([]domain.Token, error) {
-	tokens := []domain.Token{}
-	assets := s.tokenRegistry.GetAssetsByText(text)
-	for _, asset := range assets {
-		for _, token := range asset.Tokens {
-			symbol := token.Symbol
-			if symbol == "" {
-				symbol = asset.Symbol
-			}
-			token, found := s.tokenRegistry.GetBySymbol(symbol)
-			if found {
-				token.AddImageURL(token.ImageURL)
-				tokens = append(tokens, token)
-			}
-		}
+func (s *AssetService) SearchCoins(ctx context.Context, text string) ([]domain.TokenSimple, error) {
+	out := []domain.TokenSimple{}
+	tokens := s.tokenRegistry.GetByQuery(text)
+	for _, i := range tokens {
+		coin := s.priceCache.GetCoinBySymbol(ctx, i.Symbol)
+		out = append(out, domain.TokenSimple{
+			Symbol:   i.Symbol,
+			Name:     i.Name,
+			ImageURL: coin.ImageURL,
+		})
 	}
-	// coins, err := s.priceCache.GetCoins(ctx)
-	// if err != nil {
-	// 	return nil, err
-	// }
-	return tokens, nil
+	return out, nil
 }
 
 func (s *AssetService) GetPrices(ctx context.Context, symbols []string) ([]domain.TokenPrice, error) {
@@ -105,7 +101,7 @@ func (s *AssetService) GetPrices(ctx context.Context, symbols []string) ([]domai
 	for _, symbol := range symbols {
 		price := s.priceCache.GetPriceBySymbol(ctx, symbol)
 		if price != nil {
-			prices = append(prices, dbPriceToEntity(price))
+			prices = append(prices, *price)
 		}
 	}
 	// add prices to watch
@@ -117,42 +113,7 @@ func (s *AssetService) GetPrice(ctx context.Context, symbol string) (domain.Toke
 	price := s.priceCache.GetPriceBySymbol(ctx, symbol)
 	if price != nil {
 		s.priceCache.AddPricesToWatch(ctx, []string{symbol})
-		return dbPriceToEntity(price), nil
+		return *price, nil
 	}
 	return domain.TokenPrice{}, ErrPriceNotFound
-}
-
-func dbCoinsToEntity(in []models.Coin) []domain.Token {
-	out := []domain.Token{}
-	for _, i := range in {
-		out = append(out, domain.Token{
-			Chain:    i.Symbol,
-			Symbol:   i.Symbol,
-			Name:     i.Name,
-			Address:  i.Name,
-			Decimals: 0, IsNative: false,
-			ImageURL: i.ImageURL,
-		})
-	}
-	return out
-}
-
-func dbPriceToEntity(in *models.CoinPrice) domain.TokenPrice {
-	return domain.TokenPrice{
-		ID:                             in.ID,
-		CoinID:                         in.CoinID,
-		Name:                           in.Name,
-		Symbol:                         in.Symbol,
-		CurrentPrice:                   in.CurrentPrice,
-		Change_24h:                     in.Change_24h,
-		MarketCap:                      in.MarketCap,
-		TotalVolume:                    in.TotalVolume,
-		High_24h:                       in.High_24h,
-		Low_24h:                        in.Low_24h,
-		PriceChange_24h:                in.PriceChange_24h,
-		PriceChangePercentage_24h:      in.PriceChangePercentage_24h,
-		MarketCapChange_24h:            in.MarketCapChange_24h,
-		MarketCapChange_percentage_24h: in.MarketCapChange_percentage_24h,
-		LastUpdated:                    in.LastUpdated,
-	}
 }

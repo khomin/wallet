@@ -17,12 +17,19 @@ type EthereumClient struct {
 	rpcURL  string
 	client  *ethclient.Client
 	timeout time.Duration
+	decimal int64
 }
 
-func NewEthereumClient(rpcURL string) *EthereumClient {
+type EthConfig struct {
+	RpcURL  string
+	Decimal int64
+}
+
+func NewEthereumClient(conf EthConfig) *EthereumClient {
 	return &EthereumClient{
-		rpcURL:  rpcURL,
+		rpcURL:  conf.RpcURL,
 		timeout: 10 * time.Second,
+		decimal: conf.Decimal,
 	}
 }
 
@@ -79,7 +86,8 @@ func (c *EthereumClient) GetTokenBalance(ctx context.Context, address, tokenAddr
 		Data: decimalsMethodID,
 	}
 
-	var decimals int64 = 18 // Default fallback to 18
+	decimals := c.decimal
+
 	decimalsOutput, err := c.client.CallContract(ctx, decimalsMsg, nil)
 	if err == nil && len(decimalsOutput) > 0 {
 		// Unpack the 32-byte hex return into a standard integer
