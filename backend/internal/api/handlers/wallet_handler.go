@@ -3,7 +3,7 @@ package handlers
 import (
 	"errors"
 	"net/http"
-	walletv1 "tracker/gen/v1"
+	walletv1 "tracker/gen/wallet/v1"
 	"tracker/internal/api/dto"
 	"tracker/internal/api/middleware"
 	"tracker/internal/core"

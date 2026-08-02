@@ -2,7 +2,7 @@
 // versions:
 // 	protoc-gen-go v1.36.11
 // 	protoc        (unknown)
-// source: v1/wallet.proto
+// source: wallet/v1/wallet.proto
 
 package walletv1
 
@@ -33,7 +33,7 @@ type GetBalanceRequest struct {
 
 func (x *GetBalanceRequest) Reset() {
 	*x = GetBalanceRequest{}
-	mi := &file_v1_wallet_proto_msgTypes[0]
+	mi := &file_wallet_v1_wallet_proto_msgTypes[0]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -45,7 +45,7 @@ func (x *GetBalanceRequest) String() string {
 func (*GetBalanceRequest) ProtoMessage() {}
 
 func (x *GetBalanceRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_v1_wallet_proto_msgTypes[0]
+	mi := &file_wallet_v1_wallet_proto_msgTypes[0]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -58,7 +58,7 @@ func (x *GetBalanceRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetBalanceRequest.ProtoReflect.Descriptor instead.
 func (*GetBalanceRequest) Descriptor() ([]byte, []int) {
-	return file_v1_wallet_proto_rawDescGZIP(), []int{0}
+	return file_wallet_v1_wallet_proto_rawDescGZIP(), []int{0}
 }
 
 func (x *GetBalanceRequest) GetChain() string {
@@ -96,7 +96,7 @@ type GetBalanceResponse struct {
 
 func (x *GetBalanceResponse) Reset() {
 	*x = GetBalanceResponse{}
-	mi := &file_v1_wallet_proto_msgTypes[1]
+	mi := &file_wallet_v1_wallet_proto_msgTypes[1]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -108,7 +108,7 @@ func (x *GetBalanceResponse) String() string {
 func (*GetBalanceResponse) ProtoMessage() {}
 
 func (x *GetBalanceResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_v1_wallet_proto_msgTypes[1]
+	mi := &file_wallet_v1_wallet_proto_msgTypes[1]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -121,7 +121,7 @@ func (x *GetBalanceResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetBalanceResponse.ProtoReflect.Descriptor instead.
 func (*GetBalanceResponse) Descriptor() ([]byte, []int) {
-	return file_v1_wallet_proto_rawDescGZIP(), []int{1}
+	return file_wallet_v1_wallet_proto_rawDescGZIP(), []int{1}
 }
 
 func (x *GetBalanceResponse) GetChain() string {
@@ -166,11 +166,11 @@ func (x *GetBalanceResponse) GetErrorMsg() string {
 	return ""
 }
 
-var File_v1_wallet_proto protoreflect.FileDescriptor
+var File_wallet_v1_wallet_proto protoreflect.FileDescriptor
 
-const file_v1_wallet_proto_rawDesc = "" +
+const file_wallet_v1_wallet_proto_rawDesc = "" +
 	"\n" +
-	"\x0fv1/wallet.proto\x12\twallet.v1\x1a\x1cgoogle/api/annotations.proto\"[\n" +
+	"\x16wallet/v1/wallet.proto\x12\twallet.v1\x1a\x1cgoogle/api/annotations.proto\"[\n" +
 	"\x11GetBalanceRequest\x12\x14\n" +
 	"\x05chain\x18\x01 \x01(\tR\x05chain\x12\x18\n" +
 	"\aaddress\x18\x02 \x01(\tR\aaddress\x12\x16\n" +
@@ -188,23 +188,23 @@ const file_v1_wallet_proto_rawDesc = "" +
 	"GetBalance\x12\x1c.wallet.v1.GetBalanceRequest\x1a\x1d.wallet.v1.GetBalanceResponse\"-\x82\xd3\xe4\x93\x02'\x12%/v1/wallets/{chain}/{address}/balanceB<Z:github.com/yourusername/yourrepo/gen/go/wallet/v1;walletv1b\x06proto3"
 
 var (
-	file_v1_wallet_proto_rawDescOnce sync.Once
-	file_v1_wallet_proto_rawDescData []byte
+	file_wallet_v1_wallet_proto_rawDescOnce sync.Once
+	file_wallet_v1_wallet_proto_rawDescData []byte
 )
 
-func file_v1_wallet_proto_rawDescGZIP() []byte {
-	file_v1_wallet_proto_rawDescOnce.Do(func() {
-		file_v1_wallet_proto_rawDescData = protoimpl.X.CompressGZIP(unsafe.Slice(unsafe.StringData(file_v1_wallet_proto_rawDesc), len(file_v1_wallet_proto_rawDesc)))
+func file_wallet_v1_wallet_proto_rawDescGZIP() []byte {
+	file_wallet_v1_wallet_proto_rawDescOnce.Do(func() {
+		file_wallet_v1_wallet_proto_rawDescData = protoimpl.X.CompressGZIP(unsafe.Slice(unsafe.StringData(file_wallet_v1_wallet_proto_rawDesc), len(file_wallet_v1_wallet_proto_rawDesc)))
 	})
-	return file_v1_wallet_proto_rawDescData
+	return file_wallet_v1_wallet_proto_rawDescData
 }
 
-var file_v1_wallet_proto_msgTypes = make([]protoimpl.MessageInfo, 2)
-var file_v1_wallet_proto_goTypes = []any{
+var file_wallet_v1_wallet_proto_msgTypes = make([]protoimpl.MessageInfo, 2)
+var file_wallet_v1_wallet_proto_goTypes = []any{
 	(*GetBalanceRequest)(nil),  // 0: wallet.v1.GetBalanceRequest
 	(*GetBalanceResponse)(nil), // 1: wallet.v1.GetBalanceResponse
 }
-var file_v1_wallet_proto_depIdxs = []int32{
+var file_wallet_v1_wallet_proto_depIdxs = []int32{
 	0, // 0: wallet.v1.WalletService.GetBalance:input_type -> wallet.v1.GetBalanceRequest
 	1, // 1: wallet.v1.WalletService.GetBalance:output_type -> wallet.v1.GetBalanceResponse
 	1, // [1:2] is the sub-list for method output_type
@@ -214,26 +214,26 @@ var file_v1_wallet_proto_depIdxs = []int32{
 	0, // [0:0] is the sub-list for field type_name
 }
 
-func init() { file_v1_wallet_proto_init() }
-func file_v1_wallet_proto_init() {
-	if File_v1_wallet_proto != nil {
+func init() { file_wallet_v1_wallet_proto_init() }
+func file_wallet_v1_wallet_proto_init() {
+	if File_wallet_v1_wallet_proto != nil {
 		return
 	}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
-			RawDescriptor: unsafe.Slice(unsafe.StringData(file_v1_wallet_proto_rawDesc), len(file_v1_wallet_proto_rawDesc)),
+			RawDescriptor: unsafe.Slice(unsafe.StringData(file_wallet_v1_wallet_proto_rawDesc), len(file_wallet_v1_wallet_proto_rawDesc)),
 			NumEnums:      0,
 			NumMessages:   2,
 			NumExtensions: 0,
 			NumServices:   1,
 		},
-		GoTypes:           file_v1_wallet_proto_goTypes,
-		DependencyIndexes: file_v1_wallet_proto_depIdxs,
-		MessageInfos:      file_v1_wallet_proto_msgTypes,
+		GoTypes:           file_wallet_v1_wallet_proto_goTypes,
+		DependencyIndexes: file_wallet_v1_wallet_proto_depIdxs,
+		MessageInfos:      file_wallet_v1_wallet_proto_msgTypes,
 	}.Build()
-	File_v1_wallet_proto = out.File
-	file_v1_wallet_proto_goTypes = nil
-	file_v1_wallet_proto_depIdxs = nil
+	File_wallet_v1_wallet_proto = out.File
+	file_wallet_v1_wallet_proto_goTypes = nil
+	file_wallet_v1_wallet_proto_depIdxs = nil
 }

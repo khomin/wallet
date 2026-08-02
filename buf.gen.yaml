@@ -17,7 +17,7 @@ plugins:
 
   # 4. Generate OpenAPI v3 Specs (Swagger)
   - remote: buf.build/grpc-ecosystem/openapiv2
-    out: gen/openapiv2
+    out: backend/gen/openapiv2
 
   # 5. Generate TypeScript Types & Client for React (Connect-ES)
   - remote: buf.build/connectrpc/es

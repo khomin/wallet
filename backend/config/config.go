@@ -20,7 +20,8 @@ type Config struct {
 }
 
 type ServerConfig struct {
-	Port        int    `mapstructure:"port"`
+	PortHTTP    int    `mapstructure:"port_http"`
+	PortGRPC    int    `mapstructure:"port_grpc"`
 	Environment string `mapstructure:"environment"`
 	LogPath     string `mapstructure:"log_path"`
 }

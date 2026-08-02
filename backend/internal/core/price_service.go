@@ -17,7 +17,7 @@ type PriceRepository interface {
 	SetPriceSnapshot(ctx context.Context, in []domain.TokenPrice) error
 }
 
-type AssetService struct {
+type PriceService struct {
 	cache         *cache.RedisClient
 	priceRepo     PriceRepository
 	fetcher       *PriceFetcher
@@ -31,8 +31,8 @@ func NewPriceService(
 	fetcher *PriceFetcher,
 	priceCache PriceCache,
 	tokenRegistry *TokenRegistry,
-) *AssetService {
-	return &AssetService{
+) *PriceService {
+	return &PriceService{
 		cache:         cache,
 		priceRepo:     priceRepo,
 		fetcher:       fetcher,
@@ -41,7 +41,7 @@ func NewPriceService(
 	}
 }
 
-func (s *AssetService) GetCoins(ctx context.Context) ([]domain.TokenWithURL, error) {
+func (s *PriceService) GetCoins(ctx context.Context) ([]domain.TokenWithURL, error) {
 	coins, err := s.priceCache.GetCoins(ctx)
 	if err != nil {
 		return nil, err
@@ -59,7 +59,7 @@ func (s *AssetService) GetCoins(ctx context.Context) ([]domain.TokenWithURL, err
 	return tokens, nil
 }
 
-func (s *AssetService) GetCoin(ctx context.Context, id string) (*domain.TokenWithURL, error) {
+func (s *PriceService) GetCoin(ctx context.Context, id string) (*domain.TokenWithURL, error) {
 	coin := s.priceCache.GetCoinBySymbol(ctx, id)
 	if coin == nil {
 		return nil, ErrPriceNotFound
@@ -74,7 +74,7 @@ func (s *AssetService) GetCoin(ctx context.Context, id string) (*domain.TokenWit
 	return nil, ErrPriceNotFound
 }
 
-func (s *AssetService) SearchCoins(ctx context.Context, text string) ([]domain.TokenWithURL, error) {
+func (s *PriceService) SearchCoins(ctx context.Context, text string) ([]domain.TokenWithURL, error) {
 	out := []domain.TokenWithURL{}
 	tokens := s.tokenRegistry.GetByQuery(text)
 	for _, token := range tokens {
@@ -87,7 +87,7 @@ func (s *AssetService) SearchCoins(ctx context.Context, text string) ([]domain.T
 	return out, nil
 }
 
-func (s *AssetService) GetPrices(ctx context.Context, symbols []string) ([]domain.TokenPrice, error) {
+func (s *PriceService) GetPrices(ctx context.Context, symbols []string) ([]domain.TokenPrice, error) {
 	// keep only supported symbols
 	symbols = slices.DeleteFunc(symbols, func(symbol string) bool {
 		_, found := s.tokenRegistry.GetBySymbol(symbol)
@@ -104,7 +104,7 @@ func (s *AssetService) GetPrices(ctx context.Context, symbols []string) ([]domai
 	return prices, nil
 }
 
-func (s *AssetService) GetPrice(ctx context.Context, symbol string) (domain.TokenPrice, error) {
+func (s *PriceService) GetPrice(ctx context.Context, symbol string) (domain.TokenPrice, error) {
 	price := s.priceCache.GetPriceBySymbol(ctx, symbol)
 	if price != nil {
 		return *price, nil

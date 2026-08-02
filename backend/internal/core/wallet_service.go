@@ -37,14 +37,14 @@ type WalletRepository interface {
 
 type WalletService struct {
 	walletRepo        WalletRepository
-	priceService      *AssetService
+	priceService      *PriceService
 	blockchainService *BlockchainService
 	tokenRegistry     *TokenRegistry
 }
 
 func NewWalletService(
 	walletRepo WalletRepository,
-	priceService *AssetService,
+	priceService *PriceService,
 	blockchainService *BlockchainService,
 	tokenRegistry *TokenRegistry,
 ) *WalletService {

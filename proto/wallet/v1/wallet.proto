@@ -8,7 +8,8 @@ option go_package = "github.com/yourusername/yourrepo/gen/go/wallet/v1;walletv1"
 import "google/api/annotations.proto";
 
 service WalletService {
-  // GET /v1/wallets/{chain}/{address}/balance
+
+  
   rpc GetBalance(GetBalanceRequest) returns (GetBalanceResponse) {
     option (google.api.http) = {
       get: "/v1/wallets/{chain}/{address}/balance"

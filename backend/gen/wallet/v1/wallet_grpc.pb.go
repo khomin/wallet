@@ -2,7 +2,7 @@
 // versions:
 // - protoc-gen-go-grpc v1.6.2
 // - protoc             (unknown)
-// source: v1/wallet.proto
+// source: wallet/v1/wallet.proto
 
 package walletv1
 
@@ -26,7 +26,6 @@ const (
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type WalletServiceClient interface {
-	// GET /v1/wallets/{chain}/{address}/balance
 	GetBalance(ctx context.Context, in *GetBalanceRequest, opts ...grpc.CallOption) (*GetBalanceResponse, error)
 }
 
@@ -52,7 +51,6 @@ func (c *walletServiceClient) GetBalance(ctx context.Context, in *GetBalanceRequ
 // All implementations must embed UnimplementedWalletServiceServer
 // for forward compatibility.
 type WalletServiceServer interface {
-	// GET /v1/wallets/{chain}/{address}/balance
 	GetBalance(context.Context, *GetBalanceRequest) (*GetBalanceResponse, error)
 	mustEmbedUnimplementedWalletServiceServer()
 }
@@ -119,5 +117,5 @@ var WalletService_ServiceDesc = grpc.ServiceDesc{
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
-	Metadata: "v1/wallet.proto",
+	Metadata: "wallet/v1/wallet.proto",
 }
