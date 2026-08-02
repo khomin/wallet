@@ -1,11 +1,11 @@
 info:
   name: get-wallet-one
   type: http
-  seq: 5
+  seq: 6
 
 http:
   method: GET
-  url: "{{url}}/api/v1/wallets/0635daa4-584e-42ce-a122-b9c7f807442a"
+  url: "{{url}}/v1/wallets/0635daa4-584e-42ce-a122-b9c7f807442a"
   auth: inherit
 
 settings:

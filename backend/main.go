@@ -102,7 +102,6 @@ func main() {
 	}
 
 	walletService := core.NewWalletService(walletRepo, priceService, blockchainService, tokenRegistry)
-	walletHandler := handlers.NewWalletHandler(walletService)
 
 	go priceFetcher.StartCoinFetcher(ctx)
 
@@ -127,6 +126,7 @@ func main() {
 		c.Next()
 	})
 
+	// walletHandler := handlers.NewWalletHandler(walletService)
 	// v1 := r.Group("/api/v1")
 	// {
 	// 	protected := v1.Group("").Use(middleware.Auth(verifier))
@@ -148,13 +148,17 @@ func main() {
 	// 	})
 	// })
 	// print(assetsHandler, verifier, walletHandler)
-	print(verifier, walletHandler)
+	// print(verifier, walletHandler)
+	print(verifier)
 
 	httpAddr := fmt.Sprintf(":%d", app.Cfg.Server.PortHTTP)
 	grpcPort := fmt.Sprintf(":%d", app.Cfg.Server.PortGRPC)
 	gwmux := runtime.NewServeMux()
 
-	grpcServer := grpc.NewServer(grpc.EmptyServerOption{})
+	grpcServer := grpc.NewServer(
+		// grpc.EmptyServerOption{},
+		grpc.UnaryInterceptor(middleware.UnaryAuthInterceptor(verifier)),
+	)
 	lis, err := net.Listen("tcp", grpcPort)
 	if err != nil {
 		logrus.Fatalf("failed to listen on gRPC port %s: %v", grpcPort, err)

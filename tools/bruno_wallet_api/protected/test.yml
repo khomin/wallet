@@ -1,0 +1,11 @@
+info:
+  name: test
+  type: grpc
+  seq: 12
+
+grpc:
+  url: "{{grpcUrl}}"
+  method: /wallet.v1.WalletService/GetBalance
+  methodType: unary
+  message: "{}"
+  auth: inherit

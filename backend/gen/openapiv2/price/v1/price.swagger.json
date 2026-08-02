@@ -1,0 +1,312 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "title": "price/v1/price.proto",
+    "version": "version not set"
+  },
+  "tags": [
+    {
+      "name": "PriceService"
+    }
+  ],
+  "consumes": [
+    "application/json"
+  ],
+  "produces": [
+    "application/json"
+  ],
+  "paths": {
+    "/v1/coins": {
+      "get": {
+        "operationId": "PriceService_GetCoins",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1GetCoinsResp"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "tags": [
+          "PriceService"
+        ]
+      }
+    },
+    "/v1/coins/search": {
+      "post": {
+        "operationId": "PriceService_SearchCoin",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1SearchCoinsResp"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/v1SearchCoinsReq"
+            }
+          }
+        ],
+        "tags": [
+          "PriceService"
+        ]
+      }
+    },
+    "/v1/prices": {
+      "get": {
+        "operationId": "PriceService_GetPrices",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1GetPricesResp"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "symbols",
+            "in": "query",
+            "required": false,
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "collectionFormat": "multi"
+          }
+        ],
+        "tags": [
+          "PriceService"
+        ]
+      }
+    },
+    "/v1/prices/{symbol}": {
+      "get": {
+        "operationId": "PriceService_GetPrice",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1GetPriceResp"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "symbol",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "PriceService"
+        ]
+      }
+    }
+  },
+  "definitions": {
+    "protobufAny": {
+      "type": "object",
+      "properties": {
+        "@type": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": {}
+    },
+    "rpcStatus": {
+      "type": "object",
+      "properties": {
+        "code": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "message": {
+          "type": "string"
+        },
+        "details": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/protobufAny"
+          }
+        }
+      }
+    },
+    "v1GetCoinsResp": {
+      "type": "object",
+      "properties": {
+        "total": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "token": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v1Token"
+          }
+        }
+      }
+    },
+    "v1GetPriceResp": {
+      "type": "object",
+      "properties": {
+        "price": {
+          "$ref": "#/definitions/v1Price"
+        }
+      }
+    },
+    "v1GetPricesResp": {
+      "type": "object",
+      "properties": {
+        "total": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "price": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v1Price"
+          }
+        }
+      }
+    },
+    "v1Price": {
+      "type": "object",
+      "properties": {
+        "symbol": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "priceUsd": {
+          "type": "number",
+          "format": "float"
+        },
+        "marketCap": {
+          "type": "number",
+          "format": "float"
+        },
+        "totalVolume": {
+          "type": "number",
+          "format": "float"
+        },
+        "high24h": {
+          "type": "number",
+          "format": "float"
+        },
+        "low24h": {
+          "type": "number",
+          "format": "float"
+        },
+        "priceChange24h": {
+          "type": "number",
+          "format": "float"
+        },
+        "priceChangePercentage24h": {
+          "type": "number",
+          "format": "float"
+        },
+        "marketCapChange24h": {
+          "type": "number",
+          "format": "float"
+        },
+        "marketCapChangePercentage24h": {
+          "type": "number",
+          "format": "float"
+        },
+        "lastUpdated": {
+          "type": "string",
+          "format": "date-time"
+        }
+      }
+    },
+    "v1SearchCoinsReq": {
+      "type": "object",
+      "properties": {
+        "text": {
+          "type": "string"
+        }
+      }
+    },
+    "v1SearchCoinsResp": {
+      "type": "object",
+      "properties": {
+        "total": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "token": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v1Token"
+          }
+        }
+      }
+    },
+    "v1Token": {
+      "type": "object",
+      "properties": {
+        "symbol": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "chains": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "addrs": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "isNative": {
+          "type": "boolean"
+        },
+        "imageUrl": {
+          "type": "string"
+        }
+      }
+    }
+  }
+}

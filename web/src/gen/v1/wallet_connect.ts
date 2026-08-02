@@ -13,8 +13,6 @@ export const WalletService = {
   typeName: "wallet.v1.WalletService",
   methods: {
     /**
-     * GET /v1/wallets/{chain}/{address}/balance
-     *
      * @generated from rpc wallet.v1.WalletService.GetBalance
      */
     getBalance: {

@@ -1,0 +1,350 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "title": "wallet/v1/wallet.proto",
+    "version": "version not set"
+  },
+  "tags": [
+    {
+      "name": "WalletService"
+    }
+  ],
+  "consumes": [
+    "application/json"
+  ],
+  "produces": [
+    "application/json"
+  ],
+  "paths": {
+    "/v1/wallets": {
+      "get": {
+        "operationId": "WalletService_GetWallets",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1GetWalletsResp"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "tags": [
+          "WalletService"
+        ]
+      },
+      "post": {
+        "operationId": "WalletService_AddWallet",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1AddWalletResp"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/v1AddWalletReq"
+            }
+          }
+        ],
+        "tags": [
+          "WalletService"
+        ]
+      }
+    },
+    "/v1/wallets/{id}": {
+      "get": {
+        "operationId": "WalletService_GetWallet",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1GetWalletResp"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "WalletService"
+        ]
+      },
+      "delete": {
+        "operationId": "WalletService_DeleteWallet",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1DeleteWalletResp"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "WalletService"
+        ]
+      },
+      "patch": {
+        "operationId": "WalletService_EditWallet",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1EditWalletResp"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/WalletServiceEditWalletBody"
+            }
+          }
+        ],
+        "tags": [
+          "WalletService"
+        ]
+      }
+    }
+  },
+  "definitions": {
+    "WalletServiceEditWalletBody": {
+      "type": "object"
+    },
+    "protobufAny": {
+      "type": "object",
+      "properties": {
+        "@type": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": {}
+    },
+    "rpcStatus": {
+      "type": "object",
+      "properties": {
+        "code": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "message": {
+          "type": "string"
+        },
+        "details": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/protobufAny"
+          }
+        }
+      }
+    },
+    "v1AddWalletReq": {
+      "type": "object",
+      "properties": {
+        "address": {
+          "type": "string"
+        },
+        "chain": {
+          "type": "string"
+        },
+        "tokenSymbol": {
+          "type": "string"
+        },
+        "label": {
+          "type": "string"
+        },
+        "balanceCrypto": {
+          "type": "number",
+          "format": "float"
+        },
+        "balanceUsd": {
+          "type": "number",
+          "format": "float"
+        },
+        "change24hPercent": {
+          "type": "number",
+          "format": "float"
+        },
+        "hasError": {
+          "type": "boolean"
+        },
+        "errorMsg": {
+          "type": "string"
+        }
+      }
+    },
+    "v1AddWalletResp": {
+      "type": "object",
+      "properties": {
+        "wallet": {
+          "$ref": "#/definitions/v1Wallet"
+        }
+      }
+    },
+    "v1DeleteWalletResp": {
+      "type": "object",
+      "properties": {
+        "wallet": {
+          "$ref": "#/definitions/v1Wallet"
+        }
+      }
+    },
+    "v1EditWalletResp": {
+      "type": "object",
+      "properties": {
+        "wallet": {
+          "$ref": "#/definitions/v1Wallet"
+        }
+      }
+    },
+    "v1GetWalletResp": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "address": {
+          "type": "string"
+        },
+        "chain": {
+          "type": "string"
+        },
+        "tokenSymbol": {
+          "type": "string"
+        },
+        "label": {
+          "type": "string"
+        },
+        "balanceCrypto": {
+          "type": "number",
+          "format": "float"
+        },
+        "balanceUsd": {
+          "type": "number",
+          "format": "float"
+        },
+        "change24hPercent": {
+          "type": "number",
+          "format": "float"
+        },
+        "hasError": {
+          "type": "boolean"
+        },
+        "errorMsg": {
+          "type": "string"
+        }
+      }
+    },
+    "v1GetWalletsResp": {
+      "type": "object",
+      "properties": {
+        "total": {
+          "type": "string",
+          "format": "int64"
+        },
+        "wallet": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v1Wallet"
+          }
+        }
+      }
+    },
+    "v1Wallet": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "address": {
+          "type": "string"
+        },
+        "chain": {
+          "type": "string"
+        },
+        "tokenSymbol": {
+          "type": "string"
+        },
+        "label": {
+          "type": "string"
+        },
+        "balanceCrypto": {
+          "type": "number",
+          "format": "float"
+        },
+        "balanceUsd": {
+          "type": "number",
+          "format": "float"
+        },
+        "change24hPercent": {
+          "type": "number",
+          "format": "float"
+        },
+        "hasError": {
+          "type": "boolean"
+        },
+        "errorMsg": {
+          "type": "string"
+        }
+      }
+    }
+  }
+}
