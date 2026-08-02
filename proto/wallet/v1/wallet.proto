@@ -8,26 +8,93 @@ option go_package = "github.com/yourusername/yourrepo/gen/go/wallet/v1;walletv1"
 import "google/api/annotations.proto";
 
 service WalletService {
+  // func (h *WalletHandler) ListWallets(c *gin.Context) {
+  // user, ok := middleware.GetOAUTH(c)
 
-  
-  rpc GetBalance(GetBalanceRequest) returns (GetBalanceResponse) {
+  rpc GetWallets(GetWalletsReq) returns (GetWalletsResp) {
     option (google.api.http) = {
-      get: "/v1/wallets/{chain}/{address}/balance"
+      get: "/v1/wallets"
+    };
+  }
+  rpc GetWallet(GetWalletReq) returns (GetWalletResp) {
+    option (google.api.http) = {
+      get: "/v1/wallets/{id}"
+    };
+  }
+  rpc EditWallet(EditWalletReq) returns (EditWalletResp) {
+    option (google.api.http) = {
+      patch: "/v1/wallets/"
+    };
+  }
+  rpc DeleteWallet(DeleteWalletReq) returns (DeleteWalletResp) {
+    option (google.api.http) = {
+      delete: "/v1/wallets/"
+    };
+  }
+  rpc AddWallet(AddWalletReq) returns (AddWalletResp) {
+    option (google.api.http) = {
+      post: "/v1/wallets/"
     };
   }
 }
 
-message GetBalanceRequest {
-  string chain = 1;
-  string address = 2;
-  string symbol = 3;
+message GetWalletsReq {}
+
+message GetWalletsResp {
+  int64           total  = 1;
+  repeated Wallet wallet = 2;
 }
 
-message GetBalanceResponse {
-  string chain = 1;
-  string address = 2;
-  double balance_crypto = 3;
-  double balance_usd = 4;
-  bool has_error = 5;
-  string error_msg = 6;
+message GetWalletReq {
+  string id = 1;
+}
+
+message GetWalletResp {
+  string id                 = 1;
+  string address            = 2;
+  string chain              = 3;
+  string token_symbol       = 4;
+  string label              = 5;
+  float  balance_crypto     = 6;
+  float  balance_usd        = 7;
+  float  change_24h_percent = 8;
+  bool   has_error          = 9;
+  string error_msg          = 10;
+}
+
+message EditWalletReq {
+
+}
+
+message EditWalletResp {
+
+}
+
+message DeleteWalletReq {
+
+}
+
+message DeleteWalletResp {
+
+}
+
+message AddWalletReq {
+
+}
+
+message AddWalletResp {
+
+}
+
+message Wallet {
+  string id                 = 1;
+  string address            = 2;
+  string chain              = 3;
+  string token_symbol       = 4;
+  string label              = 5;
+  float  balance_crypto     = 6;
+  float  balance_usd        = 7;
+  float  change_24h_percent = 8;
+  bool   has_error          = 9;
+  string error_msg          = 10;
 }
