@@ -3,8 +3,8 @@ package dto
 import "tracker/internal/core/domain"
 
 type CoinsResponse struct {
-	Total int                     `json:"total"`
-	Coins []domain.TokenWithImage `json:"coins"`
+	Total int                   `json:"total"`
+	Coins []domain.TokenWithURL `json:"coins"`
 }
 
 type Token struct {

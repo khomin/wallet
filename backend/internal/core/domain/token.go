@@ -3,11 +3,9 @@ package domain
 import (
 	"math/big"
 	"time"
-
-	"github.com/google/uuid"
 )
 
-type Token struct {
+type TokenRaw struct {
 	Symbol   string   `json:"symbol"`  // e.g., "USDT"
 	Name     string   `json:"name"`    // e.g., "Tether USD"
 	Chains   []string `json:"chain"`   // e.g., "TRX"
@@ -15,27 +13,27 @@ type Token struct {
 	IsNative bool     `json:"is_native"`
 }
 
-type TokenWithImage struct {
-	Token
+type TokenWithURL struct {
+	TokenRaw
 	ImageURL string `json:"image_url"`
 }
 
-type TokenOnChain struct {
+type TokenChain struct {
 	Symbol  string `json:"symbol"`  // e.g., "USDT"
 	Name    string `json:"name"`    // e.g., "Tether USD"
 	Chain   string `json:"chain"`   // e.g., "TRX"
 	Address string `json:"address"` // "native" or "0x..."
 }
 
-type TokenSimple struct {
-	Symbol   string `json:"symbol"` // e.g., "USDT"
-	Name     string `json:"name"`   // e.g., "Tether USD"
+type TokenID struct {
+	ID       string `json:"id"`
+	Symbol   string `json:"symbol"`
+	Name     string `json:"name"`
 	ImageURL string `json:"image_url"`
 }
 
 type TokenPrice struct {
-	ID                             uuid.UUID `json:"id"`
-	CoinID                         string    `json:"coin_id"`
+	ID                             string    `json:"id"`
 	Name                           string    `json:"name"`
 	Symbol                         string    `json:"symbol"`
 	CurrentPrice                   float64   `json:"current_price"`
@@ -54,7 +52,7 @@ type TokenPrice struct {
 type TokenBalance struct {
 	Chain      string   `json:"chain"`
 	Address    string   `json:"address"`     // User's wallet address
-	Token      Token    `json:"token"`       // Token metadata
+	Token      TokenRaw `json:"token"`       // Token metadata
 	Balance    *big.Int `json:"balance_wei"` // Raw balance
 	BalanceDec float64  `json:"balance"`     // Human-readable
 	PriceUSD   float64  `json:"price_usd"`

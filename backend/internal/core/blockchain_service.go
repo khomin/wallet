@@ -22,7 +22,7 @@ type ChainProvider interface {
 type BlockchainService struct {
 	providers     map[string]ChainProvider
 	walletRepo    WalletRepository
-	tokenRegistry *Registry
+	tokenRegistry *TokenRegistry
 	cache         PriceCache
 }
 
@@ -42,7 +42,7 @@ type BlockchainServiceDeps struct {
 	BTC           *bitcoin.BitcoinClient
 	Tron          *tron.TronClient
 	WalletRepo    WalletRepository
-	TokenRegistry *Registry
+	TokenRegistry *TokenRegistry
 	Cache         PriceCache
 }
 

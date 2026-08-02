@@ -2,24 +2,20 @@ package models
 
 import (
 	"time"
-
-	"github.com/google/uuid"
 )
 
 type Coin struct {
-	ID          uuid.UUID `db:"id"`
-	CoinID      string    `db:"coin_id"` // "bitcoin"
-	Symbol      string    `db:"symbol"`  // "btc"
-	Name        string    `db:"name"`    // "Bitcoin"
+	ID          string    `db:"id"`
+	Symbol      string    `db:"symbol"` // "btc"
+	Name        string    `db:"name"`   // "Bitcoin"
 	ImageURL    string    `db:"image_url"`
 	LastUpdated time.Time `db:"last_updated"`
 	SnapshotAt  time.Time `db:"snapshot_at"` // When we captured this
 }
 
 type CoinPrice struct {
-	ID                             uuid.UUID `db:"id"`
-	CoinID                         string    `db:"coin_id"` // "bitcoin"
-	Name                           string    `db:"name"`    // "Bitcoin"
+	ID                             string    `db:"id"`
+	Name                           string    `db:"name"`
 	Symbol                         string    `db:"symbol"`
 	CurrentPrice                   float64   `db:"current_price"`
 	Change_24h                     float64   `db:"change_24h"`

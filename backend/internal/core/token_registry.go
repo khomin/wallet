@@ -8,22 +8,22 @@ import (
 	"tracker/internal/core/domain"
 )
 
-type Registry struct {
+type TokenRegistry struct {
 	mu                  sync.RWMutex
 	tokensByName        map[string]config.TokenConfig
 	tokensByChainSymbol map[string]config.TokenConfig
 	tokensBySymbol      map[string]config.TokenConfig
 }
 
-func NewTokenRegistry() *Registry {
-	return &Registry{
+func NewTokenRegistry() *TokenRegistry {
+	return &TokenRegistry{
 		tokensByName:        make(map[string]config.TokenConfig),
 		tokensByChainSymbol: make(map[string]config.TokenConfig),
 		tokensBySymbol:      make(map[string]config.TokenConfig),
 	}
 }
 
-func DefaultTokenRegistry(conf config.TokenRegistry) *Registry {
+func DefaultTokenRegistry(conf config.TokenRegistry) *TokenRegistry {
 	registry := NewTokenRegistry()
 	for _, token := range conf.Tokens {
 		registry.Register(token)
@@ -31,7 +31,7 @@ func DefaultTokenRegistry(conf config.TokenRegistry) *Registry {
 	return registry
 }
 
-func (r *Registry) Register(token config.TokenConfig) {
+func (r *TokenRegistry) Register(token config.TokenConfig) {
 	r.mu.Lock()
 	defer r.mu.Unlock()
 
@@ -53,7 +53,7 @@ func (r *Registry) Register(token config.TokenConfig) {
 	}
 }
 
-func (r *Registry) GetByChainAndSymbol(chain, symbol string) (*domain.TokenOnChain, error) {
+func (r *TokenRegistry) GetByChainAndSymbol(chain, symbol string) (*domain.TokenChain, error) {
 	r.mu.RLock()
 	defer r.mu.RUnlock()
 	token, ok := r.tokensByChainSymbol[fmt.Sprintf("%s:%s", strings.ToUpper(chain), strings.ToUpper(symbol))]
@@ -61,7 +61,7 @@ func (r *Registry) GetByChainAndSymbol(chain, symbol string) (*domain.TokenOnCha
 		for depChain, dep := range token.Deployments {
 			depChain = strings.ToUpper(depChain)
 			if depChain == chain {
-				return &domain.TokenOnChain{
+				return &domain.TokenChain{
 					Symbol:  token.Symbol,
 					Name:    token.Name,
 					Chain:   depChain,
@@ -71,7 +71,7 @@ func (r *Registry) GetByChainAndSymbol(chain, symbol string) (*domain.TokenOnCha
 		}
 		if token.Native != nil {
 			if token.Native.Chain == chain {
-				return &domain.TokenOnChain{
+				return &domain.TokenChain{
 					Symbol:  token.Symbol,
 					Name:    token.Name,
 					Chain:   token.Native.Chain,
@@ -83,13 +83,13 @@ func (r *Registry) GetByChainAndSymbol(chain, symbol string) (*domain.TokenOnCha
 	return nil, fmt.Errorf("cannot find token")
 }
 
-func (r *Registry) GetBySymbol(symbol string) (domain.Token, bool) {
+func (r *TokenRegistry) GetBySymbol(symbol string) (domain.TokenRaw, bool) {
 	r.mu.RLock()
 	defer r.mu.RUnlock()
 	symbol = strings.ToUpper(symbol)
 	token, found := r.tokensBySymbol[symbol]
 	if !found {
-		return domain.Token{}, false
+		return domain.TokenRaw{}, false
 	}
 	chains := []string{}
 	address := []string{}
@@ -97,7 +97,7 @@ func (r *Registry) GetBySymbol(symbol string) (domain.Token, bool) {
 		chains = append(chains, chain)
 		address = append(address, depl.Address)
 	}
-	return domain.Token{
+	return domain.TokenRaw{
 		Symbol:   token.Symbol,
 		Chains:   chains,
 		Addrs:    address,
@@ -106,7 +106,7 @@ func (r *Registry) GetBySymbol(symbol string) (domain.Token, bool) {
 	}, true
 }
 
-func (r *Registry) GetByQuery(query string) []domain.Token {
+func (r *TokenRegistry) GetByQuery(query string) []domain.TokenRaw {
 	if query == "" {
 		return nil
 	}
@@ -114,7 +114,7 @@ func (r *Registry) GetByQuery(query string) []domain.Token {
 	defer r.mu.RUnlock()
 
 	query = strings.ToUpper(query)
-	distinct := map[string]domain.Token{}
+	distinct := map[string]domain.TokenRaw{}
 	for _, token := range r.tokensByChainSymbol {
 		matches := strings.Contains(token.Name, query) || strings.Contains(token.Symbol, query)
 		if matches {
@@ -124,7 +124,7 @@ func (r *Registry) GetByQuery(query string) []domain.Token {
 				chains = append(chains, chain)
 				addrs = append(addrs, depl.Address)
 			}
-			distinct[token.Name] = domain.Token{
+			distinct[token.Name] = domain.TokenRaw{
 				Symbol:   token.Symbol,
 				Name:     token.Name,
 				Chains:   chains,
@@ -133,7 +133,7 @@ func (r *Registry) GetByQuery(query string) []domain.Token {
 			}
 		}
 	}
-	tokens := make([]domain.Token, 0, len(distinct))
+	tokens := make([]domain.TokenRaw, 0, len(distinct))
 	for _, token := range distinct {
 		tokens = append(tokens, token)
 	}

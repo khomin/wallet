@@ -59,7 +59,7 @@ func (c *AlchemyClient) GetPrices(ctx context.Context, symbols []string) ([]doma
 					if error == nil {
 						prices = append(prices, domain.TokenPrice{
 							Symbol:       token.Symbol,
-							CoinID:       token.Symbol,
+							ID:           token.Symbol,
 							Name:         token.Symbol,
 							CurrentPrice: price,
 							LastUpdated:  p.LastUpdated,

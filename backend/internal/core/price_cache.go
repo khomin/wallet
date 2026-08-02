@@ -13,12 +13,11 @@ type PriceCache interface {
 	GetPriceBySymbol(ctx context.Context, symbol string) *domain.TokenPrice
 	SetPrices(ctx context.Context, prices []domain.TokenPrice) error
 	SetPrice(ctx context.Context, symbol string, price domain.TokenPrice) error
-	GetCoins(ctx context.Context) ([]domain.TokenSimple, error)
-	GetCoinsBySymbol(ctx context.Context, symbols []string) ([]domain.TokenSimple, error)
-	GetCoinBySymbol(ctx context.Context, symbol string) *domain.TokenSimple
-	SetCoins(ctx context.Context, coins []domain.TokenSimple) error
-	AddPricesToWatch(ctx context.Context, symbols []string) error
-	GetPricesToWatch(ctx context.Context) []string
+	GetCoins(ctx context.Context) ([]domain.TokenID, error)
+	GetCoinsBySymbol(ctx context.Context, symbols []string) ([]domain.TokenID, error)
+	GetCoinBySymbol(ctx context.Context, symbol string) *domain.TokenID
+	SetCoins(ctx context.Context, coins []domain.TokenID) error
+
 	GetBalanceNative(ctx context.Context, chain, address string) (float64, error)
 	SetBalanceNative(ctx context.Context, chain, address string, balance float64) error
 	GetBalanceToken(ctx context.Context, chain, address, tokenSymbol string) (float64, error)
@@ -40,16 +39,16 @@ func (p *noOpCache) SetPrices(ctx context.Context, prices []domain.TokenPrice) e
 func (p *noOpCache) SetPrice(ctx context.Context, symbol string, price domain.TokenPrice) error {
 	return nil
 }
-func (p *noOpCache) GetCoins(ctx context.Context) ([]domain.TokenSimple, error) {
+func (p *noOpCache) GetCoins(ctx context.Context) ([]domain.TokenID, error) {
 	return nil, nil
 }
-func (p *noOpCache) GetCoinsBySymbol(ctx context.Context, symbols []string) ([]domain.TokenSimple, error) {
+func (p *noOpCache) GetCoinsBySymbol(ctx context.Context, symbols []string) ([]domain.TokenID, error) {
 	return nil, nil
 }
-func (p *noOpCache) GetCoinBySymbol(ctx context.Context, symbol string) *domain.TokenSimple {
+func (p *noOpCache) GetCoinBySymbol(ctx context.Context, symbol string) *domain.TokenID {
 	return nil
 }
-func (p *noOpCache) SetCoins(ctx context.Context, coins []domain.TokenSimple) error {
+func (p *noOpCache) SetCoins(ctx context.Context, coins []domain.TokenID) error {
 	return nil
 }
 func (p *noOpCache) AddPricesToWatch(ctx context.Context, symbols []string) error {
@@ -103,18 +102,18 @@ func (p *priceCache) SetPrice(ctx context.Context, symbol string, price domain.T
 	return p.cache.SetJSON(ctx, fmt.Sprintf("prices:%s", strings.ToUpper(symbol)), price, 1*time.Hour)
 }
 
-func (p *priceCache) GetCoins(ctx context.Context) ([]domain.TokenSimple, error) {
-	var coins []domain.TokenSimple
+func (p *priceCache) GetCoins(ctx context.Context) ([]domain.TokenID, error) {
+	var coins []domain.TokenID
 	if err := p.cache.GetJSON(ctx, "coins:list", &coins); err != nil {
 		return nil, err
 	}
 	return coins, nil
 }
 
-func (p *priceCache) GetCoinsBySymbol(ctx context.Context, symbols []string) ([]domain.TokenSimple, error) {
-	coins := []domain.TokenSimple{}
+func (p *priceCache) GetCoinsBySymbol(ctx context.Context, symbols []string) ([]domain.TokenID, error) {
+	coins := []domain.TokenID{}
 	for _, symbol := range symbols {
-		var coin domain.TokenSimple
+		var coin domain.TokenID
 		if err := p.cache.GetJSON(ctx, fmt.Sprintf("coins:%s", strings.ToUpper(symbol)), &coin); err != nil {
 			return nil, err
 		}
@@ -123,15 +122,15 @@ func (p *priceCache) GetCoinsBySymbol(ctx context.Context, symbols []string) ([]
 	return coins, nil
 }
 
-func (p *priceCache) GetCoinBySymbol(ctx context.Context, symbol string) *domain.TokenSimple {
-	var coin domain.TokenSimple
+func (p *priceCache) GetCoinBySymbol(ctx context.Context, symbol string) *domain.TokenID {
+	var coin domain.TokenID
 	if err := p.cache.GetJSON(ctx, fmt.Sprintf("coins:%s", strings.ToUpper(symbol)), &coin); err != nil {
 		return nil
 	}
 	return &coin
 }
 
-func (p *priceCache) SetCoins(ctx context.Context, coins []domain.TokenSimple) error {
+func (p *priceCache) SetCoins(ctx context.Context, coins []domain.TokenID) error {
 	if err := p.cache.SetJSON(ctx, "coins:list", coins, 1*time.Hour); err != nil {
 		return err
 	}
@@ -141,27 +140,6 @@ func (p *priceCache) SetCoins(ctx context.Context, coins []domain.TokenSimple) e
 		}
 	}
 	return nil
-}
-
-func (p *priceCache) AddPricesToWatch(ctx context.Context, symbols []string) error {
-	for _, symbol := range symbols {
-		if err := p.cache.Set(ctx, fmt.Sprintf("prices-to-watch:%s", strings.ToUpper(symbol)), symbol, 5*time.Minute); err != nil {
-			return err
-		}
-	}
-	return nil
-}
-
-func (p *priceCache) GetPricesToWatch(ctx context.Context) []string {
-	prices := []string{}
-	found, err := p.cache.Scan(ctx, "prices-to-watch:*")
-	if err != nil {
-		return prices
-	}
-	for _, foundPrice := range found {
-		prices = append(prices, foundPrice.(string))
-	}
-	return prices
 }
 
 func (p *priceCache) GetBalanceNative(ctx context.Context, chain, address string) (float64, error) {

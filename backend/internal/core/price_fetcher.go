@@ -99,20 +99,15 @@ func (f *PriceFetcher) fetch(ctx context.Context) {
 	}
 }
 
-func (f *PriceFetcher) fromGeckoToCoin(prices []coingecko.CoinGeckoCoin) []domain.TokenSimple {
-	res := make([]domain.TokenSimple, len(prices))
-	for i, p := range prices {
-		res[i] = domain.TokenSimple{
-			// Chains: ,
-			// Address:  "",
-			// IsNative: false,
-			// CoinID:      p.ID,
-			Name:     p.Name,
-			Symbol:   p.Symbol,
-			ImageURL: p.Image,
-			// ImageURL:    p.Image,
-			// LastUpdated: p.LastUpdated,
-		}
+func (f *PriceFetcher) fromGeckoToCoin(prices []coingecko.CoinGeckoCoin) []domain.TokenID {
+	res := make([]domain.TokenID, 0, len(prices))
+	for _, i := range prices {
+		res = append(res, domain.TokenID{
+			ID:       i.ID,
+			Name:     i.Name,
+			Symbol:   i.Symbol,
+			ImageURL: i.Image,
+		})
 	}
 	return res
 }
@@ -121,7 +116,7 @@ func (f *PriceFetcher) fromGeckoToCoinPrice(prices []coingecko.CoinGeckoCoin) []
 	res := make([]domain.TokenPrice, len(prices))
 	for i, p := range prices {
 		res[i] = domain.TokenPrice{
-			CoinID:                         p.ID,
+			ID:                             p.ID,
 			Name:                           p.Name,
 			Symbol:                         p.Symbol,
 			CurrentPrice:                   p.CurrentPrice,

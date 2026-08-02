@@ -2,6 +2,7 @@ package repositories
 
 import (
 	"context"
+	"strings"
 	"time"
 	"tracker/internal/core/domain"
 	"tracker/internal/db"
@@ -16,17 +17,8 @@ func NewPriceRepository(db *db.DataBase) PriceRepository {
 	return PriceRepository{db: db}
 }
 
-func (r *PriceRepository) GetCoinSnapshot(ctx context.Context) ([]domain.TokenSimple, error) {
-	query := `SELECT
-		id,
-		coin_id,
-		symbol,
-		coin_name,
-		image_url,
-		last_updated,
-		snapshot_at
-	FROM coins
-	ORDER BY coin_id ASC`
+func (r *PriceRepository) GetCoinSnapshot(ctx context.Context) ([]domain.TokenID, error) {
+	query := `SELECT * FROM coins`
 
 	rows, err := r.db.Pool.Query(ctx, query)
 	if err != nil {
@@ -39,7 +31,6 @@ func (r *PriceRepository) GetCoinSnapshot(ctx context.Context) ([]domain.TokenSi
 		var snapshot models.Coin
 		if err := rows.Scan(
 			&snapshot.ID,
-			&snapshot.CoinID,
 			&snapshot.Symbol,
 			&snapshot.Name,
 			&snapshot.ImageURL,
@@ -56,12 +47,12 @@ func (r *PriceRepository) GetCoinSnapshot(ctx context.Context) ([]domain.TokenSi
 	return modelTokensToDomain(snapshots), nil
 }
 
-func (r *PriceRepository) SetCoinSnapshot(ctx context.Context, in []domain.TokenSimple) error {
+func (r *PriceRepository) SetCoinSnapshot(ctx context.Context, in []domain.TokenID) error {
 	if len(in) == 0 {
 		return nil
 	}
 	query := `INSERT INTO coins (
-			coin_id,
+			id,
 			symbol,
 			coin_name,
 			image_url,
@@ -71,7 +62,7 @@ func (r *PriceRepository) SetCoinSnapshot(ctx context.Context, in []domain.Token
 		VALUES (
 			$1, $2, $3, $4, $5, $6
 		)
-		ON CONFLICT (coin_id)
+		ON CONFLICT (id)
 		DO UPDATE SET
 			symbol = EXCLUDED.symbol,
 			coin_name = EXCLUDED.coin_name,
@@ -81,8 +72,8 @@ func (r *PriceRepository) SetCoinSnapshot(ctx context.Context, in []domain.Token
 	`
 	for _, snapshot := range domainTokensToModel(in) {
 		_, err := r.db.Pool.Exec(ctx, query,
-			snapshot.CoinID,
-			snapshot.Symbol,
+			strings.ToUpper(snapshot.ID),
+			strings.ToUpper(snapshot.Symbol),
 			snapshot.Name,
 			snapshot.ImageURL,
 			snapshot.LastUpdated,
@@ -97,7 +88,7 @@ func (r *PriceRepository) SetCoinSnapshot(ctx context.Context, in []domain.Token
 
 func (r *PriceRepository) GetPriceSnapshot(ctx context.Context) ([]domain.TokenPrice, error) {
 	query := `SELECT
-		coin_id,
+		id,
 		symbol,
 		coin_name,
 		price_usd,
@@ -108,8 +99,7 @@ func (r *PriceRepository) GetPriceSnapshot(ctx context.Context) ([]domain.TokenP
 		market_cap_change_24h,
 		market_cap_change_percent_24h,
 		last_updated
-	FROM coin_price_snapshots
-	ORDER BY coin_id ASC`
+	FROM coin_price_snapshots`
 
 	rows, err := r.db.Pool.Query(ctx, query)
 	if err != nil {
@@ -121,7 +111,7 @@ func (r *PriceRepository) GetPriceSnapshot(ctx context.Context) ([]domain.TokenP
 	for rows.Next() {
 		var snapshot models.CoinPrice
 		if err := rows.Scan(
-			&snapshot.CoinID,
+			&snapshot.ID,
 			&snapshot.Symbol,
 			&snapshot.Name,
 			&snapshot.CurrentPrice,
@@ -149,7 +139,7 @@ func (r *PriceRepository) SetPriceSnapshot(ctx context.Context, in []domain.Toke
 		return nil
 	}
 	query := `INSERT INTO coin_price_snapshots (
-			coin_id,
+			id,
 			symbol,
 			coin_name,
 			price_usd,
@@ -165,7 +155,7 @@ func (r *PriceRepository) SetPriceSnapshot(ctx context.Context, in []domain.Toke
 		VALUES (
 			$1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12
 		)
-		ON CONFLICT (coin_id)
+		ON CONFLICT (id)
 		DO UPDATE SET
 			symbol = EXCLUDED.symbol,
 			coin_name = EXCLUDED.coin_name,
@@ -181,8 +171,8 @@ func (r *PriceRepository) SetPriceSnapshot(ctx context.Context, in []domain.Toke
 	`
 	for _, snapshot := range domainPriceToModel(in) {
 		_, err := r.db.Pool.Exec(ctx, query,
-			snapshot.CoinID,
-			snapshot.Symbol,
+			strings.ToUpper(snapshot.ID),
+			strings.ToUpper(snapshot.Symbol),
 			snapshot.Name,
 			snapshot.CurrentPrice,
 			snapshot.MarketCap,
@@ -201,54 +191,53 @@ func (r *PriceRepository) SetPriceSnapshot(ctx context.Context, in []domain.Toke
 	return nil
 }
 
-func modelTokensToDomain(in []models.Coin) []domain.TokenSimple {
-	out := make([]domain.TokenSimple, len(in))
-	for idx, i := range in {
-		out[idx] = domain.TokenSimple{
-			Symbol: i.Symbol,
-			Name:   i.Name,
-			// Chains: i.,
-			// Address: i.,
-		}
+func modelTokensToDomain(in []models.Coin) []domain.TokenID {
+	out := make([]domain.TokenID, 0, len(in))
+	for _, i := range in {
+		out = append(out, domain.TokenID{
+			ID:       i.ID,
+			Symbol:   i.Symbol,
+			Name:     i.Name,
+			ImageURL: i.ImageURL,
+		})
 	}
 	return out
 }
 
-func domainTokensToModel(in []domain.TokenSimple) []models.Coin {
-	out := make([]models.Coin, len(in))
-	for idx, i := range in {
-		out[idx] = models.Coin{
-			Symbol: i.Symbol,
-			Name:   i.Name,
-			// Chains: i.,
-			// Address: i.,
-		}
+func domainTokensToModel(in []domain.TokenID) []models.Coin {
+	out := make([]models.Coin, 0, len(in))
+	for _, i := range in {
+		out = append(out, models.Coin{
+			Symbol:   i.Symbol,
+			Name:     i.Name,
+			ID:       i.ID,
+			ImageURL: i.ImageURL,
+		})
 	}
 	return out
 }
 
 func domainPriceToModel(in []domain.TokenPrice) []models.CoinPrice {
-	out := make([]models.CoinPrice, len(in))
-	for idx, i := range in {
-		out[idx] = models.CoinPrice{
+	out := make([]models.CoinPrice, 0, len(in))
+	for _, i := range in {
+		out = append(out, models.CoinPrice{
 			Symbol: i.Symbol,
 			Name:   i.Name,
-			// Chains: i.,
-			// Address: i.,
-		}
+			ID:     i.ID,
+		})
 	}
 	return out
 }
 
 func modelPriceToDomain(in []models.CoinPrice) []domain.TokenPrice {
-	out := make([]domain.TokenPrice, len(in))
-	for idx, i := range in {
-		out[idx] = domain.TokenPrice{
+	out := make([]domain.TokenPrice, 0, len(in))
+	for _, i := range in {
+		out = append(out, domain.TokenPrice{
 			Symbol: i.Symbol,
 			Name:   i.Name,
 			// Chains: i.,
 			// Address: i.,
-		}
+		})
 	}
 	return out
 }

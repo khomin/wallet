@@ -91,36 +91,36 @@ func TestDeleteWalletReturnsDeletedWallet(t *testing.T) {
 
 	userID := "ad4abec0-8bae-462a-8ea3-8502048f3071"
 
-	tokens := []domain.Token{}
+	tokens := []domain.TokenRaw{}
 
-	tokens = append(tokens, domain.Token{
+	tokens = append(tokens, domain.TokenRaw{
 		Name:   "BTC",
 		Chains: []string{"BTC"},
 		Symbol: "BTC",
 		Addrs:  []string{"bc1qyyfjmtl9s8s6wn3llt2ltzze978l5szfj7hr79"},
 	})
 
-	tokens = append(tokens, domain.Token{
+	tokens = append(tokens, domain.TokenRaw{
 		Chains: []string{"SOL"},
 		Symbol: "GOOGLX",
 		Addrs:  []string{"DDcdDmDPYw595wAR1jYNHZQTFNi8BGisd2bVa3WH3XbE"},
 	})
-	tokens = append(tokens, domain.Token{
+	tokens = append(tokens, domain.TokenRaw{
 		Chains: []string{"SOL"},
 		Symbol: "XAUT",
 		Addrs:  []string{"9Z6qhmZ2AHWMSBSM4LmA1WrCAefs2dkr1pHnkW3vmg8z"},
 	})
-	tokens = append(tokens, domain.Token{
+	tokens = append(tokens, domain.TokenRaw{
 		Chains: []string{"SOL"},
 		Symbol: "SOL",
 		Addrs:  []string{"9Z6qhmZ2AHWMSBSM4LmA1WrCAefs2dkr1pHnkW3vmg8z"},
 	})
-	tokens = append(tokens, domain.Token{
+	tokens = append(tokens, domain.TokenRaw{
 		Chains: []string{"TRX"},
 		Symbol: "TRX",
 		Addrs:  []string{"TF6MrLnLa72U6PGZcx4pXhs8hSvsAgQ78t"},
 	})
-	tokens = append(tokens, domain.Token{
+	tokens = append(tokens, domain.TokenRaw{
 		Chains: []string{"TRX"},
 		Symbol: "USDT",
 		Addrs:  []string{"TF6MrLnLa72U6PGZcx4pXhs8hSvsAgQ78t"},

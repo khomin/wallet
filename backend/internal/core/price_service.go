@@ -11,8 +11,8 @@ import (
 var ErrPriceNotFound = errors.New("not found")
 
 type PriceRepository interface {
-	GetCoinSnapshot(ctx context.Context) ([]domain.TokenSimple, error)
-	SetCoinSnapshot(ctx context.Context, in []domain.TokenSimple) error
+	GetCoinSnapshot(ctx context.Context) ([]domain.TokenID, error)
+	SetCoinSnapshot(ctx context.Context, in []domain.TokenID) error
 	GetPriceSnapshot(ctx context.Context) ([]domain.TokenPrice, error)
 	SetPriceSnapshot(ctx context.Context, in []domain.TokenPrice) error
 }
@@ -22,7 +22,7 @@ type AssetService struct {
 	priceRepo     PriceRepository
 	fetcher       *PriceFetcher
 	priceCache    PriceCache
-	tokenRegistry *Registry
+	tokenRegistry *TokenRegistry
 }
 
 func NewPriceService(
@@ -30,7 +30,7 @@ func NewPriceService(
 	priceRepo PriceRepository,
 	fetcher *PriceFetcher,
 	priceCache PriceCache,
-	tokenRegistry *Registry,
+	tokenRegistry *TokenRegistry,
 ) *AssetService {
 	return &AssetService{
 		cache:         cache,
@@ -41,17 +41,17 @@ func NewPriceService(
 	}
 }
 
-func (s *AssetService) GetCoins(ctx context.Context) ([]domain.TokenWithImage, error) {
+func (s *AssetService) GetCoins(ctx context.Context) ([]domain.TokenWithURL, error) {
 	coins, err := s.priceCache.GetCoins(ctx)
 	if err != nil {
 		return nil, err
 	}
-	tokens := []domain.TokenWithImage{}
+	tokens := []domain.TokenWithURL{}
 	for _, coin := range coins {
 		token, found := s.tokenRegistry.GetBySymbol(coin.Symbol)
 		if found {
-			tokens = append(tokens, domain.TokenWithImage{
-				Token:    token,
+			tokens = append(tokens, domain.TokenWithURL{
+				TokenRaw: token,
 				ImageURL: coin.ImageURL,
 			})
 		}
@@ -59,28 +59,28 @@ func (s *AssetService) GetCoins(ctx context.Context) ([]domain.TokenWithImage, e
 	return tokens, nil
 }
 
-func (s *AssetService) GetCoin(ctx context.Context, id string) (*domain.TokenWithImage, error) {
+func (s *AssetService) GetCoin(ctx context.Context, id string) (*domain.TokenWithURL, error) {
 	coin := s.priceCache.GetCoinBySymbol(ctx, id)
 	if coin == nil {
 		return nil, ErrPriceNotFound
 	}
 	token, found := s.tokenRegistry.GetBySymbol(coin.Symbol)
 	if found {
-		return &domain.TokenWithImage{
-			Token:    token,
+		return &domain.TokenWithURL{
+			TokenRaw: token,
 			ImageURL: coin.ImageURL,
 		}, nil
 	}
 	return nil, ErrPriceNotFound
 }
 
-func (s *AssetService) SearchCoins(ctx context.Context, text string) ([]domain.TokenWithImage, error) {
-	out := []domain.TokenWithImage{}
+func (s *AssetService) SearchCoins(ctx context.Context, text string) ([]domain.TokenWithURL, error) {
+	out := []domain.TokenWithURL{}
 	tokens := s.tokenRegistry.GetByQuery(text)
 	for _, token := range tokens {
 		coin := s.priceCache.GetCoinBySymbol(ctx, token.Symbol)
-		out = append(out, domain.TokenWithImage{
-			Token:    token,
+		out = append(out, domain.TokenWithURL{
+			TokenRaw: token,
 			ImageURL: coin.ImageURL,
 		})
 	}
@@ -101,15 +101,12 @@ func (s *AssetService) GetPrices(ctx context.Context, symbols []string) ([]domai
 			prices = append(prices, *price)
 		}
 	}
-	// add prices to watch
-	s.priceCache.AddPricesToWatch(ctx, symbols)
 	return prices, nil
 }
 
 func (s *AssetService) GetPrice(ctx context.Context, symbol string) (domain.TokenPrice, error) {
 	price := s.priceCache.GetPriceBySymbol(ctx, symbol)
 	if price != nil {
-		s.priceCache.AddPricesToWatch(ctx, []string{symbol})
 		return *price, nil
 	}
 	return domain.TokenPrice{}, ErrPriceNotFound
