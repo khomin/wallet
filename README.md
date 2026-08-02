@@ -66,7 +66,7 @@ go run .
 Launch the frontend client in another terminal:
 
 ```bash
-cd ./frontend
+cd ./web
 npm install
 npm run dev
 ```
@@ -101,4 +101,16 @@ The project is aimed at becoming a crypto monitoring platform for:
 go install -tags 'postgres' github.com/golang-migrate/migrate/v4/cmd/migrate@latest
 
 migrate -path $PWD/internal/db/migrations -database "postgres://tracker_admin:super_secure_password@localhost:5432/whale_tracker?sslmode=disable" up
+```
+
+### Generate grpc
+```
+# macOS
+brew install bufbuild/buf/buf
+
+# Linux / WSL
+go install github.com/bufbuild/buf/cmd/buf@latest
+
+buf dep update
+buf generate
 ```

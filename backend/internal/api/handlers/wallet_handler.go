@@ -3,6 +3,7 @@ package handlers
 import (
 	"errors"
 	"net/http"
+	walletv1 "tracker/gen/v1"
 	"tracker/internal/api/dto"
 	"tracker/internal/api/middleware"
 	"tracker/internal/core"
@@ -10,6 +11,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 	"github.com/sirupsen/logrus"
+	"google.golang.org/grpc"
 )
 
 type WalletHandler struct {
@@ -20,6 +22,7 @@ type WalletHandler struct {
 func NewWalletHandler(
 	walletService *core.WalletService,
 ) *WalletHandler {
+	walletv1.NewWalletServiceClient(&grpc.ClientConn{})
 	return &WalletHandler{
 		walletService: walletService,
 		log:           logrus.WithField("component", "WalletHandler"),

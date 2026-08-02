@@ -1,0 +1,32 @@
+
+syntax = "proto3";
+
+package wallet.v1;
+
+option go_package = "github.com/yourusername/yourrepo/gen/go/wallet/v1;walletv1";
+
+import "google/api/annotations.proto";
+
+service WalletService {
+  // GET /v1/wallets/{chain}/{address}/balance
+  rpc GetBalance(GetBalanceRequest) returns (GetBalanceResponse) {
+    option (google.api.http) = {
+      get: "/v1/wallets/{chain}/{address}/balance"
+    };
+  }
+}
+
+message GetBalanceRequest {
+  string chain = 1;
+  string address = 2;
+  string symbol = 3;
+}
+
+message GetBalanceResponse {
+  string chain = 1;
+  string address = 2;
+  double balance_crypto = 3;
+  double balance_usd = 4;
+  bool has_error = 5;
+  string error_msg = 6;
+}
