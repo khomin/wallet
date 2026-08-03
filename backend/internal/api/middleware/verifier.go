@@ -28,5 +28,17 @@ func NewTokenVerifier(ctx context.Context, issuerURL string, clientID string) (T
 }
 
 func (v *tokenVerifier) Verify(ctx context.Context, rawToken string) (domain.JwtClaims, error) {
-	return domain.JwtClaims{}, nil
+	i, err := v.verifier.Verify(ctx, rawToken)
+	if err != nil {
+		return domain.JwtClaims{}, err
+	}
+	var claims map[string]interface{}
+	if err := i.Claims(&claims); err != nil {
+		return domain.JwtClaims{}, err
+	}
+	return domain.JwtClaims{
+		Email:   claims["email"].(string),
+		Subject: claims["sub"].(string),
+		Name:    claims["name"].(string),
+	}, nil
 }

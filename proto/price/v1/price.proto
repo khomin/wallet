@@ -15,6 +15,18 @@ service PriceService {
       get: "/v1/coins"
     };
   }
+  rpc GetCoin(GetCoinReq) returns (GetCoinResp) {
+    option (google.api.http) = {
+      get: "/v1/coins/{id}"
+    };
+  }
+  rpc SearchCoin(SearchCoinsReq) returns (SearchCoinsResp) {
+    option (google.api.http) = {
+      post: "/v1/coins/search",
+      body: "*"
+    };
+  }
+
   rpc GetPrices(GetPricesReq) returns (GetPricesResp) {
     option (google.api.http) = {
       get: "/v1/prices"
@@ -25,12 +37,6 @@ service PriceService {
       get: "/v1/prices/{symbol}"
     };
   }
-  rpc SearchCoin(SearchCoinsReq) returns (SearchCoinsResp) {
-    option (google.api.http) = {
-      post: "/v1/coins/search",
-      body: "*"
-    };
-  }
 }
 
 message GetCoinsReq {}
@@ -38,6 +44,13 @@ message GetCoinsReq {}
 message GetCoinsResp {
   int32          total = 1;
   repeated Token token = 2;
+}
+
+message GetCoinReq {
+  string id = 1;
+}
+message GetCoinResp {
+  Token token = 1;
 }
 
 message GetPricesReq {

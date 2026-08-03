@@ -165,7 +165,12 @@
   },
   "definitions": {
     "WalletServiceEditWalletBody": {
-      "type": "object"
+      "type": "object",
+      "properties": {
+        "label": {
+          "type": "string"
+        }
+      }
     },
     "protobufAny": {
       "type": "object",
@@ -241,8 +246,8 @@
     "v1DeleteWalletResp": {
       "type": "object",
       "properties": {
-        "wallet": {
-          "$ref": "#/definitions/v1Wallet"
+        "deletedId": {
+          "type": "string"
         }
       }
     },

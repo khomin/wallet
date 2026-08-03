@@ -2,9 +2,12 @@ package handlers
 
 import (
 	"context"
+	"errors"
 	walletv1 "tracker/gen/wallet/v1"
 	"tracker/internal/api/middleware"
 	"tracker/internal/core"
+
+	"github.com/google/uuid"
 
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -21,33 +24,8 @@ func NewWalletGrpcHandler(walletService *core.WalletService) *WalletGrpcHandler 
 	}
 }
 
-// func (s *WalletGrpcHandler) GetBalance(ctx context.Context, req *walletv1.GetBalanceRequest) (*walletv1.GetBalanceResponse, error) {
-// 	// Call your core service logic
-// 	// balance, err := s.walletService.GetBalance(ctx, req.Chain, req.Address, req.Symbol)
-// 	// if err != nil {
-// 	// 	return &walletv1.GetBalanceResponse{
-// 	// 		Chain:    req.Chain,
-// 	// 		Address:  req.Address,
-// 	// 		HasError: true,
-// 	// 		ErrorMsg: err.Error(),
-// 	// 	}, nil
-// 	// }
-
-// 	return &walletv1.GetBalanceResponse{
-// 		// Chain:         balance.Chain,
-// 		// Address:       balance.Address,
-// 		// BalanceCrypto: balance.Balance,
-// 		// HasError:      false,
-// 	}, nil
-// }
-
 func (s *WalletGrpcHandler) GetWallets(ctx context.Context, req *walletv1.GetWalletsReq) (*walletv1.GetWalletsResp, error) {
-	// user, ok := middleware.GetOAUTH(c)
-	// if !ok {
-	// 	dto.UnauthorizedError(c)
-	// 	return
-	// }
-	user, ok := ctx.Value("user").(*middleware.JwtCustomClaims)
+	user, ok := middleware.GetOAUTH(ctx)
 	if !ok {
 		return nil, status.Error(codes.Unauthenticated, "unauthorized")
 	}
@@ -77,14 +55,114 @@ func (s *WalletGrpcHandler) GetWallets(ctx context.Context, req *walletv1.GetWal
 }
 
 func (s *WalletGrpcHandler) GetWallet(ctx context.Context, req *walletv1.GetWalletReq) (*walletv1.GetWalletResp, error) {
-	return nil, status.Error(codes.Unimplemented, "method GetWallet not implemented")
+	user, ok := middleware.GetOAUTH(ctx)
+	if !ok {
+		return nil, status.Error(codes.Unauthenticated, "unauthorized")
+	}
+	uuid, err := uuid.Parse(req.Id)
+	if err != nil {
+		return nil, status.Error(codes.InvalidArgument, "id parameter is required")
+	}
+	wallet, err := s.walletService.GetWallet(ctx, user.Subject, uuid)
+	if err != nil {
+		if errors.Is(err, core.ErrWalletNotFound) {
+			return nil, status.Error(codes.NotFound, "wallet not found")
+		}
+		return nil, status.Error(codes.Internal, err.Error())
+	}
+	return &walletv1.GetWalletResp{
+		Id:                wallet.Wallet.ID,
+		Address:           wallet.Wallet.Address,
+		Chain:             wallet.Wallet.Chain,
+		TokenSymbol:       wallet.Wallet.Symbol,
+		Label:             wallet.Wallet.Label,
+		BalanceCrypto:     float32(wallet.Balance),
+		BalanceUsd:        float32(wallet.BalanceUSD),
+		Change_24HPercent: float32(wallet.Price.Change_24h),
+		HasError:          wallet.HasError,
+		ErrorMsg:          wallet.ErrorMsg,
+	}, nil
 }
-func (s *WalletGrpcHandler) EditWallet(ctx context.Context, req *walletv1.EditWalletReq) (*walletv1.EditWalletResp, error) {
-	return nil, status.Error(codes.Unimplemented, "method EditWallet not implemented")
-}
-func (s *WalletGrpcHandler) DeleteWallet(ctx context.Context, req *walletv1.DeleteWalletReq) (*walletv1.DeleteWalletResp, error) {
-	return nil, status.Error(codes.Unimplemented, "method DeleteWallet not implemented")
-}
+
 func (s *WalletGrpcHandler) AddWallet(ctx context.Context, req *walletv1.AddWalletReq) (*walletv1.AddWalletResp, error) {
-	return nil, status.Error(codes.Unimplemented, "method AddWallet not implemented")
+	user, ok := middleware.GetOAUTH(ctx)
+	if !ok {
+		return nil, status.Error(codes.Unauthenticated, "unauthorized")
+	}
+	wallet, err := s.walletService.AddWallet(ctx, user.Subject, req.Chain, req.Address, req.TokenSymbol, req.Label)
+	if err != nil {
+		if errors.Is(err, core.ErrWalletNotFound) {
+			return nil, status.Error(codes.NotFound, "wallet not found")
+		} else if errors.Is(err, core.ErrWalletAlreadyExists) {
+			return nil, status.Error(codes.AlreadyExists, "wallet already exists")
+		}
+		return nil, status.Error(codes.Internal, err.Error())
+	}
+	return &walletv1.AddWalletResp{
+		Wallet: &walletv1.Wallet{
+			Id:                wallet.Wallet.ID,
+			Address:           wallet.Wallet.Address,
+			Chain:             wallet.Wallet.Chain,
+			TokenSymbol:       wallet.Wallet.Symbol,
+			Label:             wallet.Wallet.Label,
+			BalanceCrypto:     float32(wallet.Balance),
+			BalanceUsd:        float32(wallet.BalanceUSD),
+			Change_24HPercent: float32(wallet.Price.Change_24h),
+			HasError:          wallet.HasError,
+			ErrorMsg:          wallet.ErrorMsg,
+		},
+	}, nil
+}
+
+func (s *WalletGrpcHandler) EditWallet(ctx context.Context, req *walletv1.EditWalletReq) (*walletv1.EditWalletResp, error) {
+	user, ok := middleware.GetOAUTH(ctx)
+	if !ok {
+		return nil, status.Error(codes.Unauthenticated, "unauthorized")
+	}
+	uuid, err := uuid.Parse(req.Id)
+	if err != nil {
+		return nil, status.Error(codes.InvalidArgument, "id parameter is required")
+	}
+	wallet, err := s.walletService.EditWallet(ctx, user.Subject, uuid, req.Label)
+	if err != nil {
+		if errors.Is(err, core.ErrWalletNotFound) {
+			return nil, status.Error(codes.NotFound, "wallet not found")
+		}
+		return nil, status.Error(codes.Internal, err.Error())
+	}
+	return &walletv1.EditWalletResp{
+		Wallet: &walletv1.Wallet{
+			Id:                wallet.Wallet.ID,
+			Address:           wallet.Wallet.Address,
+			Chain:             wallet.Wallet.Chain,
+			TokenSymbol:       wallet.Wallet.Symbol,
+			Label:             wallet.Wallet.Label,
+			BalanceCrypto:     float32(wallet.Balance),
+			BalanceUsd:        float32(wallet.BalanceUSD),
+			Change_24HPercent: float32(wallet.Price.Change_24h),
+			HasError:          wallet.HasError,
+			ErrorMsg:          wallet.ErrorMsg,
+		},
+	}, nil
+}
+
+func (s *WalletGrpcHandler) DeleteWallet(ctx context.Context, req *walletv1.DeleteWalletReq) (*walletv1.DeleteWalletResp, error) {
+	user, ok := middleware.GetOAUTH(ctx)
+	if !ok {
+		return nil, status.Error(codes.Unauthenticated, "unauthorized")
+	}
+	uuid, err := uuid.Parse(req.Id)
+	if err != nil {
+		return nil, status.Error(codes.InvalidArgument, "id parameter is required")
+	}
+	err = s.walletService.DeleteWallet(ctx, user.Subject, uuid)
+	if err != nil {
+		if errors.Is(err, core.ErrWalletNotFound) {
+			return nil, status.Error(codes.NotFound, err.Error())
+		}
+		return nil, status.Error(codes.Internal, err.Error())
+	}
+	return &walletv1.DeleteWalletResp{
+		DeletedId: uuid.String(),
+	}, nil
 }

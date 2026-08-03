@@ -273,6 +273,7 @@ func (x *GetWalletResp) GetErrorMsg() string {
 type EditWalletReq struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Id            string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
+	Label         string                 `protobuf:"bytes,2,opt,name=label,proto3" json:"label,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -310,6 +311,13 @@ func (*EditWalletReq) Descriptor() ([]byte, []int) {
 func (x *EditWalletReq) GetId() string {
 	if x != nil {
 		return x.Id
+	}
+	return ""
+}
+
+func (x *EditWalletReq) GetLabel() string {
+	if x != nil {
+		return x.Label
 	}
 	return ""
 }
@@ -404,7 +412,7 @@ func (x *DeleteWalletReq) GetId() string {
 
 type DeleteWalletResp struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Wallet        *Wallet                `protobuf:"bytes,1,opt,name=wallet,proto3" json:"wallet,omitempty"`
+	DeletedId     string                 `protobuf:"bytes,1,opt,name=deleted_id,json=deletedId,proto3" json:"deleted_id,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -439,11 +447,11 @@ func (*DeleteWalletResp) Descriptor() ([]byte, []int) {
 	return file_wallet_v1_wallet_proto_rawDescGZIP(), []int{7}
 }
 
-func (x *DeleteWalletResp) GetWallet() *Wallet {
+func (x *DeleteWalletResp) GetDeletedId() string {
 	if x != nil {
-		return x.Wallet
+		return x.DeletedId
 	}
-	return nil
+	return ""
 }
 
 type AddWalletReq struct {
@@ -737,15 +745,17 @@ const file_wallet_v1_wallet_proto_rawDesc = "" +
 	"\x12change_24h_percent\x18\b \x01(\x02R\x10change24hPercent\x12\x1b\n" +
 	"\thas_error\x18\t \x01(\bR\bhasError\x12\x1b\n" +
 	"\terror_msg\x18\n" +
-	" \x01(\tR\berrorMsg\"\x1f\n" +
+	" \x01(\tR\berrorMsg\"5\n" +
 	"\rEditWalletReq\x12\x0e\n" +
-	"\x02id\x18\x01 \x01(\tR\x02id\";\n" +
+	"\x02id\x18\x01 \x01(\tR\x02id\x12\x14\n" +
+	"\x05label\x18\x02 \x01(\tR\x05label\";\n" +
 	"\x0eEditWalletResp\x12)\n" +
 	"\x06wallet\x18\x01 \x01(\v2\x11.wallet.v1.WalletR\x06wallet\"!\n" +
 	"\x0fDeleteWalletReq\x12\x0e\n" +
-	"\x02id\x18\x01 \x01(\tR\x02id\"=\n" +
-	"\x10DeleteWalletResp\x12)\n" +
-	"\x06wallet\x18\x01 \x01(\v2\x11.wallet.v1.WalletR\x06wallet\"\xa7\x02\n" +
+	"\x02id\x18\x01 \x01(\tR\x02id\"1\n" +
+	"\x10DeleteWalletResp\x12\x1d\n" +
+	"\n" +
+	"deleted_id\x18\x01 \x01(\tR\tdeletedId\"\xa7\x02\n" +
 	"\fAddWalletReq\x12\x18\n" +
 	"\aaddress\x18\x02 \x01(\tR\aaddress\x12\x14\n" +
 	"\x05chain\x18\x03 \x01(\tR\x05chain\x12!\n" +
@@ -811,23 +821,22 @@ var file_wallet_v1_wallet_proto_goTypes = []any{
 var file_wallet_v1_wallet_proto_depIdxs = []int32{
 	10, // 0: wallet.v1.GetWalletsResp.wallet:type_name -> wallet.v1.Wallet
 	10, // 1: wallet.v1.EditWalletResp.wallet:type_name -> wallet.v1.Wallet
-	10, // 2: wallet.v1.DeleteWalletResp.wallet:type_name -> wallet.v1.Wallet
-	10, // 3: wallet.v1.AddWalletResp.wallet:type_name -> wallet.v1.Wallet
-	0,  // 4: wallet.v1.WalletService.GetWallets:input_type -> wallet.v1.GetWalletsReq
-	2,  // 5: wallet.v1.WalletService.GetWallet:input_type -> wallet.v1.GetWalletReq
-	4,  // 6: wallet.v1.WalletService.EditWallet:input_type -> wallet.v1.EditWalletReq
-	6,  // 7: wallet.v1.WalletService.DeleteWallet:input_type -> wallet.v1.DeleteWalletReq
-	8,  // 8: wallet.v1.WalletService.AddWallet:input_type -> wallet.v1.AddWalletReq
-	1,  // 9: wallet.v1.WalletService.GetWallets:output_type -> wallet.v1.GetWalletsResp
-	3,  // 10: wallet.v1.WalletService.GetWallet:output_type -> wallet.v1.GetWalletResp
-	5,  // 11: wallet.v1.WalletService.EditWallet:output_type -> wallet.v1.EditWalletResp
-	7,  // 12: wallet.v1.WalletService.DeleteWallet:output_type -> wallet.v1.DeleteWalletResp
-	9,  // 13: wallet.v1.WalletService.AddWallet:output_type -> wallet.v1.AddWalletResp
-	9,  // [9:14] is the sub-list for method output_type
-	4,  // [4:9] is the sub-list for method input_type
-	4,  // [4:4] is the sub-list for extension type_name
-	4,  // [4:4] is the sub-list for extension extendee
-	0,  // [0:4] is the sub-list for field type_name
+	10, // 2: wallet.v1.AddWalletResp.wallet:type_name -> wallet.v1.Wallet
+	0,  // 3: wallet.v1.WalletService.GetWallets:input_type -> wallet.v1.GetWalletsReq
+	2,  // 4: wallet.v1.WalletService.GetWallet:input_type -> wallet.v1.GetWalletReq
+	4,  // 5: wallet.v1.WalletService.EditWallet:input_type -> wallet.v1.EditWalletReq
+	6,  // 6: wallet.v1.WalletService.DeleteWallet:input_type -> wallet.v1.DeleteWalletReq
+	8,  // 7: wallet.v1.WalletService.AddWallet:input_type -> wallet.v1.AddWalletReq
+	1,  // 8: wallet.v1.WalletService.GetWallets:output_type -> wallet.v1.GetWalletsResp
+	3,  // 9: wallet.v1.WalletService.GetWallet:output_type -> wallet.v1.GetWalletResp
+	5,  // 10: wallet.v1.WalletService.EditWallet:output_type -> wallet.v1.EditWalletResp
+	7,  // 11: wallet.v1.WalletService.DeleteWallet:output_type -> wallet.v1.DeleteWalletResp
+	9,  // 12: wallet.v1.WalletService.AddWallet:output_type -> wallet.v1.AddWalletResp
+	8,  // [8:13] is the sub-list for method output_type
+	3,  // [3:8] is the sub-list for method input_type
+	3,  // [3:3] is the sub-list for extension type_name
+	3,  // [3:3] is the sub-list for extension extendee
+	0,  // [0:3] is the sub-list for field type_name
 }
 
 func init() { file_wallet_v1_wallet_proto_init() }

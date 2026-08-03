@@ -23,18 +23,20 @@ func NewPriceGrpcHandler(service *core.PriceService) *PriceGrpcHandler {
 	}
 }
 
-func (s *PriceGrpcHandler) GetCoin(ctx context.Context, req *pricev1.GetCoinRequest) (*pricev1.GetCoinResponse, error) {
-	coin, err := s.priceService.GetCoin(ctx, req.Coin)
+func (s *PriceGrpcHandler) GetCoin(ctx context.Context, req *pricev1.GetCoinReq) (*pricev1.GetCoinResp, error) {
+	coin, err := s.priceService.GetCoin(ctx, req.Id)
 	if err != nil {
 		return nil, err
 	}
-	return &pricev1.GetCoinResponse{
-		Symbol:   coin.Symbol,
-		Name:     coin.Name,
-		Chains:   coin.Chains,
-		Addrs:    coin.Addrs,
-		IsNative: coin.IsNative,
-		ImageUrl: coin.ImageURL,
+	return &pricev1.GetCoinResp{
+		Token: &pricev1.Token{
+			Symbol:   coin.Symbol,
+			Name:     coin.Name,
+			Chains:   coin.Chains,
+			Addrs:    coin.Addrs,
+			IsNative: coin.IsNative,
+			ImageUrl: coin.ImageURL,
+		},
 	}, nil
 }
 

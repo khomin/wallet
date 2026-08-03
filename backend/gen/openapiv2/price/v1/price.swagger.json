@@ -70,6 +70,36 @@
         ]
       }
     },
+    "/v1/coins/{id}": {
+      "get": {
+        "operationId": "PriceService_GetCoin",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1GetCoinResp"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "PriceService"
+        ]
+      }
+    },
     "/v1/prices": {
       "get": {
         "operationId": "PriceService_GetPrices",
@@ -161,6 +191,14 @@
             "type": "object",
             "$ref": "#/definitions/protobufAny"
           }
+        }
+      }
+    },
+    "v1GetCoinResp": {
+      "type": "object",
+      "properties": {
+        "token": {
+          "$ref": "#/definitions/v1Token"
         }
       }
     },

@@ -1,11 +1,11 @@
 info:
-  name: test
+  name: grpc
   type: grpc
-  seq: 12
+  seq: 11
 
 grpc:
   url: "{{grpcUrl}}"
-  method: /wallet.v1.WalletService/GetBalance
+  method: /wallet.v1.WalletService/GetWallets
   methodType: unary
   message: "{}"
   auth: inherit

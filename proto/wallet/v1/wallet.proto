@@ -65,7 +65,8 @@ message GetWalletResp {
 }
 
 message EditWalletReq {
-  string id = 1;
+  string id    = 1;
+  string label = 2;
 }
 
 message EditWalletResp {
@@ -77,7 +78,7 @@ message DeleteWalletReq {
 }
 
 message DeleteWalletResp {
-  Wallet wallet = 1;
+  string deleted_id = 1;
 }
 
 message AddWalletReq {

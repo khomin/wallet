@@ -1,17 +1,16 @@
 info:
-  name: put-wallet
+  name: patch-wallet
   type: http
   seq: 9
 
 http:
-  method: PUT
-  url: "{{url}}/api/v1/wallets"
+  method: PATCH
+  url: "{{url}}/v1/wallets/9e7dbb28-e257-40b2-88ed-8db5816269e8"
   body:
     type: json
     data: |-
       {
-        "id": "0ed0bf89-c4a8-4aa2-9c90-821009a70644",
-        "label": "sol-edit-1"
+        "label": "some-edit-5"
       }
   auth: inherit
 

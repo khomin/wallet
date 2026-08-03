@@ -29,7 +29,9 @@ import (
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
 	"github.com/sirupsen/logrus"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials/insecure"
 	"google.golang.org/grpc/reflection"
+	"google.golang.org/protobuf/encoding/protojson"
 )
 
 func main() {
@@ -126,39 +128,24 @@ func main() {
 		c.Next()
 	})
 
-	// walletHandler := handlers.NewWalletHandler(walletService)
-	// v1 := r.Group("/api/v1")
-	// {
-	// 	protected := v1.Group("").Use(middleware.Auth(verifier))
-	// 	v1.GET("/coins", assetsHandler.GetCoins)
-	// 	v1.GET("/coins/:id", assetsHandler.GetCoin)
-	// 	v1.GET("/coins/search", assetsHandler.SearchCoin)
-	// 	v1.GET("/prices", assetsHandler.GetPrices)
-	// 	v1.GET("/prices/:id", assetsHandler.GetPrice)
-	// 	protected.GET("/wallets/:id", walletHandler.GetWallet)
-	// 	protected.GET("/wallets", walletHandler.ListWallets)
-	// 	protected.POST("/wallets", walletHandler.AddWallet)
-	// 	protected.PUT("/wallets", walletHandler.EditWallet)
-	// 	protected.DELETE("/wallets", walletHandler.DeleteWallet)
-	// }
-	// r.GET("/health", func(c *gin.Context) {
-	// 	c.JSON(http.StatusOK, gin.H{
-	// 		"status":    "ok",
-	// 		"timestamp": time.Now().UTC().Format(time.RFC3339),
-	// 	})
-	// })
-	// print(assetsHandler, verifier, walletHandler)
-	// print(verifier, walletHandler)
-	print(verifier)
-
 	httpAddr := fmt.Sprintf(":%d", app.Cfg.Server.PortHTTP)
 	grpcPort := fmt.Sprintf(":%d", app.Cfg.Server.PortGRPC)
-	gwmux := runtime.NewServeMux()
+	gwmux := runtime.NewServeMux(
+		runtime.WithMarshalerOption(runtime.MIMEWildcard, &runtime.JSONPb{
+			MarshalOptions: protojson.MarshalOptions{
+				UseProtoNames:   true,
+				EmitUnpopulated: false,
+			},
+			UnmarshalOptions: protojson.UnmarshalOptions{
+				DiscardUnknown: true,
+			},
+		}),
+	)
 
 	grpcServer := grpc.NewServer(
-		// grpc.EmptyServerOption{},
 		grpc.UnaryInterceptor(middleware.UnaryAuthInterceptor(verifier)),
 	)
+
 	lis, err := net.Listen("tcp", grpcPort)
 	if err != nil {
 		logrus.Fatalf("failed to listen on gRPC port %s: %v", grpcPort, err)
@@ -168,6 +155,7 @@ func main() {
 		Addr:    httpAddr,
 		Handler: httpHandler,
 	}
+	opts := []grpc.DialOption{grpc.WithTransportCredentials(insecure.NewCredentials())}
 
 	walletGrpcServer := handlers.NewWalletGrpcHandler(walletService)
 	priceGrpcServer := handlers.NewPriceGrpcHandler(priceService)
@@ -175,7 +163,7 @@ func main() {
 	walletv1.RegisterWalletServiceServer(grpcServer, walletGrpcServer)
 	pricev1.RegisterPriceServiceServer(grpcServer, priceGrpcServer)
 
-	walletv1.RegisterWalletServiceHandlerServer(ctx, gwmux, walletGrpcServer)
+	walletv1.RegisterWalletServiceHandlerFromEndpoint(ctx, gwmux, grpcPort, opts)
 	pricev1.RegisterPriceServiceHandlerServer(ctx, gwmux, priceGrpcServer)
 
 	reflection.Register(grpcServer)

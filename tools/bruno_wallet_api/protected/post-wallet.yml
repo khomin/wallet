@@ -5,13 +5,13 @@ info:
 
 http:
   method: POST
-  url: "{{url}}/api/v1/wallets"
+  url: "{{url}}/v1/wallets"
   body:
     type: json
     data: |-
       {
         "chain": "sol",
-        "address": "CFMQzGS8M8wpvcWs1udJ2XgzXEmVf31bmYxBwtgPBLRg",
+        "address": "CFMQzGS8M8wpvczs1udJ2XgzXEmVf31bmYxBwtgPBLRg",
         "token_symbol": "XAUT",
         "label": "test some XAUt0"
       }

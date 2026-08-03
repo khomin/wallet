@@ -18,7 +18,7 @@ request:
     tokenConfig:
       placement:
         header: Bearer
-      source: id_token
+      source: access_token
     settings:
       autoFetchToken: true
-      autoRefreshToken: true
+      autoRefreshToken: false
