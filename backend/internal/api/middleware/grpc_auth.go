@@ -22,12 +22,9 @@ func UnaryAuthInterceptor(verifier TokenVerifier) grpc.UnaryServerInterceptor {
 		info *grpc.UnaryServerInfo,
 		handler grpc.UnaryHandler,
 	) (any, error) {
-		// 1. Skip auth for public endpoints (e.g. Health, Public Coins)
 		if isPublicEndpoint(info.FullMethod) {
 			return handler(ctx, req)
 		}
-
-		// 2. Extract metadata from gRPC context
 		md, ok := metadata.FromIncomingContext(ctx)
 		if !ok {
 			return nil, status.Error(codes.Unauthenticated, "missing request metadata")
@@ -40,13 +37,11 @@ func UnaryAuthInterceptor(verifier TokenVerifier) grpc.UnaryServerInterceptor {
 
 		tokenStr := strings.TrimPrefix(authHeader[0], "Bearer ")
 
-		// 3. Verify JWT against Keycloak
 		claims, err := verifier.Verify(ctx, tokenStr)
 		if err != nil {
 			return nil, status.Errorf(codes.Unauthenticated, "invalid or expired token: %v", err)
 		}
 
-		// 4. Attach user claims/ID to context for downstream handlers
 		newCtx := context.WithValue(ctx, "user_id", claims.Subject)
 
 		return handler(newCtx, req)

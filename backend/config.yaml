@@ -35,7 +35,7 @@ blockchain:
   bnb: "https://bsc-mainnet.public.blastapi.io"
   solana_rpc: "https://api.mainnet-beta.solana.com"
   tron_grpc: "grpc.trongrid.io:50051"
-  tron_api_key: ""
+  tron_api_key: "38bcc631-6749-4afb-9626-45afafd2af13"
   bitcoin:
     host: "https://mempool.space/api"
     user: ""
