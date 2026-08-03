@@ -24,6 +24,7 @@ import (
 	"tracker/internal/core"
 	"tracker/internal/db"
 	"tracker/internal/db/repositories"
+	"tracker/internal/docs"
 
 	"github.com/gin-gonic/gin"
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
@@ -208,33 +209,7 @@ func setupHttpHandler(gwmux *runtime.ServeMux) http.Handler {
 	mux := http.NewServeMux()
 
 	mux.Handle("/", gwmux)
-
-	mux.HandleFunc("/swagger.json", func(w http.ResponseWriter, r *http.Request) {
-		http.ServeFile(w, r, "gen/openapiv2/v1/wallet.swagger.json")
-	})
-
-	mux.HandleFunc("/docs", func(w http.ResponseWriter, r *http.Request) {
-		html := `
-		<!DOCTYPE html>
-		<html>
-		<head>
-			<title>Wallet API Docs</title>
-			<link rel="stylesheet" href="https://unpkg.com/swagger-ui-dist@5/swagger-ui.css" />
-		</head>
-		<body>
-			<div id="swagger-ui"></div>
-			<script src="https://unpkg.com/swagger-ui-dist@5/swagger-ui-bundle.js"></script>
-			<script>
-				SwaggerUIBundle({
-					url: '/swagger.json',
-					dom_id: '#swagger-ui',
-				});
-			</script>
-		</body>
-		</html>`
-		w.Header().Set("Content-Type", "text/html")
-		w.Write([]byte(html))
-	})
+	mux.Handle("/docs/", http.StripPrefix("/docs", docs.Handler()))
 
 	return corsMiddleware(mux)
 }
