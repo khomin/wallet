@@ -10,9 +10,8 @@ http:
     type: json
     data: |-
       {
-        "text": "usd"
+        "text": "xrp"
       }
-  auth: inherit
 
 settings:
   encodeUrl: true

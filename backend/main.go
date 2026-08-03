@@ -157,14 +157,18 @@ func main() {
 	}
 	opts := []grpc.DialOption{grpc.WithTransportCredentials(insecure.NewCredentials())}
 
-	walletGrpcServer := handlers.NewWalletGrpcHandler(walletService)
 	priceGrpcServer := handlers.NewPriceGrpcHandler(priceService)
+	walletGrpcServer := handlers.NewWalletGrpcHandler(walletService)
 
-	walletv1.RegisterWalletServiceServer(grpcServer, walletGrpcServer)
 	pricev1.RegisterPriceServiceServer(grpcServer, priceGrpcServer)
+	walletv1.RegisterWalletServiceServer(grpcServer, walletGrpcServer)
 
-	walletv1.RegisterWalletServiceHandlerFromEndpoint(ctx, gwmux, grpcPort, opts)
-	pricev1.RegisterPriceServiceHandlerServer(ctx, gwmux, priceGrpcServer)
+	if err := pricev1.RegisterPriceServiceHandlerFromEndpoint(ctx, gwmux, grpcPort, opts); err != nil {
+		logrus.Fatalf("failed to register price gateway: %v", err)
+	}
+	if err := walletv1.RegisterWalletServiceHandlerFromEndpoint(ctx, gwmux, grpcPort, opts); err != nil {
+		logrus.Fatalf("failed to register wallet gateway: %v", err)
+	}
 
 	reflection.Register(grpcServer)
 

@@ -52,9 +52,10 @@ func UnaryAuthInterceptor(verifier TokenVerifier) grpc.UnaryServerInterceptor {
 func isPublicEndpoint(method string) bool {
 	// Exclude public endpoints matching gRPC method names
 	publicMethods := map[string]bool{
-		"/price.v1.PriceService/GetCoins":  true,
-		"/price.v1.PriceService/GetCoin":   true,
-		"/price.v1.PriceService/GetPrices": true,
+		"/price.v1.PriceService/GetCoins":   true,
+		"/price.v1.PriceService/GetCoin":    true,
+		"/price.v1.PriceService/SearchCoin": true,
+		"/price.v1.PriceService/GetPrices":  true,
 	}
 	return publicMethods[method]
 }

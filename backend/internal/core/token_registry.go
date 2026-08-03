@@ -116,7 +116,7 @@ func (r *TokenRegistry) GetByQuery(query string) []domain.TokenRaw {
 	query = strings.ToUpper(query)
 	distinct := map[string]domain.TokenRaw{}
 	for _, token := range r.tokensByChainSymbol {
-		matches := strings.Contains(token.Name, query) || strings.Contains(token.Symbol, query)
+		matches := strings.Contains(strings.ToUpper(token.Name), query) || strings.Contains(token.Symbol, query)
 		if matches {
 			chains := make([]string, 0, len(token.Deployments))
 			addrs := make([]string, 0, len(token.Deployments))

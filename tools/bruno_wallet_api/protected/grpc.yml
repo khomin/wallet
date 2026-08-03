@@ -5,7 +5,10 @@ info:
 
 grpc:
   url: "{{grpcUrl}}"
-  method: /wallet.v1.WalletService/GetWallets
+  method: /price.v1.PriceService/SearchCoin
   methodType: unary
-  message: "{}"
+  message: |-
+    {
+       "text": "xrp"
+    }
   auth: inherit
