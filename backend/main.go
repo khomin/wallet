@@ -5,10 +5,6 @@ import (
 	"fmt"
 	"net"
 	"net/http"
-	"os"
-	"os/signal"
-	"syscall"
-	"time"
 	"tracker/bootstrap"
 	pricev1 "tracker/gen/price/v1"
 	walletv1 "tracker/gen/wallet/v1"
@@ -26,9 +22,9 @@ import (
 	"tracker/internal/db/repositories"
 	"tracker/internal/docs"
 
-	"github.com/gin-gonic/gin"
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
 	"github.com/sirupsen/logrus"
+	"golang.org/x/sync/errgroup"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 	"google.golang.org/grpc/reflection"
@@ -36,6 +32,11 @@ import (
 )
 
 func main() {
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
+	g, ctx := errgroup.WithContext(ctx)
+
 	logrus.SetFormatter(&logrus.JSONFormatter{})
 	logrus.SetLevel(logrus.InfoLevel)
 
@@ -66,13 +67,8 @@ func main() {
 	bitcoinClient := bitcoin.NewBitcoinClient(app.Cfg.Blockchain.Bitcoin.Host, app.Cfg.Blockchain.Bitcoin.User, app.Cfg.Blockchain.Bitcoin.Pass)
 	tronClient := tron.NewTronClient(app.Cfg.Blockchain.TronGRPC, app.Cfg.Blockchain.TronAPIKey)
 
-	// Create a context that can be cancelled for graceful shutdown
-	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
-
 	priceCache := core.NewPriceCache(redisClient)
 
-	// Create the price fetcher with 60 second interval
 	priceFetcher := core.NewPriceFetcher(core.PriceFetcherDeps{
 		CoinGeckoClient: coingeckoClient,
 		AlchemyClient:   alchemyClient,
@@ -98,7 +94,6 @@ func main() {
 		// Cache:         priceCache,
 		Cache: core.NewNoOpCache(),
 	})
-	// assetsHandler := handlers.NewPriceHandler(priceService)
 
 	if err := blockchainService.ConnectAll(ctx); err != nil {
 		logrus.WithError(err).Warn("failed to connect all blockchain clients")
@@ -113,24 +108,6 @@ func main() {
 		logrus.Fatalf("failed to create jwt verifier %s", err.Error())
 	}
 
-	r := gin.Default()
-
-	// CORS – allow Vite dev server (localhost:5173) and any other origins you need
-	r.Use(func(c *gin.Context) {
-		c.Header("Access-Control-Allow-Origin", "*")
-		c.Header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
-		c.Header("Access-Control-Allow-Headers", "Origin, Content-Type, Accept, Authorization")
-		c.Header("Access-Control-Max-Age", "86400")
-
-		if c.Request.Method == "OPTIONS" {
-			c.AbortWithStatus(http.StatusNoContent)
-			return
-		}
-		c.Next()
-	})
-
-	httpAddr := fmt.Sprintf(":%d", app.Cfg.Server.PortHTTP)
-	grpcPort := fmt.Sprintf(":%d", app.Cfg.Server.PortGRPC)
 	gwmux := runtime.NewServeMux(
 		runtime.WithMarshalerOption(runtime.MIMEWildcard, &runtime.JSONPb{
 			MarshalOptions: protojson.MarshalOptions{
@@ -143,20 +120,12 @@ func main() {
 		}),
 	)
 
-	grpcServer := grpc.NewServer(
-		grpc.UnaryInterceptor(middleware.UnaryAuthInterceptor(verifier)),
-	)
+	httpAddr := fmt.Sprintf(":%d", app.Cfg.Server.PortHTTP)
+	grpcAddr := fmt.Sprintf(":%d", app.Cfg.Server.PortGRPC)
 
-	lis, err := net.Listen("tcp", grpcPort)
-	if err != nil {
-		logrus.Fatalf("failed to listen on gRPC port %s: %v", grpcPort, err)
-	}
-	httpHandler := setupHttpHandler(gwmux)
-	httpServer := &http.Server{
-		Addr:    httpAddr,
-		Handler: httpHandler,
-	}
+	grpcServer := grpc.NewServer(grpc.UnaryInterceptor(middleware.UnaryAuthInterceptor(verifier)))
 	opts := []grpc.DialOption{grpc.WithTransportCredentials(insecure.NewCredentials())}
+	reflection.Register(grpcServer)
 
 	priceGrpcServer := handlers.NewPriceGrpcHandler(priceService)
 	walletGrpcServer := handlers.NewWalletGrpcHandler(walletService)
@@ -164,45 +133,54 @@ func main() {
 	pricev1.RegisterPriceServiceServer(grpcServer, priceGrpcServer)
 	walletv1.RegisterWalletServiceServer(grpcServer, walletGrpcServer)
 
-	if err := pricev1.RegisterPriceServiceHandlerFromEndpoint(ctx, gwmux, grpcPort, opts); err != nil {
+	if err := pricev1.RegisterPriceServiceHandlerFromEndpoint(ctx, gwmux, grpcAddr, opts); err != nil {
 		logrus.Fatalf("failed to register price gateway: %v", err)
 	}
-	if err := walletv1.RegisterWalletServiceHandlerFromEndpoint(ctx, gwmux, grpcPort, opts); err != nil {
+	if err := walletv1.RegisterWalletServiceHandlerFromEndpoint(ctx, gwmux, grpcAddr, opts); err != nil {
 		logrus.Fatalf("failed to register wallet gateway: %v", err)
 	}
 
-	reflection.Register(grpcServer)
+	httpHandler := setupHttpHandler(gwmux)
 
-	go func() {
-		logrus.WithField("port", grpcPort).Info("Starting gRPC server")
-		if err := grpcServer.Serve(lis); err != nil {
-			logrus.WithError(err).Fatal("gRPC server failed")
-		}
-	}()
-	go func() {
-		logrus.WithField("port", app.Cfg.Server.PortHTTP).Info("HTTP server started")
-		if err := httpServer.ListenAndServe(); err != nil && err != http.ErrServerClosed {
-			logrus.WithError(err).Fatal("Failed to start HTTP server")
-		}
-	}()
+	runHttp(g, "http", httpAddr, httpHandler)
+	runGrpc(g, "grpc", grpcAddr, grpcServer)
 
-	// Wait for interrupt signal (Ctrl+C or kill)
-	quit := make(chan os.Signal, 1)
-	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
-	<-quit
+	<-ctx.Done()
+	logrus.Info("Shutdown signal received, shutting down...")
 
-	logrus.Info("Shutting down gracefully...")
-	cancel()
-
-	// Shutdown HTTP server with 5 second timeout
-	shutdownCtx, shutdownCancel := context.WithTimeout(context.Background(), 5*time.Second)
-	defer shutdownCancel()
-
-	if err := httpServer.Shutdown(shutdownCtx); err != nil {
-		logrus.WithError(err).Error("HTTP server forced to shutdown")
+	if err := g.Wait(); err != nil {
+		logrus.Error("Stopped", "erro", err)
+	} else {
+		logrus.Info("Stopped cleanly")
 	}
 
 	logrus.Info("Server shutdown complete")
+}
+
+func runHttp(g *errgroup.Group, name string, addr string, handler http.Handler) {
+	g.Go(func() error {
+		srv := &http.Server{
+			Addr:    addr,
+			Handler: handler,
+		}
+		if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+			return fmt.Errorf("server failed: %w %s", err, name)
+		}
+		return nil
+	})
+}
+
+func runGrpc(g *errgroup.Group, name string, addr string, grpcServer *grpc.Server) {
+	g.Go(func() error {
+		listen, err := net.Listen("tcp", addr)
+		if err != nil {
+			return fmt.Errorf("failed to listen on gRPC: %s %w %s", addr, err, name)
+		}
+		if err := grpcServer.Serve(listen); err != nil {
+			return fmt.Errorf("gRPC server failed: %w %s", err, name)
+		}
+		return nil
+	})
 }
 
 func setupHttpHandler(gwmux *runtime.ServeMux) http.Handler {
