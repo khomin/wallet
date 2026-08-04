@@ -6,7 +6,6 @@ import (
 	"fmt"
 
 	"tracker/internal/core/domain"
-	"tracker/internal/db/models"
 
 	"github.com/google/uuid"
 	"github.com/sirupsen/logrus"
@@ -28,11 +27,11 @@ type WalletPortfolio struct {
 }
 
 type WalletRepository interface {
-	ListWallets(ctx context.Context, userID string) ([]models.Wallet, error)
-	CreateWallet(ctx context.Context, userID string, chain string, address string, symbol string, label string) (*models.Wallet, error)
-	EditWallet(ctx context.Context, userID string, id uuid.UUID, label string) (*models.Wallet, error)
+	ListWallets(ctx context.Context, userID string) ([]domain.Wallet, error)
+	CreateWallet(ctx context.Context, userID string, chain string, address string, symbol string, label string) (*domain.Wallet, error)
+	EditWallet(ctx context.Context, userID string, id uuid.UUID, label string) (*domain.Wallet, error)
 	DeleteWallet(ctx context.Context, userID string, id uuid.UUID) error
-	GetWallet(ctx context.Context, userID string, id uuid.UUID) (*models.Wallet, error)
+	GetWallet(ctx context.Context, userID string, id uuid.UUID) (*domain.Wallet, error)
 }
 
 type WalletService struct {
@@ -40,53 +39,67 @@ type WalletService struct {
 	priceService      *PriceService
 	blockchainService *BlockchainService
 	tokenRegistry     *TokenRegistry
+	userRepo          UserRepo
 }
 
-func NewWalletService(
-	walletRepo WalletRepository,
-	priceService *PriceService,
-	blockchainService *BlockchainService,
-	tokenRegistry *TokenRegistry,
-) *WalletService {
+type WalletDeps struct {
+	WalletRepo        WalletRepository
+	PriceService      *PriceService
+	UserRepo          UserRepo
+	BlockchainService *BlockchainService
+	TokenRegistry     *TokenRegistry
+}
+
+func NewWalletService(deps WalletDeps) *WalletService {
 	return &WalletService{
-		walletRepo:        walletRepo,
-		priceService:      priceService,
-		blockchainService: blockchainService,
-		tokenRegistry:     tokenRegistry,
+		walletRepo:        deps.WalletRepo,
+		priceService:      deps.PriceService,
+		userRepo:          deps.UserRepo,
+		blockchainService: deps.BlockchainService,
+		tokenRegistry:     deps.TokenRegistry,
 	}
 }
 
 func (s *WalletService) GetWallet(ctx context.Context, userID string, id uuid.UUID) (WalletPortfolio, error) {
+	if err := s.userRepo.EnsureExists(ctx, userID); err != nil {
+		return WalletPortfolio{}, err
+	}
 	wallet, err := s.walletRepo.GetWallet(ctx, userID, id)
 	if err != nil {
 		return WalletPortfolio{}, err
 	}
-	return s.getWalletPortfolio(ctx, walletDbToEntity(*wallet))
+	return s.getWalletPortfolio(ctx, *wallet)
 }
 
 func (s *WalletService) ListWallets(ctx context.Context, userID string) ([]WalletPortfolio, error) {
-	res := []WalletPortfolio{}
+	if err := s.userRepo.EnsureExists(ctx, userID); err != nil {
+		return nil, err
+	}
 	wallets, err := s.walletRepo.ListWallets(ctx, userID)
 	if err != nil {
 		return nil, err
 	}
+	out := []WalletPortfolio{}
 	for _, wallet := range wallets {
-		portfolio, err := s.getWalletPortfolio(ctx, walletDbToEntity(wallet))
+		portfolio, err := s.getWalletPortfolio(ctx, wallet)
 		if err != nil {
 			continue
 		}
-		res = append(res, portfolio)
+		out = append(out, portfolio)
 	}
-	return res, nil
+	return out, nil
 }
 
 func (s *WalletService) AddWallet(ctx context.Context, userID string, chain string, address string, symbol string, label string) (*WalletPortfolio, error) {
-	// TODO: add validation
+	if err := s.userRepo.EnsureExists(ctx, userID); err != nil {
+		return nil, err
+	}
+	// TODO: maybe add validation
 	wallet, err := s.walletRepo.CreateWallet(ctx, userID, chain, address, symbol, label)
 	if err != nil {
 		return nil, err
 	}
-	portfolio, err := s.getWalletPortfolio(ctx, walletDbToEntity(*wallet))
+	portfolio, err := s.getWalletPortfolio(ctx, *wallet)
 	if err != nil {
 		return nil, err
 	}
@@ -94,11 +107,14 @@ func (s *WalletService) AddWallet(ctx context.Context, userID string, chain stri
 }
 
 func (s *WalletService) EditWallet(ctx context.Context, userID string, id uuid.UUID, label string) (*WalletPortfolio, error) {
+	if err := s.userRepo.EnsureExists(ctx, userID); err != nil {
+		return nil, err
+	}
 	wallet, err := s.walletRepo.EditWallet(ctx, userID, id, label)
 	if err != nil {
 		return nil, err
 	}
-	portfolio, err := s.getWalletPortfolio(ctx, walletDbToEntity(*wallet))
+	portfolio, err := s.getWalletPortfolio(ctx, *wallet)
 	if err != nil {
 		return nil, err
 	}
@@ -106,6 +122,9 @@ func (s *WalletService) EditWallet(ctx context.Context, userID string, id uuid.U
 }
 
 func (s *WalletService) DeleteWallet(ctx context.Context, userID string, id uuid.UUID) error {
+	if err := s.userRepo.EnsureExists(ctx, userID); err != nil {
+		return err
+	}
 	return s.walletRepo.DeleteWallet(ctx, userID, id)
 }
 
@@ -142,15 +161,4 @@ func (s *WalletService) getWalletPortfolio(ctx context.Context, wallet domain.Wa
 	item.Balance = balance.Balance
 	item.BalanceUSD = balance.Balance * price.CurrentPrice
 	return item, nil
-}
-
-func walletDbToEntity(in models.Wallet) domain.Wallet {
-	return domain.Wallet{
-		ID:      in.ID.String(),
-		Address: in.Address,
-		Chain:   in.Chain,
-		Label:   in.Label,
-		Symbol:  in.Symbol,
-		UserID:  in.UserID,
-	}
 }

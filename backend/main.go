@@ -54,6 +54,8 @@ func main() {
 		app.Cfg.Redis.DB,
 	)
 	priceRepo := repositories.NewPriceRepository(db)
+	walletRepo := repositories.NewWalletRepository(db)
+	userRepo := repositories.NewUserRepo(db)
 
 	coingeckoClient := coingecko.NewCoinGeckoClient(app.Cfg.CoinGecko.APIKey)
 	alchemyClient := alchemy.NewAlchemyClient(app.Cfg.Alchemy.APIKey)
@@ -79,7 +81,6 @@ func main() {
 
 	tokenRegistry := core.DefaultTokenRegistry(app.Cfg.TokenRegistry)
 	priceService := core.NewPriceService(redisClient, &priceRepo, priceFetcher, priceCache, tokenRegistry)
-	walletRepo := repositories.NewWalletRepository(db)
 	blockchainService := core.NewBlockchainService(core.BlockchainServiceDeps{
 		EthMainnet:    ethMainnetClient,
 		EthArbitrum:   ethArbitrumClient,
@@ -99,7 +100,10 @@ func main() {
 		logrus.WithError(err).Warn("failed to connect all blockchain clients")
 	}
 
-	walletService := core.NewWalletService(walletRepo, priceService, blockchainService, tokenRegistry)
+	walletService := core.NewWalletService(core.WalletDeps{
+		WalletRepo: walletRepo, PriceService: priceService,
+		UserRepo: userRepo, BlockchainService: blockchainService, TokenRegistry: tokenRegistry,
+	})
 
 	go priceFetcher.StartCoinFetcher(ctx)
 

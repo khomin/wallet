@@ -18,7 +18,7 @@ func NewPriceRepository(db *db.DataBase) PriceRepository {
 }
 
 func (r *PriceRepository) GetCoinSnapshot(ctx context.Context) ([]domain.TokenID, error) {
-	query := `SELECT * FROM coins`
+	query := `SELECT id, symbol, coin_name, image_url, last_updated, snapshot_at FROM coins`
 
 	rows, err := r.db.Pool.Query(ctx, query)
 	if err != nil {
@@ -233,6 +233,7 @@ func modelPriceToDomain(in []models.CoinPrice) []domain.TokenPrice {
 	out := make([]domain.TokenPrice, 0, len(in))
 	for _, i := range in {
 		out = append(out, domain.TokenPrice{
+			ID:     i.ID,
 			Symbol: i.Symbol,
 			Name:   i.Name,
 			// Chains: i.,

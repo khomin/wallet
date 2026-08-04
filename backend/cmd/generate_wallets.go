@@ -19,7 +19,7 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-func TestDeleteWalletReturnsDeletedWallet(t *testing.T) {
+func TestGenerateWallets(t *testing.T) {
 	logrus.SetFormatter(&logrus.JSONFormatter{})
 	logrus.SetLevel(logrus.InfoLevel)
 
@@ -87,7 +87,13 @@ func TestDeleteWalletReturnsDeletedWallet(t *testing.T) {
 
 	go priceFetcher.StartCoinFetcher(ctx)
 
-	svc := core.NewWalletService(walletRepo, priceService, blockchainService, tokenRegistry)
+	svc := core.NewWalletService(core.WalletDeps{
+		WalletRepo:        walletRepo,
+		PriceService:      priceService,
+		UserRepo:          repositories.NewUserRepo(db),
+		BlockchainService: blockchainService,
+		TokenRegistry:     tokenRegistry,
+	})
 
 	userID := "ad4abec0-8bae-462a-8ea3-8502048f3071"
 

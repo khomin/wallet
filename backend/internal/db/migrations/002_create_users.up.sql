@@ -1,7 +1,7 @@
 CREATE TABLE IF NOT EXISTS users (
     id TEXT PRIMARY KEY,
-    name TEXT NOT NULL UNIQUE,
-    email TEXT NOT NULL UNIQUE,
+    name TEXT,
+    email TEXT,
     image_url TEXT
 );
 
