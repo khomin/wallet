@@ -11,6 +11,7 @@ import (
 
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
+	"google.golang.org/protobuf/types/known/emptypb"
 )
 
 type WalletGrpcHandler struct {
@@ -84,12 +85,12 @@ func (s *WalletGrpcHandler) GetWallet(ctx context.Context, req *walletv1.GetWall
 	}, nil
 }
 
-func (s *WalletGrpcHandler) AddWallet(ctx context.Context, req *walletv1.AddWalletReq) (*walletv1.AddWalletResp, error) {
+func (s *WalletGrpcHandler) AddWallet(ctx context.Context, req *walletv1.AddWalletReq) (*emptypb.Empty, error) {
 	user, ok := middleware.GetOAUTH(ctx)
 	if !ok {
 		return nil, status.Error(codes.Unauthenticated, "unauthorized")
 	}
-	wallet, err := s.walletService.AddWallet(ctx, user.Subject, req.Chain, req.Address, req.TokenSymbol, req.Label)
+	err := s.walletService.AddWallet(ctx, user.Subject, req.Chain, req.Address, req.TokenSymbol, req.Label)
 	if err != nil {
 		if errors.Is(err, core.ErrWalletNotFound) {
 			return nil, status.Error(codes.NotFound, "wallet not found")
@@ -98,20 +99,21 @@ func (s *WalletGrpcHandler) AddWallet(ctx context.Context, req *walletv1.AddWall
 		}
 		return nil, status.Error(codes.Internal, err.Error())
 	}
-	return &walletv1.AddWalletResp{
-		Wallet: &walletv1.Wallet{
-			Id:                wallet.Wallet.ID,
-			Address:           wallet.Wallet.Address,
-			Chain:             wallet.Wallet.Chain,
-			TokenSymbol:       wallet.Wallet.Symbol,
-			Label:             wallet.Wallet.Label,
-			BalanceCrypto:     float32(wallet.Balance),
-			BalanceUsd:        float32(wallet.BalanceUSD),
-			Change_24HPercent: float32(wallet.Price.Change_24h),
-			HasError:          wallet.HasError,
-			ErrorMsg:          wallet.ErrorMsg,
-		},
-	}, nil
+	// return &walletv1.AddWalletResp{
+	// 	Wallet: &walletv1.Wallet{
+	// 		Id:                wallet.Wallet.ID,
+	// 		Address:           wallet.Wallet.Address,
+	// 		Chain:             wallet.Wallet.Chain,
+	// 		TokenSymbol:       wallet.Wallet.Symbol,
+	// 		Label:             wallet.Wallet.Label,
+	// 		BalanceCrypto:     float32(wallet.Balance),
+	// 		BalanceUsd:        float32(wallet.BalanceUSD),
+	// 		Change_24HPercent: float32(wallet.Price.Change_24h),
+	// 		HasError:          wallet.HasError,
+	// 		ErrorMsg:          wallet.ErrorMsg,
+	// 	},
+	// }, nil
+	return &emptypb.Empty{}, nil
 }
 
 func (s *WalletGrpcHandler) EditWallet(ctx context.Context, req *walletv1.EditWalletReq) (*walletv1.EditWalletResp, error) {

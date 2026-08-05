@@ -3,8 +3,8 @@
 /* eslint-disable */
 // @ts-nocheck
 
-import { AddWalletReq, AddWalletResp, DeleteWalletReq, DeleteWalletResp, EditWalletReq, EditWalletResp, GetWalletReq, GetWalletResp, GetWalletsReq, GetWalletsResp } from "./wallet_pb.js";
-import { MethodKind } from "@bufbuild/protobuf";
+import { AddWalletReq, DeleteWalletReq, DeleteWalletResp, EditWalletReq, EditWalletResp, GetWalletReq, GetWalletResp, GetWalletsReq, GetWalletsResp } from "./wallet_pb.js";
+import { Empty, MethodKind } from "@bufbuild/protobuf";
 
 /**
  * func (h *WalletHandler) ListWallets(c *gin.Context) {
@@ -57,7 +57,7 @@ export const WalletService = {
     addWallet: {
       name: "AddWallet",
       I: AddWalletReq,
-      O: AddWalletResp,
+      O: Empty,
       kind: MethodKind.Unary,
     },
   }

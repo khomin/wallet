@@ -43,7 +43,8 @@
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/v1AddWalletResp"
+              "type": "object",
+              "properties": {}
             }
           },
           "default": {
@@ -232,14 +233,6 @@
         },
         "errorMsg": {
           "type": "string"
-        }
-      }
-    },
-    "v1AddWalletResp": {
-      "type": "object",
-      "properties": {
-        "wallet": {
-          "$ref": "#/definitions/v1Wallet"
         }
       }
     },

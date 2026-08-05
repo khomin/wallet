@@ -8,3 +8,8 @@ type Wallet struct {
 	Symbol  string `json:"symbol"`
 	UserID  string `json:"user_id"`
 }
+
+type WalletCreatedEvent struct {
+	ID     string `json:"id"`
+	UserID string `json:"user_id"`
+}

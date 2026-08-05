@@ -13,6 +13,7 @@ type Config struct {
 	Authorization Authorization    `mapstructure:"authorization"`
 	Database      DatabaseConfig   `mapstructure:"database"`
 	Redis         RedisConfig      `mapstructure:"redis"`
+	Rabbit        RabbitMqConfig   `mapstructure:"rabbit"`
 	Alchemy       AlchemyConfig    `mapstructure:"alchemy"`
 	CoinGecko     CoinGeckoConfig  `mapstructure:"coingecko"`
 	Blockchain    BlockchainConfig `mapstructure:"blockchain"`
@@ -43,6 +44,10 @@ type RedisConfig struct {
 	Addr     string `mapstructure:"addr"`
 	Password string `mapstructure:"password"`
 	DB       int    `mapstructure:"db"`
+}
+
+type RabbitMqConfig struct {
+	Url string `mapstructure:"url"`
 }
 
 type AlchemyConfig struct {

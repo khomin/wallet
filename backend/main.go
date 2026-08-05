@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"fmt"
+	"log"
 	"net"
 	"net/http"
 	"tracker/bootstrap"
@@ -21,6 +22,7 @@ import (
 	"tracker/internal/db"
 	"tracker/internal/db/repositories"
 	"tracker/internal/docs"
+	"tracker/internal/messaging"
 
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
 	"github.com/sirupsen/logrus"
@@ -46,13 +48,20 @@ func main() {
 	if err != nil {
 		logrus.WithError(err).Fatal("Failed to connect to Postgres")
 	}
-	defer db.Close()
+	// defer db.Close()
 
 	redisClient := cache.NewRedisClient(
 		app.Cfg.Redis.Addr,
 		app.Cfg.Redis.Password,
 		app.Cfg.Redis.DB,
 	)
+
+	mq, err := messaging.NewRabbitMQ(app.Cfg.Rabbit.Url)
+	if err != nil {
+		log.Fatal(err)
+	}
+	// defer mq.Close()
+
 	priceRepo := repositories.NewPriceRepository(db)
 	walletRepo := repositories.NewWalletRepository(db)
 	userRepo := repositories.NewUserRepo(db)
@@ -103,7 +112,11 @@ func main() {
 	walletService := core.NewWalletService(core.WalletDeps{
 		WalletRepo: walletRepo, PriceService: priceService,
 		UserRepo: userRepo, BlockchainService: blockchainService, TokenRegistry: tokenRegistry,
+		RabbitMQ: mq,
 	})
+
+	walletWorker := core.NewWalletWorker(walletService)
+	walletWorker.StartConsuming(ctx)
 
 	go priceFetcher.StartCoinFetcher(ctx)
 

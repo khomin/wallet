@@ -20,6 +20,9 @@ redis:
   password: ""
   db: 0
 
+rabbit:
+  url: 	"amqp://admin:supersecretpassword@localhost:5672"
+
 alchemy:
   api_key: ""
 

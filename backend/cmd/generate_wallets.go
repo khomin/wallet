@@ -136,7 +136,7 @@ func TestGenerateWallets(t *testing.T) {
 
 	for _, token := range tokens {
 		for idx, chain := range token.Chains {
-			_, err = svc.AddWallet(context.Background(), userID, chain, token.Addrs[idx], token.Symbol, token.Name)
+			err = svc.AddWallet(context.Background(), userID, chain, token.Addrs[idx], token.Symbol, token.Name)
 			if err != nil {
 				t.Logf("AddWallet returned unexpected error: %v", err)
 			}

@@ -2,10 +2,12 @@ package core
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
 
 	"tracker/internal/core/domain"
+	"tracker/internal/messaging"
 
 	"github.com/google/uuid"
 	"github.com/sirupsen/logrus"
@@ -38,6 +40,7 @@ type WalletService struct {
 	walletRepo        WalletRepository
 	priceService      *PriceService
 	blockchainService *BlockchainService
+	rabbitMQ          *messaging.RabbitMQ
 	tokenRegistry     *TokenRegistry
 	userRepo          UserRepo
 }
@@ -46,6 +49,7 @@ type WalletDeps struct {
 	WalletRepo        WalletRepository
 	PriceService      *PriceService
 	UserRepo          UserRepo
+	RabbitMQ          *messaging.RabbitMQ
 	BlockchainService *BlockchainService
 	TokenRegistry     *TokenRegistry
 }
@@ -57,6 +61,7 @@ func NewWalletService(deps WalletDeps) *WalletService {
 		userRepo:          deps.UserRepo,
 		blockchainService: deps.BlockchainService,
 		tokenRegistry:     deps.TokenRegistry,
+		rabbitMQ:          deps.RabbitMQ,
 	}
 }
 
@@ -68,7 +73,7 @@ func (s *WalletService) GetWallet(ctx context.Context, userID string, id uuid.UU
 	if err != nil {
 		return WalletPortfolio{}, err
 	}
-	return s.getWalletPortfolio(ctx, *wallet)
+	return s.FetchPortfolio(ctx, *wallet)
 }
 
 func (s *WalletService) ListWallets(ctx context.Context, userID string) ([]WalletPortfolio, error) {
@@ -81,7 +86,7 @@ func (s *WalletService) ListWallets(ctx context.Context, userID string) ([]Walle
 	}
 	out := []WalletPortfolio{}
 	for _, wallet := range wallets {
-		portfolio, err := s.getWalletPortfolio(ctx, wallet)
+		portfolio, err := s.FetchPortfolio(ctx, wallet)
 		if err != nil {
 			continue
 		}
@@ -90,20 +95,33 @@ func (s *WalletService) ListWallets(ctx context.Context, userID string) ([]Walle
 	return out, nil
 }
 
-func (s *WalletService) AddWallet(ctx context.Context, userID string, chain string, address string, symbol string, label string) (*WalletPortfolio, error) {
+func (s *WalletService) AddWallet(ctx context.Context, userID string, chain string, address string, symbol string, label string) error {
 	if err := s.userRepo.EnsureExists(ctx, userID); err != nil {
-		return nil, err
+		return nil
 	}
 	// TODO: maybe add validation
 	wallet, err := s.walletRepo.CreateWallet(ctx, userID, chain, address, symbol, label)
 	if err != nil {
-		return nil, err
+		return nil
 	}
-	portfolio, err := s.getWalletPortfolio(ctx, *wallet)
-	if err != nil {
-		return nil, err
+	// msg := string("hell worlrd!")
+	event := domain.WalletCreatedEvent{
+		ID:     wallet.ID,
+		UserID: userID,
 	}
-	return &portfolio, nil
+	if bytes, err := json.Marshal(event); err != nil {
+		return nil
+	} else {
+		if err := s.rabbitMQ.Publish(messaging.QueueWalletCreated, bytes); err != nil {
+			return nil
+		}
+	}
+	// portfolio, err := s.getWalletPortfolio(ctx, *wallet)
+	// if err != nil {
+	// 	return nil, err
+	// }
+	// return &portfolio, nil
+	return nil
 }
 
 func (s *WalletService) EditWallet(ctx context.Context, userID string, id uuid.UUID, label string) (*WalletPortfolio, error) {
@@ -114,7 +132,7 @@ func (s *WalletService) EditWallet(ctx context.Context, userID string, id uuid.U
 	if err != nil {
 		return nil, err
 	}
-	portfolio, err := s.getWalletPortfolio(ctx, *wallet)
+	portfolio, err := s.FetchPortfolio(ctx, *wallet)
 	if err != nil {
 		return nil, err
 	}
@@ -128,7 +146,7 @@ func (s *WalletService) DeleteWallet(ctx context.Context, userID string, id uuid
 	return s.walletRepo.DeleteWallet(ctx, userID, id)
 }
 
-func (s *WalletService) getWalletPortfolio(ctx context.Context, wallet domain.Wallet) (WalletPortfolio, error) {
+func (s *WalletService) FetchPortfolio(ctx context.Context, wallet domain.Wallet) (WalletPortfolio, error) {
 	priceSymbol := wallet.Symbol
 	if wallet.Chain == wallet.Symbol {
 		priceSymbol = wallet.Chain

@@ -11,6 +11,7 @@ import (
 	grpc "google.golang.org/grpc"
 	codes "google.golang.org/grpc/codes"
 	status "google.golang.org/grpc/status"
+	emptypb "google.golang.org/protobuf/types/known/emptypb"
 )
 
 // This is a compile-time assertion to ensure that this generated file
@@ -34,7 +35,7 @@ type WalletServiceClient interface {
 	GetWallet(ctx context.Context, in *GetWalletReq, opts ...grpc.CallOption) (*GetWalletResp, error)
 	EditWallet(ctx context.Context, in *EditWalletReq, opts ...grpc.CallOption) (*EditWalletResp, error)
 	DeleteWallet(ctx context.Context, in *DeleteWalletReq, opts ...grpc.CallOption) (*DeleteWalletResp, error)
-	AddWallet(ctx context.Context, in *AddWalletReq, opts ...grpc.CallOption) (*AddWalletResp, error)
+	AddWallet(ctx context.Context, in *AddWalletReq, opts ...grpc.CallOption) (*emptypb.Empty, error)
 }
 
 type walletServiceClient struct {
@@ -85,9 +86,9 @@ func (c *walletServiceClient) DeleteWallet(ctx context.Context, in *DeleteWallet
 	return out, nil
 }
 
-func (c *walletServiceClient) AddWallet(ctx context.Context, in *AddWalletReq, opts ...grpc.CallOption) (*AddWalletResp, error) {
+func (c *walletServiceClient) AddWallet(ctx context.Context, in *AddWalletReq, opts ...grpc.CallOption) (*emptypb.Empty, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(AddWalletResp)
+	out := new(emptypb.Empty)
 	err := c.cc.Invoke(ctx, WalletService_AddWallet_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
@@ -103,7 +104,7 @@ type WalletServiceServer interface {
 	GetWallet(context.Context, *GetWalletReq) (*GetWalletResp, error)
 	EditWallet(context.Context, *EditWalletReq) (*EditWalletResp, error)
 	DeleteWallet(context.Context, *DeleteWalletReq) (*DeleteWalletResp, error)
-	AddWallet(context.Context, *AddWalletReq) (*AddWalletResp, error)
+	AddWallet(context.Context, *AddWalletReq) (*emptypb.Empty, error)
 	mustEmbedUnimplementedWalletServiceServer()
 }
 
@@ -126,7 +127,7 @@ func (UnimplementedWalletServiceServer) EditWallet(context.Context, *EditWalletR
 func (UnimplementedWalletServiceServer) DeleteWallet(context.Context, *DeleteWalletReq) (*DeleteWalletResp, error) {
 	return nil, status.Error(codes.Unimplemented, "method DeleteWallet not implemented")
 }
-func (UnimplementedWalletServiceServer) AddWallet(context.Context, *AddWalletReq) (*AddWalletResp, error) {
+func (UnimplementedWalletServiceServer) AddWallet(context.Context, *AddWalletReq) (*emptypb.Empty, error) {
 	return nil, status.Error(codes.Unimplemented, "method AddWallet not implemented")
 }
 func (UnimplementedWalletServiceServer) mustEmbedUnimplementedWalletServiceServer() {}

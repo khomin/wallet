@@ -10,6 +10,7 @@ import (
 	_ "google.golang.org/genproto/googleapis/api/annotations"
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
+	emptypb "google.golang.org/protobuf/types/known/emptypb"
 	reflect "reflect"
 	sync "sync"
 	unsafe "unsafe"
@@ -562,50 +563,6 @@ func (x *AddWalletReq) GetErrorMsg() string {
 	return ""
 }
 
-type AddWalletResp struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Wallet        *Wallet                `protobuf:"bytes,1,opt,name=wallet,proto3" json:"wallet,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *AddWalletResp) Reset() {
-	*x = AddWalletResp{}
-	mi := &file_wallet_v1_wallet_proto_msgTypes[9]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *AddWalletResp) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*AddWalletResp) ProtoMessage() {}
-
-func (x *AddWalletResp) ProtoReflect() protoreflect.Message {
-	mi := &file_wallet_v1_wallet_proto_msgTypes[9]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use AddWalletResp.ProtoReflect.Descriptor instead.
-func (*AddWalletResp) Descriptor() ([]byte, []int) {
-	return file_wallet_v1_wallet_proto_rawDescGZIP(), []int{9}
-}
-
-func (x *AddWalletResp) GetWallet() *Wallet {
-	if x != nil {
-		return x.Wallet
-	}
-	return nil
-}
-
 type Wallet struct {
 	state             protoimpl.MessageState `protogen:"open.v1"`
 	Id                string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
@@ -624,7 +581,7 @@ type Wallet struct {
 
 func (x *Wallet) Reset() {
 	*x = Wallet{}
-	mi := &file_wallet_v1_wallet_proto_msgTypes[10]
+	mi := &file_wallet_v1_wallet_proto_msgTypes[9]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -636,7 +593,7 @@ func (x *Wallet) String() string {
 func (*Wallet) ProtoMessage() {}
 
 func (x *Wallet) ProtoReflect() protoreflect.Message {
-	mi := &file_wallet_v1_wallet_proto_msgTypes[10]
+	mi := &file_wallet_v1_wallet_proto_msgTypes[9]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -649,7 +606,7 @@ func (x *Wallet) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Wallet.ProtoReflect.Descriptor instead.
 func (*Wallet) Descriptor() ([]byte, []int) {
-	return file_wallet_v1_wallet_proto_rawDescGZIP(), []int{10}
+	return file_wallet_v1_wallet_proto_rawDescGZIP(), []int{9}
 }
 
 func (x *Wallet) GetId() string {
@@ -726,7 +683,7 @@ var File_wallet_v1_wallet_proto protoreflect.FileDescriptor
 
 const file_wallet_v1_wallet_proto_rawDesc = "" +
 	"\n" +
-	"\x16wallet/v1/wallet.proto\x12\twallet.v1\x1a\x1cgoogle/api/annotations.proto\"\x0f\n" +
+	"\x16wallet/v1/wallet.proto\x12\twallet.v1\x1a\x1bgoogle/protobuf/empty.proto\x1a\x1cgoogle/api/annotations.proto\"\x0f\n" +
 	"\rGetWalletsReq\"Q\n" +
 	"\x0eGetWalletsResp\x12\x14\n" +
 	"\x05total\x18\x01 \x01(\x03R\x05total\x12)\n" +
@@ -767,9 +724,7 @@ const file_wallet_v1_wallet_proto_rawDesc = "" +
 	"\x12change_24h_percent\x18\b \x01(\x02R\x10change24hPercent\x12\x1b\n" +
 	"\thas_error\x18\t \x01(\bR\bhasError\x12\x1b\n" +
 	"\terror_msg\x18\n" +
-	" \x01(\tR\berrorMsg\":\n" +
-	"\rAddWalletResp\x12)\n" +
-	"\x06wallet\x18\x01 \x01(\v2\x11.wallet.v1.WalletR\x06wallet\"\xb1\x02\n" +
+	" \x01(\tR\berrorMsg\"\xb1\x02\n" +
 	"\x06Wallet\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12\x18\n" +
 	"\aaddress\x18\x02 \x01(\tR\aaddress\x12\x14\n" +
@@ -782,15 +737,15 @@ const file_wallet_v1_wallet_proto_rawDesc = "" +
 	"\x12change_24h_percent\x18\b \x01(\x02R\x10change24hPercent\x12\x1b\n" +
 	"\thas_error\x18\t \x01(\bR\bhasError\x12\x1b\n" +
 	"\terror_msg\x18\n" +
-	" \x01(\tR\berrorMsg2\xdc\x03\n" +
+	" \x01(\tR\berrorMsg2\xda\x03\n" +
 	"\rWalletService\x12V\n" +
 	"\n" +
 	"GetWallets\x12\x18.wallet.v1.GetWalletsReq\x1a\x19.wallet.v1.GetWalletsResp\"\x13\x82\xd3\xe4\x93\x02\r\x12\v/v1/wallets\x12X\n" +
 	"\tGetWallet\x12\x17.wallet.v1.GetWalletReq\x1a\x18.wallet.v1.GetWalletResp\"\x18\x82\xd3\xe4\x93\x02\x12\x12\x10/v1/wallets/{id}\x12^\n" +
 	"\n" +
 	"EditWallet\x12\x18.wallet.v1.EditWalletReq\x1a\x19.wallet.v1.EditWalletResp\"\x1b\x82\xd3\xe4\x93\x02\x15:\x01*2\x10/v1/wallets/{id}\x12a\n" +
-	"\fDeleteWallet\x12\x1a.wallet.v1.DeleteWalletReq\x1a\x1b.wallet.v1.DeleteWalletResp\"\x18\x82\xd3\xe4\x93\x02\x12*\x10/v1/wallets/{id}\x12V\n" +
-	"\tAddWallet\x12\x17.wallet.v1.AddWalletReq\x1a\x18.wallet.v1.AddWalletResp\"\x16\x82\xd3\xe4\x93\x02\x10:\x01*\"\v/v1/walletsB<Z:github.com/yourusername/yourrepo/gen/go/wallet/v1;walletv1b\x06proto3"
+	"\fDeleteWallet\x12\x1a.wallet.v1.DeleteWalletReq\x1a\x1b.wallet.v1.DeleteWalletResp\"\x18\x82\xd3\xe4\x93\x02\x12*\x10/v1/wallets/{id}\x12T\n" +
+	"\tAddWallet\x12\x17.wallet.v1.AddWalletReq\x1a\x16.google.protobuf.Empty\"\x16\x82\xd3\xe4\x93\x02\x10:\x01*\"\v/v1/walletsB<Z:github.com/yourusername/yourrepo/gen/go/wallet/v1;walletv1b\x06proto3"
 
 var (
 	file_wallet_v1_wallet_proto_rawDescOnce sync.Once
@@ -804,7 +759,7 @@ func file_wallet_v1_wallet_proto_rawDescGZIP() []byte {
 	return file_wallet_v1_wallet_proto_rawDescData
 }
 
-var file_wallet_v1_wallet_proto_msgTypes = make([]protoimpl.MessageInfo, 11)
+var file_wallet_v1_wallet_proto_msgTypes = make([]protoimpl.MessageInfo, 10)
 var file_wallet_v1_wallet_proto_goTypes = []any{
 	(*GetWalletsReq)(nil),    // 0: wallet.v1.GetWalletsReq
 	(*GetWalletsResp)(nil),   // 1: wallet.v1.GetWalletsResp
@@ -815,28 +770,27 @@ var file_wallet_v1_wallet_proto_goTypes = []any{
 	(*DeleteWalletReq)(nil),  // 6: wallet.v1.DeleteWalletReq
 	(*DeleteWalletResp)(nil), // 7: wallet.v1.DeleteWalletResp
 	(*AddWalletReq)(nil),     // 8: wallet.v1.AddWalletReq
-	(*AddWalletResp)(nil),    // 9: wallet.v1.AddWalletResp
-	(*Wallet)(nil),           // 10: wallet.v1.Wallet
+	(*Wallet)(nil),           // 9: wallet.v1.Wallet
+	(*emptypb.Empty)(nil),    // 10: google.protobuf.Empty
 }
 var file_wallet_v1_wallet_proto_depIdxs = []int32{
-	10, // 0: wallet.v1.GetWalletsResp.wallet:type_name -> wallet.v1.Wallet
-	10, // 1: wallet.v1.EditWalletResp.wallet:type_name -> wallet.v1.Wallet
-	10, // 2: wallet.v1.AddWalletResp.wallet:type_name -> wallet.v1.Wallet
-	0,  // 3: wallet.v1.WalletService.GetWallets:input_type -> wallet.v1.GetWalletsReq
-	2,  // 4: wallet.v1.WalletService.GetWallet:input_type -> wallet.v1.GetWalletReq
-	4,  // 5: wallet.v1.WalletService.EditWallet:input_type -> wallet.v1.EditWalletReq
-	6,  // 6: wallet.v1.WalletService.DeleteWallet:input_type -> wallet.v1.DeleteWalletReq
-	8,  // 7: wallet.v1.WalletService.AddWallet:input_type -> wallet.v1.AddWalletReq
-	1,  // 8: wallet.v1.WalletService.GetWallets:output_type -> wallet.v1.GetWalletsResp
-	3,  // 9: wallet.v1.WalletService.GetWallet:output_type -> wallet.v1.GetWalletResp
-	5,  // 10: wallet.v1.WalletService.EditWallet:output_type -> wallet.v1.EditWalletResp
-	7,  // 11: wallet.v1.WalletService.DeleteWallet:output_type -> wallet.v1.DeleteWalletResp
-	9,  // 12: wallet.v1.WalletService.AddWallet:output_type -> wallet.v1.AddWalletResp
-	8,  // [8:13] is the sub-list for method output_type
-	3,  // [3:8] is the sub-list for method input_type
-	3,  // [3:3] is the sub-list for extension type_name
-	3,  // [3:3] is the sub-list for extension extendee
-	0,  // [0:3] is the sub-list for field type_name
+	9,  // 0: wallet.v1.GetWalletsResp.wallet:type_name -> wallet.v1.Wallet
+	9,  // 1: wallet.v1.EditWalletResp.wallet:type_name -> wallet.v1.Wallet
+	0,  // 2: wallet.v1.WalletService.GetWallets:input_type -> wallet.v1.GetWalletsReq
+	2,  // 3: wallet.v1.WalletService.GetWallet:input_type -> wallet.v1.GetWalletReq
+	4,  // 4: wallet.v1.WalletService.EditWallet:input_type -> wallet.v1.EditWalletReq
+	6,  // 5: wallet.v1.WalletService.DeleteWallet:input_type -> wallet.v1.DeleteWalletReq
+	8,  // 6: wallet.v1.WalletService.AddWallet:input_type -> wallet.v1.AddWalletReq
+	1,  // 7: wallet.v1.WalletService.GetWallets:output_type -> wallet.v1.GetWalletsResp
+	3,  // 8: wallet.v1.WalletService.GetWallet:output_type -> wallet.v1.GetWalletResp
+	5,  // 9: wallet.v1.WalletService.EditWallet:output_type -> wallet.v1.EditWalletResp
+	7,  // 10: wallet.v1.WalletService.DeleteWallet:output_type -> wallet.v1.DeleteWalletResp
+	10, // 11: wallet.v1.WalletService.AddWallet:output_type -> google.protobuf.Empty
+	7,  // [7:12] is the sub-list for method output_type
+	2,  // [2:7] is the sub-list for method input_type
+	2,  // [2:2] is the sub-list for extension type_name
+	2,  // [2:2] is the sub-list for extension extendee
+	0,  // [0:2] is the sub-list for field type_name
 }
 
 func init() { file_wallet_v1_wallet_proto_init() }
@@ -850,7 +804,7 @@ func file_wallet_v1_wallet_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_wallet_v1_wallet_proto_rawDesc), len(file_wallet_v1_wallet_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   11,
+			NumMessages:   10,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

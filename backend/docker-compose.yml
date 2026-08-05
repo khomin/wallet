@@ -55,15 +55,30 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
-  # gorush:
-  #   image: appleboy/gorush
-  #   container_name: whale_tracker_push
-  #   ports:
-  #     - "8088:8088"
-  #   environment:
-  #     - GORUSH_CORE_PORT=8088
-  #     - GORUSH_IOS_ENABLED=true
+
+  rabbitmq:
+    image: rabbitmq:4-management-alpine
+    container_name: rabbitmq
+    restart: unless-stopped
+    ports:
+      - "5672:5672" # AMQP protocol port
+      - "15672:15672" # Management UI dashboard
+    environment:
+      - RABBITMQ_DEFAULT_USER=admin
+      - RABBITMQ_DEFAULT_PASS=supersecretpassword
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
 
 volumes:
   pgdata:
   postgres_data:
+  rabbitmq_data:
+
+    # gorush:
+    #   image: appleboy/gorush
+    #   container_name: whale_tracker_push
+    #   ports:
+    #     - "8088:8088"
+    #   environment:
+    #     - GORUSH_CORE_PORT=8088
+    #     - GORUSH_IOS_ENABLED=true

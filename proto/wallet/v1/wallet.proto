@@ -2,6 +2,7 @@
 syntax = "proto3";
 
 package wallet.v1;
+import "google/protobuf/empty.proto";
 
 option go_package = "github.com/yourusername/yourrepo/gen/go/wallet/v1;walletv1";
 
@@ -32,7 +33,7 @@ service WalletService {
       delete: "/v1/wallets/{id}"
     };
   }
-  rpc AddWallet(AddWalletReq) returns (AddWalletResp) {
+  rpc AddWallet(AddWalletReq) returns (google.protobuf.Empty) {
     option (google.api.http) = {
       post: "/v1/wallets"
       body: "*"
@@ -91,10 +92,6 @@ message AddWalletReq {
   float  change_24h_percent = 8;
   bool   has_error          = 9;
   string error_msg          = 10;
-}
-
-message AddWalletResp {
-  Wallet wallet = 1;
 }
 
 message Wallet {
