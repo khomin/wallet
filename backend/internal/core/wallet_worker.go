@@ -11,22 +11,26 @@ import (
 )
 
 type WalletWorker struct {
-	ch            *amqp091.Channel
+	mqConsumer    *messaging.Consumer
 	walletService *WalletService
 }
 
-func NewWalletWorker(walletService *WalletService) *WalletWorker {
+func NewWalletWorker(walletService *WalletService, mqConsumer *messaging.Consumer) *WalletWorker {
 	return &WalletWorker{
 		walletService: walletService,
-		ch:            &amqp091.Channel{},
+		mqConsumer:    mqConsumer,
 	}
 }
 
 func (w *WalletWorker) StartConsuming(ctx context.Context) error {
-	msgs, err := w.ch.Consume(messaging.QueueWalletCreated, "wallet-worker-1", false, false, false, false, nil)
+	msgs, err := w.mqConsumer.Consume()
 	if err != nil {
 		return err
 	}
+	// msgs, err := w.ch.Consume(messaging.QueueWalletCreated, "wallet-worker-1", false, false, false, false, nil)
+	// if err != nil {
+	// 	return err
+	// }
 	go func() {
 		for msg := range msgs {
 			if err := w.handleWalletCreated(ctx, msg); err != nil {

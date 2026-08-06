@@ -109,13 +109,22 @@ func main() {
 		logrus.WithError(err).Warn("failed to connect all blockchain clients")
 	}
 
+	walletEventPublisher, err := messaging.NewPublisher(mq, messaging.QueueWalletCreated, "wallet-task")
+	if err != nil {
+		logrus.Fatal(err)
+	}
+	walletEventConsumer, err := messaging.NewConsumer(mq, messaging.QueueWalletCreated, "wallet-task")
+	if err != nil {
+		logrus.Fatal(err)
+	}
+
 	walletService := core.NewWalletService(core.WalletDeps{
 		WalletRepo: walletRepo, PriceService: priceService,
 		UserRepo: userRepo, BlockchainService: blockchainService, TokenRegistry: tokenRegistry,
-		RabbitMQ: mq,
+		MqPublisher: walletEventPublisher,
 	})
 
-	walletWorker := core.NewWalletWorker(walletService)
+	walletWorker := core.NewWalletWorker(walletService, walletEventConsumer)
 	walletWorker.StartConsuming(ctx)
 
 	go priceFetcher.StartCoinFetcher(ctx)

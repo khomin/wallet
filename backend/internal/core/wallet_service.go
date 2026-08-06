@@ -40,16 +40,18 @@ type WalletService struct {
 	walletRepo        WalletRepository
 	priceService      *PriceService
 	blockchainService *BlockchainService
-	rabbitMQ          *messaging.RabbitMQ
-	tokenRegistry     *TokenRegistry
-	userRepo          UserRepo
+	// rabbitMQ          *messaging.RabbitMQ
+	mqPublisher   *messaging.Publisher
+	tokenRegistry *TokenRegistry
+	userRepo      UserRepo
 }
 
 type WalletDeps struct {
-	WalletRepo        WalletRepository
-	PriceService      *PriceService
-	UserRepo          UserRepo
-	RabbitMQ          *messaging.RabbitMQ
+	WalletRepo   WalletRepository
+	PriceService *PriceService
+	UserRepo     UserRepo
+	// RabbitMQ          *messaging.RabbitMQ
+	MqPublisher       *messaging.Publisher
 	BlockchainService *BlockchainService
 	TokenRegistry     *TokenRegistry
 }
@@ -61,7 +63,8 @@ func NewWalletService(deps WalletDeps) *WalletService {
 		userRepo:          deps.UserRepo,
 		blockchainService: deps.BlockchainService,
 		tokenRegistry:     deps.TokenRegistry,
-		rabbitMQ:          deps.RabbitMQ,
+		mqPublisher:       deps.MqPublisher,
+		// rabbitMQ:          deps.RabbitMQ,
 	}
 }
 
@@ -104,7 +107,6 @@ func (s *WalletService) AddWallet(ctx context.Context, userID string, chain stri
 	if err != nil {
 		return nil
 	}
-	// msg := string("hell worlrd!")
 	event := domain.WalletCreatedEvent{
 		ID:     wallet.ID,
 		UserID: userID,
@@ -112,9 +114,12 @@ func (s *WalletService) AddWallet(ctx context.Context, userID string, chain stri
 	if bytes, err := json.Marshal(event); err != nil {
 		return nil
 	} else {
-		if err := s.rabbitMQ.Publish(messaging.QueueWalletCreated, bytes); err != nil {
+		if err := s.mqPublisher.Publish(bytes); err != nil {
 			return nil
 		}
+		// if err := s.rabbitMQ.Publish(messaging.QueueWalletCreated, bytes); err != nil {
+		// 	return nil
+		// }
 	}
 	// portfolio, err := s.getWalletPortfolio(ctx, *wallet)
 	// if err != nil {
