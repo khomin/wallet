@@ -105,7 +105,7 @@ func (s *WalletService) AddWallet(ctx context.Context, userID string, chain stri
 	// TODO: maybe add validation
 	wallet, err := s.walletRepo.CreateWallet(ctx, userID, chain, address, symbol, label)
 	if err != nil {
-		return nil
+		return err
 	}
 	event := domain.WalletCreatedEvent{
 		ID:     wallet.ID,
@@ -115,7 +115,7 @@ func (s *WalletService) AddWallet(ctx context.Context, userID string, chain stri
 		return nil
 	} else {
 		if err := s.mqPublisher.Publish(bytes); err != nil {
-			return nil
+			return err
 		}
 		// if err := s.rabbitMQ.Publish(messaging.QueueWalletCreated, bytes); err != nil {
 		// 	return nil

@@ -109,11 +109,11 @@ func main() {
 		logrus.WithError(err).Warn("failed to connect all blockchain clients")
 	}
 
-	walletEventPublisher, err := messaging.NewPublisher(mq, messaging.QueueWalletCreated, "wallet-task")
+	walletEventPublisher, err := messaging.NewPublisher(mq, messaging.QueueWalletCreated)
 	if err != nil {
 		logrus.Fatal(err)
 	}
-	walletEventConsumer, err := messaging.NewConsumer(mq, messaging.QueueWalletCreated, "wallet-task")
+	walletEventConsumer, err := messaging.NewConsumer(mq, messaging.QueueWalletCreated)
 	if err != nil {
 		logrus.Fatal(err)
 	}

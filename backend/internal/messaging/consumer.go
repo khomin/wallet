@@ -5,35 +5,23 @@ import (
 )
 
 type Consumer struct {
-	ch         *amqp091.Channel
-	exchange   string
-	routingKey string
+	ch        *amqp091.Channel
+	queueName string
 }
 
-func NewConsumer(mq *RabbitMQ, exchange string, routingKey string) (*Consumer, error) {
+func NewConsumer(mq *RabbitMQ, queueName string) (*Consumer, error) {
 	ch, err := mq.NewChannel()
 	if err != nil {
 		return nil, err
 	}
 	return &Consumer{
-		ch:         ch,
-		exchange:   exchange,
-		routingKey: routingKey,
+		ch:        ch,
+		queueName: queueName,
 	}, nil
 }
 
 func (p *Consumer) Consume() (<-chan amqp091.Delivery, error) {
-	// if err := p.ch.Consume(p.exchange, p.routingKey, false,
-	// 	false,
-	// 	amqp091.Publishing{
-	// 		ContentType: "application/json",
-	// 		Body:        bytes,
-	// 	}); err != nil {
-	// 	return err
-	// }
-	return p.ch.Consume(p.exchange, p.routingKey, false, false, false, false, nil)
-	// if err != nil {
-	// 	return err
-	// }
-	// return nil
+	return p.ch.Consume(p.queueName, "",
+		false, false, false, false, nil,
+	)
 }

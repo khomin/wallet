@@ -5,26 +5,17 @@ import (
 )
 
 type Publisher struct {
-	ch         *amqp091.Channel
-	exchange   string
-	routingKey string
+	ch        *amqp091.Channel
+	queueName string
 }
 
-func NewPublisher(mq *RabbitMQ, exchange string, routingKey string) (*Publisher, error) {
+func NewPublisher(mq *RabbitMQ, queueName string) (*Publisher, error) {
 	ch, err := mq.NewChannel()
 	if err != nil {
 		return nil, err
 	}
-	return &Publisher{
-		ch:         ch,
-		exchange:   exchange,
-		routingKey: routingKey,
-	}, nil
-}
-
-func (p *Publisher) Publish(bytes []byte) error {
-	_, err := p.ch.QueueDeclare(
-		p.exchange,
+	_, err = ch.QueueDeclare(
+		queueName,
 		true,
 		false,
 		false,
@@ -32,9 +23,19 @@ func (p *Publisher) Publish(bytes []byte) error {
 		nil,
 	)
 	if err != nil {
-		return err
+		return nil, err
 	}
-	if err := p.ch.Publish(p.exchange, p.routingKey, false,
+	return &Publisher{
+		ch:        ch,
+		queueName: queueName,
+	}, nil
+}
+
+func (p *Publisher) Publish(bytes []byte) error {
+	if err := p.ch.Publish(
+		"",
+		p.queueName,
+		false,
 		false,
 		amqp091.Publishing{
 			ContentType: "application/json",

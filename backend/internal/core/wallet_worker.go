@@ -27,10 +27,6 @@ func (w *WalletWorker) StartConsuming(ctx context.Context) error {
 	if err != nil {
 		return err
 	}
-	// msgs, err := w.ch.Consume(messaging.QueueWalletCreated, "wallet-worker-1", false, false, false, false, nil)
-	// if err != nil {
-	// 	return err
-	// }
 	go func() {
 		for msg := range msgs {
 			if err := w.handleWalletCreated(ctx, msg); err != nil {
@@ -47,12 +43,11 @@ func (w *WalletWorker) StartConsuming(ctx context.Context) error {
 func (w *WalletWorker) handleWalletCreated(ctx context.Context, msg amqp091.Delivery) error {
 	var event domain.WalletCreatedEvent
 	if err := json.Unmarshal(msg.Body, &event); err != nil {
-		return err
+		return nil
 	}
 	w.walletService.FetchPortfolio(ctx, domain.Wallet{
 		ID:     event.ID,
 		UserID: event.UserID,
 	})
-	// print(event)
 	return nil
 }
