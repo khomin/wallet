@@ -48,7 +48,7 @@ func main() {
 	if err != nil {
 		logrus.WithError(err).Fatal("Failed to connect to Postgres")
 	}
-	// defer db.Close()
+	defer db.Close()
 
 	redisClient := cache.NewRedisClient(
 		app.Cfg.Redis.Addr,
@@ -60,7 +60,7 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	// defer mq.Close()
+	defer mq.Close()
 
 	priceRepo := repositories.NewPriceRepository(db)
 	walletRepo := repositories.NewWalletRepository(db)
@@ -102,7 +102,7 @@ func main() {
 		WalletRepo:    walletRepo,
 		TokenRegistry: tokenRegistry,
 		// Cache:         priceCache,
-		Cache: core.NewNoOpCache(),
+		Cache: core.NewNoOpCache(), // no cache for testing
 	})
 
 	if err := blockchainService.ConnectAll(ctx); err != nil {
