@@ -61,7 +61,7 @@ func (*GetWalletsReq) Descriptor() ([]byte, []int) {
 
 type GetWalletsResp struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Total         int64                  `protobuf:"varint,1,opt,name=total,proto3" json:"total,omitempty"`
+	Total         int32                  `protobuf:"varint,1,opt,name=total,proto3" json:"total,omitempty"`
 	Wallet        []*Wallet              `protobuf:"bytes,2,rep,name=wallet,proto3" json:"wallet,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
@@ -97,7 +97,7 @@ func (*GetWalletsResp) Descriptor() ([]byte, []int) {
 	return file_wallet_v1_wallet_proto_rawDescGZIP(), []int{1}
 }
 
-func (x *GetWalletsResp) GetTotal() int64 {
+func (x *GetWalletsResp) GetTotal() int32 {
 	if x != nil {
 		return x.Total
 	}
@@ -686,7 +686,7 @@ const file_wallet_v1_wallet_proto_rawDesc = "" +
 	"\x16wallet/v1/wallet.proto\x12\twallet.v1\x1a\x1bgoogle/protobuf/empty.proto\x1a\x1cgoogle/api/annotations.proto\"\x0f\n" +
 	"\rGetWalletsReq\"Q\n" +
 	"\x0eGetWalletsResp\x12\x14\n" +
-	"\x05total\x18\x01 \x01(\x03R\x05total\x12)\n" +
+	"\x05total\x18\x01 \x01(\x05R\x05total\x12)\n" +
 	"\x06wallet\x18\x02 \x03(\v2\x11.wallet.v1.WalletR\x06wallet\"\x1e\n" +
 	"\fGetWalletReq\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\"\xb8\x02\n" +

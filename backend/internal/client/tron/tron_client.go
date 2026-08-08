@@ -7,6 +7,7 @@ import (
 	"math"
 	"math/big"
 
+	tronAddr "github.com/fbsobreira/gotron-sdk/pkg/address"
 	"github.com/fbsobreira/gotron-sdk/pkg/client"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
@@ -88,4 +89,12 @@ func (c *TronClient) GetTokenBalance(ctx context.Context, address, tokenAddress 
 	finalBalance, _ := new(big.Float).Quo(balanceFloat, divisor).Float64()
 
 	return finalBalance, nil
+}
+
+func (c *TronClient) ValidateAddress(address, tokenAddress string) error {
+	_, err := tronAddr.Base58ToAddress(address)
+	if err != nil {
+		return fmt.Errorf("invalid address")
+	}
+	return nil
 }

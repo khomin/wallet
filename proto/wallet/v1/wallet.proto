@@ -44,7 +44,7 @@ service WalletService {
 message GetWalletsReq {}
 
 message GetWalletsResp {
-  int64           total  = 1;
+  int32           total  = 1;
   repeated Wallet wallet = 2;
 }
 

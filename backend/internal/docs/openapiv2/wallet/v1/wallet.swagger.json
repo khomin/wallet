@@ -6,7 +6,8 @@
   },
   "tags": [
     {
-      "name": "WalletService"
+      "name": "WalletService",
+      "description": "func (h *WalletHandler) ListWallets(c *gin.Context) {\n user, ok := middleware.GetOAUTH(c)"
     }
   ],
   "consumes": [
@@ -294,8 +295,8 @@
       "type": "object",
       "properties": {
         "total": {
-          "type": "string",
-          "format": "int64"
+          "type": "integer",
+          "format": "int32"
         },
         "wallet": {
           "type": "array",

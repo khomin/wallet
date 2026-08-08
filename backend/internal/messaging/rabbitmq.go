@@ -4,6 +4,7 @@ import "github.com/rabbitmq/amqp091-go"
 
 type RabbitMQ struct {
 	conn *amqp091.Connection
+	url  string
 }
 
 func NewRabbitMQ(url string) (*RabbitMQ, error) {
@@ -13,6 +14,7 @@ func NewRabbitMQ(url string) (*RabbitMQ, error) {
 	}
 	return &RabbitMQ{
 		conn: conn,
+		url:  url,
 	}, nil
 }
 
@@ -21,9 +23,12 @@ func (r *RabbitMQ) Close() error {
 }
 
 func (r *RabbitMQ) NewChannel() (*amqp091.Channel, error) {
-	ch, err := r.conn.Channel()
-	if err != nil {
-		return nil, err
+	if r.conn == nil || r.conn.IsClosed() {
+		if conn, err := amqp091.Dial(r.url); err != nil {
+			return nil, err
+		} else {
+			r.conn = conn
+		}
 	}
-	return ch, nil
+	return r.conn.Channel()
 }

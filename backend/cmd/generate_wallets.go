@@ -107,6 +107,11 @@ func TestGenerateWallets(t *testing.T) {
 	})
 
 	tokens = append(tokens, domain.TokenRaw{
+		Chains: []string{"ETH"},
+		Symbol: "ETH",
+		Addrs:  []string{"0xEC2dFb47E5AA06da508D816D83b4833f6eBE9532"},
+	})
+	tokens = append(tokens, domain.TokenRaw{
 		Chains: []string{"SOL"},
 		Symbol: "GOOGLX",
 		Addrs:  []string{"DDcdDmDPYw595wAR1jYNHZQTFNi8BGisd2bVa3WH3XbE"},

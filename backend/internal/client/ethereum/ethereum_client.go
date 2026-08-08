@@ -3,6 +3,7 @@ package ethereum
 import (
 	"context"
 	"errors"
+	"fmt"
 	"math"
 	"math/big"
 	"time"
@@ -126,4 +127,12 @@ func (c *EthereumClient) GetTokenBalance(ctx context.Context, address, tokenAddr
 
 	f, _ := etherValue.Float64()
 	return f, nil
+}
+
+func (c *EthereumClient) ValidateAddress(address, tokenAddress string) error {
+	valid := common.IsHexAddress(address)
+	if !valid {
+		return fmt.Errorf("invalid address")
+	}
+	return nil
 }

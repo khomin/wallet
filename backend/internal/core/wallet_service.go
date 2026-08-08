@@ -40,18 +40,16 @@ type WalletService struct {
 	walletRepo        WalletRepository
 	priceService      *PriceService
 	blockchainService *BlockchainService
-	// rabbitMQ          *messaging.RabbitMQ
-	mqPublisher   *messaging.Publisher
-	tokenRegistry *TokenRegistry
-	userRepo      UserRepo
+	eventPublisher    *messaging.Publisher
+	tokenRegistry     *TokenRegistry
+	userRepo          UserRepo
 }
 
 type WalletDeps struct {
-	WalletRepo   WalletRepository
-	PriceService *PriceService
-	UserRepo     UserRepo
-	// RabbitMQ          *messaging.RabbitMQ
-	MqPublisher       *messaging.Publisher
+	WalletRepo        WalletRepository
+	PriceService      *PriceService
+	UserRepo          UserRepo
+	EventPublisher    *messaging.Publisher
 	BlockchainService *BlockchainService
 	TokenRegistry     *TokenRegistry
 }
@@ -63,8 +61,7 @@ func NewWalletService(deps WalletDeps) *WalletService {
 		userRepo:          deps.UserRepo,
 		blockchainService: deps.BlockchainService,
 		tokenRegistry:     deps.TokenRegistry,
-		mqPublisher:       deps.MqPublisher,
-		// rabbitMQ:          deps.RabbitMQ,
+		eventPublisher:    deps.EventPublisher,
 	}
 }
 
@@ -102,7 +99,9 @@ func (s *WalletService) AddWallet(ctx context.Context, userID string, chain stri
 	if err := s.userRepo.EnsureExists(ctx, userID); err != nil {
 		return nil
 	}
-	// TODO: maybe add validation
+	if err := s.blockchainService.ValidateAddress(chain, address, symbol); err != nil {
+		return err
+	}
 	wallet, err := s.walletRepo.CreateWallet(ctx, userID, chain, address, symbol, label)
 	if err != nil {
 		return err
@@ -114,18 +113,10 @@ func (s *WalletService) AddWallet(ctx context.Context, userID string, chain stri
 	if bytes, err := json.Marshal(event); err != nil {
 		return nil
 	} else {
-		if err := s.mqPublisher.Publish(bytes); err != nil {
+		if err := s.eventPublisher.Publish(bytes); err != nil {
 			return err
 		}
-		// if err := s.rabbitMQ.Publish(messaging.QueueWalletCreated, bytes); err != nil {
-		// 	return nil
-		// }
 	}
-	// portfolio, err := s.getWalletPortfolio(ctx, *wallet)
-	// if err != nil {
-	// 	return nil, err
-	// }
-	// return &portfolio, nil
 	return nil
 }
 

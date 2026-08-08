@@ -117,3 +117,11 @@ func (c *SolanaClient) GetTokenBalance(ctx context.Context, address, tokenAddres
 
 	return totalBalance, nil
 }
+
+func (c *SolanaClient) ValidateAddress(address, tokenAddress string) error {
+	_, err := solana.PublicKeyFromBase58(address)
+	if err != nil {
+		return fmt.Errorf("invalid address")
+	}
+	return nil
+}

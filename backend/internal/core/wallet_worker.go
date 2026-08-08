@@ -3,6 +3,7 @@ package core
 import (
 	"context"
 	"encoding/json"
+	"time"
 	"tracker/internal/core/domain"
 	"tracker/internal/messaging"
 
@@ -11,29 +12,47 @@ import (
 )
 
 type WalletWorker struct {
-	mqConsumer    *messaging.Consumer
+	eventConsumer *messaging.Consumer
 	walletService *WalletService
 }
 
 func NewWalletWorker(walletService *WalletService, mqConsumer *messaging.Consumer) *WalletWorker {
 	return &WalletWorker{
 		walletService: walletService,
-		mqConsumer:    mqConsumer,
+		eventConsumer: mqConsumer,
 	}
 }
 
 func (w *WalletWorker) StartConsuming(ctx context.Context) error {
-	msgs, err := w.mqConsumer.Consume()
-	if err != nil {
-		return err
-	}
+	log := logrus.WithField("walletWorker", "StartConsuming")
 	go func() {
-		for msg := range msgs {
-			if err := w.handleWalletCreated(ctx, msg); err != nil {
-				logrus.WithError(err).Error("failed to handle wallet created event")
-				_ = msg.Nack(false, true)
-			} else {
-				_ = msg.Ack(false)
+		for {
+			msgs, chanErr, err := w.eventConsumer.Consume()
+			if err != nil {
+				log.Warningf("failed to set consume: %v", err)
+				time.Sleep(time.Second * 1)
+				continue
+			}
+			log.Info("event consume set successfully")
+			for {
+				var exitErr error
+				select {
+				case err := <-chanErr:
+					log.Infof("channel closed: %v", err)
+					exitErr = err
+				case msg := <-msgs:
+					log.Infof("event received")
+					if err := w.handleWalletCreated(ctx, msg); err != nil {
+						logrus.WithError(err).Error("failed to handle wallet created event")
+						_ = msg.Nack(false, true)
+					} else {
+						_ = msg.Ack(false)
+					}
+				}
+				if exitErr != nil {
+					log.Infof("channel closed due to error: %v", err)
+					break
+				}
 			}
 		}
 	}()

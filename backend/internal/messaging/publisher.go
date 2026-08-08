@@ -5,33 +5,26 @@ import (
 )
 
 type Publisher struct {
+	mq        *RabbitMQ
 	ch        *amqp091.Channel
 	queueName string
 }
 
 func NewPublisher(mq *RabbitMQ, queueName string) (*Publisher, error) {
-	ch, err := mq.NewChannel()
-	if err != nil {
-		return nil, err
-	}
-	_, err = ch.QueueDeclare(
-		queueName,
-		true,
-		false,
-		false,
-		false,
-		nil,
-	)
-	if err != nil {
-		return nil, err
-	}
-	return &Publisher{
-		ch:        ch,
+	p := Publisher{
 		queueName: queueName,
-	}, nil
+		mq:        mq,
+	}
+	if err := p.ensureChannel(); err != nil {
+		return nil, err
+	}
+	return &p, nil
 }
 
 func (p *Publisher) Publish(bytes []byte) error {
+	if err := p.ensureChannel(); err != nil {
+		return err
+	}
 	if err := p.ch.Publish(
 		"",
 		p.queueName,
@@ -43,5 +36,29 @@ func (p *Publisher) Publish(bytes []byte) error {
 		}); err != nil {
 		return err
 	}
+	return nil
+}
+
+func (p *Publisher) ensureChannel() error {
+	if p.ch != nil && !p.ch.IsClosed() {
+		return nil
+	}
+	ch, err := p.mq.NewChannel()
+	if err != nil {
+		return err
+	}
+	_, err = ch.QueueDeclare(
+		p.queueName,
+		true,
+		false,
+		false,
+		false,
+		nil,
+	)
+	if err != nil {
+		_ = ch.Close()
+		return err
+	}
+	p.ch = ch
 	return nil
 }

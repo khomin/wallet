@@ -50,7 +50,7 @@ func (s *WalletGrpcHandler) GetWallets(ctx context.Context, req *walletv1.GetWal
 		})
 	}
 	return &walletv1.GetWalletsResp{
-		Total:  int64(len(wallets)),
+		Total:  int32(len(wallets)),
 		Wallet: out,
 	}, nil
 }

@@ -15,6 +15,7 @@ import (
 type ChainProvider interface {
 	GetBalance(ctx context.Context, address string) (float64, error)
 	GetTokenBalance(ctx context.Context, address, tokenAddress string) (float64, error)
+	ValidateAddress(address, tokenAddress string) error
 	Connect(ctx context.Context) error
 	Close()
 }
@@ -129,5 +130,30 @@ func (s *BlockchainService) GetBalance(ctx context.Context, chain string, addres
 			Address: token.Address,
 			Balance: balance,
 		}, nil
+	}
+}
+
+func (s *BlockchainService) ValidateAddress(chain string, address string, tokenSymbol string) error {
+	chain = strings.ToUpper(chain)
+	provider, found := s.providers[chain]
+	if !found {
+		return fmt.Errorf("unsupported chain: %s", chain)
+	}
+	if chain == tokenSymbol {
+		err := provider.ValidateAddress(address, address)
+		if err != nil {
+			return err
+		}
+		return nil
+	} else {
+		token, err := s.tokenRegistry.GetByChainAndSymbol(chain, tokenSymbol)
+		if err != nil {
+			return fmt.Errorf("token not found %s", tokenSymbol)
+		}
+		err = provider.ValidateAddress(address, token.Address)
+		if err != nil {
+			return err
+		}
+		return nil
 	}
 }

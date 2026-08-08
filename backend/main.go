@@ -121,7 +121,7 @@ func main() {
 	walletService := core.NewWalletService(core.WalletDeps{
 		WalletRepo: walletRepo, PriceService: priceService,
 		UserRepo: userRepo, BlockchainService: blockchainService, TokenRegistry: tokenRegistry,
-		MqPublisher: walletEventPublisher,
+		EventPublisher: walletEventPublisher,
 	})
 
 	walletWorker := core.NewWalletWorker(walletService, walletEventConsumer)
