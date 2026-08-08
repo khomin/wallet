@@ -9,6 +9,15 @@ type Wallet struct {
 	UserID  string `json:"user_id"`
 }
 
+type WalletWithBalance struct {
+	Wallet
+	Price      TokenPrice
+	Balance    float64
+	BalanceUSD float64
+	HasError   bool
+	ErrorMsg   string
+}
+
 type WalletCreatedEvent struct {
 	ID     string `json:"id"`
 	UserID string `json:"user_id"`

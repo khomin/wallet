@@ -5,27 +5,26 @@ import (
 )
 
 type Coin struct {
-	ID          string    `db:"id"`
-	Symbol      string    `db:"symbol"` // "btc"
-	Name        string    `db:"name"`   // "Bitcoin"
-	ImageURL    string    `db:"image_url"`
-	LastUpdated time.Time `db:"last_updated"`
-	SnapshotAt  time.Time `db:"snapshot_at"` // When we captured this
+	ID        string
+	Symbol    string
+	Name      string
+	ImageURL  string
+	UpdatedAt time.Time
 }
 
-type CoinPrice struct {
-	ID                             string    `db:"id"`
-	Name                           string    `db:"name"`
-	Symbol                         string    `db:"symbol"`
-	CurrentPrice                   float64   `db:"current_price"`
-	Change_24h                     float64   `db:"change_24h"`
-	MarketCap                      float64   `db:"market_cap"`
-	TotalVolume                    float64   `db:"total_volume"`
-	High_24h                       float64   `db:"high_24h"`
-	Low_24h                        float64   `db:"low_24h"`
-	PriceChange_24h                float64   `db:"price_change_24h"`
-	PriceChangePercentage_24h      float64   `db:"price_change_percentage_24h"`
-	MarketCapChange_24h            float64   `db:"market_cap_change_24h"`
-	MarketCapChange_percentage_24h float64   `db:"market_cap_change_percentage_24h"`
-	LastUpdated                    time.Time `db:"last_updated"`
+type Price struct {
+	ID                             string
+	Name                           string
+	Symbol                         string
+	CurrentPrice                   float64
+	Change_24h                     float64
+	MarketCap                      float64
+	TotalVolume                    float64
+	High_24h                       float64
+	Low_24h                        float64
+	PriceChange_24h                float64
+	PriceChangePercentage_24h      float64
+	MarketCapChange_24h            float64
+	MarketCapChange_percentage_24h float64
+	UpdatedAt                      time.Time
 }

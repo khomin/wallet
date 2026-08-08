@@ -15,7 +15,7 @@ type fakeWalletRepo struct {
 	err     error
 }
 
-func (f *fakeWalletRepo) ListWallets(ctx context.Context, userID string) ([]domain.Wallet, error) {
+func (f *fakeWalletRepo) ListWallets(ctx context.Context, userID string) ([]domain.WalletWithBalance, error) {
 	return nil, nil
 }
 
@@ -31,7 +31,7 @@ func (f *fakeWalletRepo) DeleteWallet(ctx context.Context, userID string, id uui
 	return nil
 }
 
-func (f *fakeWalletRepo) GetWallet(ctx context.Context, userID string, id uuid.UUID) (*domain.Wallet, error) {
+func (f *fakeWalletRepo) GetWallet(ctx context.Context, userID string, id uuid.UUID) (*domain.WalletWithBalance, error) {
 	return nil, nil
 }
 

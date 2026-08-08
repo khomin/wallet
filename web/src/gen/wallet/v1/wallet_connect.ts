@@ -7,9 +7,6 @@ import { AddWalletReq, DeleteWalletReq, DeleteWalletResp, EditWalletReq, EditWal
 import { Empty, MethodKind } from "@bufbuild/protobuf";
 
 /**
- * func (h *WalletHandler) ListWallets(c *gin.Context) {
- * user, ok := middleware.GetOAUTH(c)
- *
  * @generated from service wallet.v1.WalletService
  */
 export const WalletService = {

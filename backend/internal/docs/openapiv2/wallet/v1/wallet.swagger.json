@@ -6,8 +6,7 @@
   },
   "tags": [
     {
-      "name": "WalletService",
-      "description": "func (h *WalletHandler) ListWallets(c *gin.Context) {\n user, ok := middleware.GetOAUTH(c)"
+      "name": "WalletService"
     }
   ],
   "consumes": [

@@ -21,8 +21,12 @@ func NewWalletRepository(db *db.DataBase) *WalletRepository {
 	return &WalletRepository{db: db}
 }
 
-func (r *WalletRepository) ListWallets(ctx context.Context, userID string) ([]domain.Wallet, error) {
-	query := `SELECT id, user_id, address, chain, symbol, label, created_at, updated_at FROM wallets ORDER BY created_at ASC`
+func (r *WalletRepository) ListWallets(ctx context.Context, userID string) ([]domain.WalletWithBalance, error) {
+	query := `SELECT 
+		id, user_id, address, chain, 
+		symbol, label, updated_at
+		FROM wallets 
+		ORDER BY updated_at ASC`
 
 	rows, err := r.db.Pool.Query(ctx, query)
 	if err != nil {
@@ -30,9 +34,9 @@ func (r *WalletRepository) ListWallets(ctx context.Context, userID string) ([]do
 	}
 	defer rows.Close()
 
-	var wallets []domain.Wallet
+	var wallets []domain.WalletWithBalance
 	for rows.Next() {
-		var wallet models.Wallet
+		var wallet models.WalletBalance
 		if err := rows.Scan(
 			&wallet.ID,
 			&wallet.UserID,
@@ -40,12 +44,11 @@ func (r *WalletRepository) ListWallets(ctx context.Context, userID string) ([]do
 			&wallet.Chain,
 			&wallet.Symbol,
 			&wallet.Label,
-			&wallet.CreatedAt,
 			&wallet.UpdatedAt,
 		); err != nil {
 			return nil, err
 		}
-		wallets = append(wallets, walletToDomain(wallet))
+		wallets = append(wallets, walletToDomain2(wallet))
 	}
 	if err := rows.Err(); err != nil {
 		return nil, err
@@ -56,7 +59,7 @@ func (r *WalletRepository) ListWallets(ctx context.Context, userID string) ([]do
 func (r *WalletRepository) CreateWallet(ctx context.Context, userID string, chain string, address string, symbol string, label string) (*domain.Wallet, error) {
 	query := `INSERT INTO wallets (address, chain, symbol, label, user_id)
         VALUES ($1, $2, $3, $4, $5)
-		RETURNING *`
+		RETURNING id, user_id, address, chain, symbol, label, updated_at`
 	row := r.db.Pool.QueryRow(ctx, query,
 		address,
 		strings.ToUpper(chain),
@@ -72,7 +75,6 @@ func (r *WalletRepository) CreateWallet(ctx context.Context, userID string, chai
 		&wallet.Chain,
 		&wallet.Symbol,
 		&wallet.Label,
-		&wallet.CreatedAt,
 		&wallet.UpdatedAt,
 	); err != nil {
 		var pgErr *pgconn.PgError
@@ -86,10 +88,9 @@ func (r *WalletRepository) CreateWallet(ctx context.Context, userID string, chai
 }
 
 func (r *WalletRepository) EditWallet(ctx context.Context, userID string, id uuid.UUID, label string) (*domain.Wallet, error) {
-	query := `UPDATE wallets
-		SET label = $1
+	query := `UPDATE wallets SET label = $1
 		WHERE user_id = $2 AND id = $3
-		RETURNING*;`
+		RETURNING id, user_id, address, chain, symbol, label, updated_at;`
 	row := r.db.Pool.QueryRow(ctx, query,
 		label,
 		userID, id,
@@ -102,7 +103,6 @@ func (r *WalletRepository) EditWallet(ctx context.Context, userID string, id uui
 		&wallet.Chain,
 		&wallet.Symbol,
 		&wallet.Label,
-		&wallet.CreatedAt,
 		&wallet.UpdatedAt,
 	); err != nil {
 		return nil, core.ErrWalletNotFound
@@ -120,8 +120,10 @@ func (r *WalletRepository) DeleteWallet(ctx context.Context, userID string, id u
 	return err
 }
 
-func (r *WalletRepository) GetWallet(ctx context.Context, userID string, id uuid.UUID) (*domain.Wallet, error) {
-	query := `SELECT * FROM wallets WHERE user_id = $1 AND id = $2`
+func (r *WalletRepository) GetWallet(ctx context.Context, userID string, id uuid.UUID) (*domain.WalletWithBalance, error) {
+	query := `SELECT id, user_id, address, chain, symbol, label, updated_at
+		FROM wallets 
+		WHERE user_id = $1 AND id = $2`
 	rows, err := r.db.Pool.Query(ctx, query, userID, id)
 	if err != nil {
 		return nil, err
@@ -129,7 +131,7 @@ func (r *WalletRepository) GetWallet(ctx context.Context, userID string, id uuid
 	defer rows.Close()
 
 	if rows.Next() {
-		var wallet models.Wallet
+		var wallet models.WalletBalance
 		if err := rows.Scan(
 			&wallet.ID,
 			&wallet.UserID,
@@ -137,12 +139,12 @@ func (r *WalletRepository) GetWallet(ctx context.Context, userID string, id uuid
 			&wallet.Chain,
 			&wallet.Symbol,
 			&wallet.Label,
-			&wallet.CreatedAt,
 			&wallet.UpdatedAt,
+			// &wallet.Balance,
 		); err != nil {
 			return nil, err
 		}
-		out := walletToDomain(wallet)
+		out := walletToDomain2(wallet)
 		return &out, nil
 	}
 	return nil, core.ErrWalletNotFound
@@ -156,5 +158,23 @@ func walletToDomain(in models.Wallet) domain.Wallet {
 		Label:   in.Label,
 		Symbol:  in.Symbol,
 		UserID:  in.UserID,
+	}
+}
+
+func walletToDomain2(in models.WalletBalance) domain.WalletWithBalance {
+	return domain.WalletWithBalance{
+		Wallet: domain.Wallet{
+			ID:      in.ID.String(),
+			Address: in.Address,
+			Chain:   in.Chain,
+			Label:   in.Label,
+			Symbol:  in.Symbol,
+			UserID:  in.UserID,
+		},
+		Price:      in.Price,
+		Balance:    in.Balance,
+		BalanceUSD: in.BalanceUSD,
+		HasError:   in.HasError,
+		ErrorMsg:   in.ErrorMsg,
 	}
 }

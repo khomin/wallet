@@ -19,21 +19,12 @@ var (
 	ErrWalletInternalError = errors.New("internal error")
 )
 
-type WalletPortfolio struct {
-	Wallet     domain.Wallet
-	Price      domain.TokenPrice
-	Balance    float64
-	BalanceUSD float64
-	HasError   bool
-	ErrorMsg   string
-}
-
 type WalletRepository interface {
-	ListWallets(ctx context.Context, userID string) ([]domain.Wallet, error)
+	ListWallets(ctx context.Context, userID string) ([]domain.WalletWithBalance, error)
 	CreateWallet(ctx context.Context, userID string, chain string, address string, symbol string, label string) (*domain.Wallet, error)
 	EditWallet(ctx context.Context, userID string, id uuid.UUID, label string) (*domain.Wallet, error)
 	DeleteWallet(ctx context.Context, userID string, id uuid.UUID) error
-	GetWallet(ctx context.Context, userID string, id uuid.UUID) (*domain.Wallet, error)
+	GetWallet(ctx context.Context, userID string, id uuid.UUID) (*domain.WalletWithBalance, error)
 }
 
 type WalletService struct {
@@ -65,18 +56,18 @@ func NewWalletService(deps WalletDeps) *WalletService {
 	}
 }
 
-func (s *WalletService) GetWallet(ctx context.Context, userID string, id uuid.UUID) (WalletPortfolio, error) {
+func (s *WalletService) GetWallet(ctx context.Context, userID string, id uuid.UUID) (*domain.WalletWithBalance, error) {
 	if err := s.userRepo.EnsureExists(ctx, userID); err != nil {
-		return WalletPortfolio{}, err
+		return nil, err
 	}
 	wallet, err := s.walletRepo.GetWallet(ctx, userID, id)
 	if err != nil {
-		return WalletPortfolio{}, err
+		return nil, err
 	}
-	return s.FetchPortfolio(ctx, *wallet)
+	return wallet, nil
 }
 
-func (s *WalletService) ListWallets(ctx context.Context, userID string) ([]WalletPortfolio, error) {
+func (s *WalletService) ListWallets(ctx context.Context, userID string) ([]domain.WalletWithBalance, error) {
 	if err := s.userRepo.EnsureExists(ctx, userID); err != nil {
 		return nil, err
 	}
@@ -84,15 +75,16 @@ func (s *WalletService) ListWallets(ctx context.Context, userID string) ([]Walle
 	if err != nil {
 		return nil, err
 	}
-	out := []WalletPortfolio{}
-	for _, wallet := range wallets {
-		portfolio, err := s.FetchPortfolio(ctx, wallet)
-		if err != nil {
-			continue
-		}
-		out = append(out, portfolio)
-	}
-	return out, nil
+	// out := []domain.WalletWithBalance{}
+
+	// for _, wallet := range wallets {
+	// 	portfolio, err := s.FetchPortfolio(ctx, wallet)
+	// 	if err != nil {
+	// 		continue
+	// 	}
+	// 	out = append(out, portfolio)
+	// }
+	return wallets, nil
 }
 
 func (s *WalletService) AddWallet(ctx context.Context, userID string, chain string, address string, symbol string, label string) error {
@@ -120,7 +112,7 @@ func (s *WalletService) AddWallet(ctx context.Context, userID string, chain stri
 	return nil
 }
 
-func (s *WalletService) EditWallet(ctx context.Context, userID string, id uuid.UUID, label string) (*WalletPortfolio, error) {
+func (s *WalletService) EditWallet(ctx context.Context, userID string, id uuid.UUID, label string) (*domain.WalletWithBalance, error) {
 	if err := s.userRepo.EnsureExists(ctx, userID); err != nil {
 		return nil, err
 	}
@@ -142,26 +134,26 @@ func (s *WalletService) DeleteWallet(ctx context.Context, userID string, id uuid
 	return s.walletRepo.DeleteWallet(ctx, userID, id)
 }
 
-func (s *WalletService) FetchPortfolio(ctx context.Context, wallet domain.Wallet) (WalletPortfolio, error) {
+func (s *WalletService) FetchPortfolio(ctx context.Context, wallet domain.Wallet) (domain.WalletWithBalance, error) {
 	priceSymbol := wallet.Symbol
 	if wallet.Chain == wallet.Symbol {
 		priceSymbol = wallet.Chain
 	}
 	token, err := s.blockchainService.tokenRegistry.GetByChainAndSymbol(wallet.Chain, priceSymbol)
 	if err != nil {
-		return WalletPortfolio{
+		return domain.WalletWithBalance{
 			Wallet: wallet,
 			Price:  domain.TokenPrice{},
 		}, fmt.Errorf("seems like unsupported token %s", priceSymbol)
 	}
 	price, err := s.priceService.GetPrice(ctx, token.Symbol)
 	if err != nil {
-		return WalletPortfolio{
+		return domain.WalletWithBalance{
 			Wallet: wallet,
 			Price:  domain.TokenPrice{},
 		}, fmt.Errorf("getting price for %s: %w", priceSymbol, err)
 	}
-	item := WalletPortfolio{
+	item := domain.WalletWithBalance{
 		Wallet: wallet,
 		Price:  price,
 	}

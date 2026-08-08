@@ -3,7 +3,6 @@ package repositories
 import (
 	"context"
 	"strings"
-	"time"
 	"tracker/internal/core/domain"
 	"tracker/internal/db"
 	"tracker/internal/db/models"
@@ -18,7 +17,7 @@ func NewPriceRepository(db *db.DataBase) PriceRepository {
 }
 
 func (r *PriceRepository) GetCoinSnapshot(ctx context.Context) ([]domain.TokenID, error) {
-	query := `SELECT id, symbol, coin_name, image_url, last_updated, snapshot_at FROM coins`
+	query := `SELECT id, symbol, coin_name, image_url, updated_at FROM coins`
 
 	rows, err := r.db.Pool.Query(ctx, query)
 	if err != nil {
@@ -34,8 +33,7 @@ func (r *PriceRepository) GetCoinSnapshot(ctx context.Context) ([]domain.TokenID
 			&snapshot.Symbol,
 			&snapshot.Name,
 			&snapshot.ImageURL,
-			&snapshot.LastUpdated,
-			&snapshot.SnapshotAt,
+			&snapshot.UpdatedAt,
 		); err != nil {
 			return nil, err
 		}
@@ -56,19 +54,17 @@ func (r *PriceRepository) SetCoinSnapshot(ctx context.Context, in []domain.Token
 			symbol,
 			coin_name,
 			image_url,
-			last_updated,
-			snapshot_at
+			updated_at
 		)
 		VALUES (
-			$1, $2, $3, $4, $5, $6
+			$1, $2, $3, $4, $5
 		)
 		ON CONFLICT (id)
 		DO UPDATE SET
 			symbol = EXCLUDED.symbol,
 			coin_name = EXCLUDED.coin_name,
 			image_url = EXCLUDED.image_url,
-			last_updated = EXCLUDED.last_updated,
-			snapshot_at = EXCLUDED.snapshot_at
+			updated_at = EXCLUDED.updated_at
 	`
 	for _, snapshot := range domainTokensToModel(in) {
 		_, err := r.db.Pool.Exec(ctx, query,
@@ -76,8 +72,7 @@ func (r *PriceRepository) SetCoinSnapshot(ctx context.Context, in []domain.Token
 			strings.ToUpper(snapshot.Symbol),
 			snapshot.Name,
 			snapshot.ImageURL,
-			snapshot.LastUpdated,
-			snapshot.SnapshotAt,
+			snapshot.UpdatedAt,
 		)
 		if err != nil {
 			return err
@@ -86,20 +81,42 @@ func (r *PriceRepository) SetCoinSnapshot(ctx context.Context, in []domain.Token
 	return nil
 }
 
+// CREATE TABLE IF NOT EXISTS coins (
+//     id TEXT PRIMARY KEY,
+//     symbol TEXT NOT NULL,
+//     coin_name TEXT NOT NULL,
+//     image_url TEXT NOT NULL,
+//     updated_at TIMESTAMP NOT NULL DEFAULT NOW()
+// );
+
+// CREATE TABLE IF NOT EXISTS coin_price_snapshots (
+//     id TEXT PRIMARY KEY REFERENCES coins(id),
+//     price_usd DECIMAL(40,18) NOT NULL,
+//     market_cap_usd DECIMAL(40,18) NOT NULL,
+//     total_volume_usd DECIMAL(40,18) NOT NULL,
+//     price_change_24h DECIMAL(40,18) NOT NULL,
+//     price_change_percent_24h DECIMAL(16,4) NOT NULL,
+//     market_cap_change_24h DECIMAL(40,18) NOT NULL,
+//     market_cap_change_percent_24h DECIMAL(16,4) NOT NULL,
+//     updated_at TIMESTAMP NOT NULL DEFAULT NOW()
+// );
+
 func (r *PriceRepository) GetPriceSnapshot(ctx context.Context) ([]domain.TokenPrice, error) {
-	query := `SELECT
-		id,
-		symbol,
-		coin_name,
-		price_usd,
-		market_cap_usd,
-		total_volume_usd,
-		price_change_24h,
-		price_change_percent_24h,
-		market_cap_change_24h,
-		market_cap_change_percent_24h,
-		last_updated
-	FROM coin_price_snapshots`
+	query := `SELECT 
+		coins.id,
+		coins.symbol,
+		coins.coin_name,
+		coin_price_snapshots.price_usd,
+		coin_price_snapshots.market_cap_usd,
+		coin_price_snapshots.total_volume_usd,
+		coin_price_snapshots.price_change_24h,
+		coin_price_snapshots.price_change_percent_24h,
+		coin_price_snapshots.market_cap_change_24h,
+		coin_price_snapshots.market_cap_change_percent_24h,
+		coin_price_snapshots.updated_at
+		FROM coin_price_snapshots
+	JOIN coins
+	ON coins.id = coin_price_snapshots.id`
 
 	rows, err := r.db.Pool.Query(ctx, query)
 	if err != nil {
@@ -107,9 +124,9 @@ func (r *PriceRepository) GetPriceSnapshot(ctx context.Context) ([]domain.TokenP
 	}
 	defer rows.Close()
 
-	var snapshots []models.CoinPrice
+	var snapshots []models.Price
 	for rows.Next() {
-		var snapshot models.CoinPrice
+		var snapshot models.Price
 		if err := rows.Scan(
 			&snapshot.ID,
 			&snapshot.Symbol,
@@ -121,11 +138,10 @@ func (r *PriceRepository) GetPriceSnapshot(ctx context.Context) ([]domain.TokenP
 			&snapshot.PriceChangePercentage_24h,
 			&snapshot.MarketCapChange_24h,
 			&snapshot.MarketCapChange_percentage_24h,
-			&snapshot.LastUpdated,
+			&snapshot.UpdatedAt,
 		); err != nil {
 			return nil, err
 		}
-		snapshot.PriceChange_24h = snapshot.Change_24h
 		snapshots = append(snapshots, snapshot)
 	}
 	if err := rows.Err(); err != nil {
@@ -138,10 +154,9 @@ func (r *PriceRepository) SetPriceSnapshot(ctx context.Context, in []domain.Toke
 	if len(in) == 0 {
 		return nil
 	}
-	query := `INSERT INTO coin_price_snapshots (
+	query := `INSERT INTO coin_price_snapshots
+		(	
 			id,
-			symbol,
-			coin_name,
 			price_usd,
 			market_cap_usd,
 			total_volume_usd,
@@ -149,16 +164,14 @@ func (r *PriceRepository) SetPriceSnapshot(ctx context.Context, in []domain.Toke
 			price_change_percent_24h,
 			market_cap_change_24h,
 			market_cap_change_percent_24h,
-			last_updated,
-			snapshot_at
+			updated_at
 		)
 		VALUES (
-			$1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12
+			(SELECT id from coins where id = $1 AND symbol = $2),
+			$3, $4, $5, $6, $7, $8, $9, $10
 		)
 		ON CONFLICT (id)
 		DO UPDATE SET
-			symbol = EXCLUDED.symbol,
-			coin_name = EXCLUDED.coin_name,
 			price_usd = EXCLUDED.price_usd,
 			market_cap_usd = EXCLUDED.market_cap_usd,
 			total_volume_usd = EXCLUDED.total_volume_usd,
@@ -166,14 +179,21 @@ func (r *PriceRepository) SetPriceSnapshot(ctx context.Context, in []domain.Toke
 			price_change_percent_24h = EXCLUDED.price_change_percent_24h,
 			market_cap_change_24h = EXCLUDED.market_cap_change_24h,
 			market_cap_change_percent_24h = EXCLUDED.market_cap_change_percent_24h,
-			last_updated = EXCLUDED.last_updated,
-			snapshot_at = EXCLUDED.snapshot_at
+			updated_at = EXCLUDED.updated_at
+		RETURNING 
+			id, price_usd, 
+			market_cap_usd,
+			total_volume_usd,
+			price_change_24h,
+			price_change_percent_24h,
+			market_cap_change_24h,
+			market_cap_change_percent_24h,
+			updated_at
 	`
 	for _, snapshot := range domainPriceToModel(in) {
 		_, err := r.db.Pool.Exec(ctx, query,
 			strings.ToUpper(snapshot.ID),
 			strings.ToUpper(snapshot.Symbol),
-			snapshot.Name,
 			snapshot.CurrentPrice,
 			snapshot.MarketCap,
 			snapshot.TotalVolume,
@@ -181,8 +201,7 @@ func (r *PriceRepository) SetPriceSnapshot(ctx context.Context, in []domain.Toke
 			snapshot.PriceChangePercentage_24h,
 			snapshot.MarketCapChange_24h,
 			snapshot.MarketCapChange_percentage_24h,
-			snapshot.LastUpdated,
-			time.Now().UTC(),
+			snapshot.UpdatedAt,
 		)
 		if err != nil {
 			return err
@@ -217,19 +236,30 @@ func domainTokensToModel(in []domain.TokenID) []models.Coin {
 	return out
 }
 
-func domainPriceToModel(in []domain.TokenPrice) []models.CoinPrice {
-	out := make([]models.CoinPrice, 0, len(in))
+func domainPriceToModel(in []domain.TokenPrice) []models.Price {
+	out := make([]models.Price, 0, len(in))
 	for _, i := range in {
-		out = append(out, models.CoinPrice{
-			Symbol: i.Symbol,
-			Name:   i.Name,
-			ID:     i.ID,
+		out = append(out, models.Price{
+			Symbol:                         i.Symbol,
+			Name:                           i.Name,
+			ID:                             i.ID,
+			CurrentPrice:                   i.CurrentPrice,
+			Change_24h:                     i.Change_24h,
+			MarketCap:                      i.MarketCap,
+			TotalVolume:                    i.TotalVolume,
+			High_24h:                       i.High_24h,
+			Low_24h:                        i.Low_24h,
+			PriceChange_24h:                i.PriceChange_24h,
+			PriceChangePercentage_24h:      i.PriceChangePercentage_24h,
+			MarketCapChange_24h:            i.MarketCapChange_24h,
+			MarketCapChange_percentage_24h: i.MarketCapChange_percentage_24h,
+			UpdatedAt:                      i.LastUpdated,
 		})
 	}
 	return out
 }
 
-func modelPriceToDomain(in []models.CoinPrice) []domain.TokenPrice {
+func modelPriceToDomain(in []models.Price) []domain.TokenPrice {
 	out := make([]domain.TokenPrice, 0, len(in))
 	for _, i := range in {
 		out = append(out, domain.TokenPrice{

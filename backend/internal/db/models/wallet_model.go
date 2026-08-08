@@ -2,17 +2,26 @@ package models
 
 import (
 	"time"
+	"tracker/internal/core/domain"
 
 	"github.com/google/uuid"
 )
 
 type Wallet struct {
-	ID        uuid.UUID `db:"id"`
-	Address   string    `db:"address" `
-	Chain     string    `db:"chain" `
-	Label     string    `db:"label"`
-	Symbol    string    `db:"symbol"`
-	UserID    string    `db:"user_id"`
-	CreatedAt time.Time `db:"created_at" `
-	UpdatedAt time.Time `db:"updated_at" `
+	ID        uuid.UUID
+	Address   string
+	Chain     string
+	Label     string
+	Symbol    string
+	UserID    string
+	UpdatedAt time.Time
+}
+
+type WalletBalance struct {
+	Wallet
+	Price      domain.TokenPrice
+	Balance    float64
+	BalanceUSD float64
+	HasError   bool
+	ErrorMsg   string
 }

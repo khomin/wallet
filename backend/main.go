@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"tracker/bootstrap"
 	pricev1 "tracker/gen/price/v1"
+	userv1 "tracker/gen/user/v1"
 	walletv1 "tracker/gen/wallet/v1"
 	"tracker/internal/api/handlers"
 	"tracker/internal/api/middleware"
@@ -155,15 +156,20 @@ func main() {
 
 	priceGrpcServer := handlers.NewPriceGrpcHandler(priceService)
 	walletGrpcServer := handlers.NewWalletGrpcHandler(walletService)
+	userServer := handlers.NewUserHandler(userRepo)
 
 	pricev1.RegisterPriceServiceServer(grpcServer, priceGrpcServer)
 	walletv1.RegisterWalletServiceServer(grpcServer, walletGrpcServer)
+	userv1.RegisterUserServiceServer(grpcServer, userServer)
 
 	if err := pricev1.RegisterPriceServiceHandlerFromEndpoint(ctx, gwmux, grpcAddr, opts); err != nil {
 		logrus.Fatalf("failed to register price gateway: %v", err)
 	}
 	if err := walletv1.RegisterWalletServiceHandlerFromEndpoint(ctx, gwmux, grpcAddr, opts); err != nil {
 		logrus.Fatalf("failed to register wallet gateway: %v", err)
+	}
+	if err := userv1.RegisterUserServiceHandlerFromEndpoint(ctx, gwmux, grpcAddr, opts); err != nil {
+		logrus.Fatalf("failed to register user gateway: %v", err)
 	}
 
 	httpHandler := setupHttpHandler(gwmux)

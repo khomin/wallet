@@ -9,9 +9,6 @@ option go_package = "github.com/yourusername/yourrepo/gen/go/wallet/v1;walletv1"
 import "google/api/annotations.proto";
 
 service WalletService {
-  // func (h *WalletHandler) ListWallets(c *gin.Context) {
-  // user, ok := middleware.GetOAUTH(c)
-
   rpc GetWallets(GetWalletsReq) returns (GetWalletsResp) {
     option (google.api.http) = {
       get: "/v1/wallets"
