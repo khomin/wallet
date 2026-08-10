@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"strings"
+	"time"
 	"tracker/internal/core"
 	"tracker/internal/core/domain"
 	"tracker/internal/db"
@@ -13,19 +14,19 @@ import (
 	"github.com/jackc/pgx/v5/pgconn"
 )
 
-type WalletRepository struct {
+type walletRepository struct {
 	db *db.DataBase
 }
 
-func NewWalletRepository(db *db.DataBase) *WalletRepository {
-	return &WalletRepository{db: db}
+func NewWalletRepository(db *db.DataBase) core.WalletRepository {
+	return &walletRepository{db: db}
 }
 
-func (r *WalletRepository) List(ctx context.Context, userID string) ([]domain.WalletWithBalance, error) {
+func (r *walletRepository) List(ctx context.Context, userID string) ([]domain.WalletWithBalance, error) {
 	query := `SELECT
 		w.id, w.user_id,  w.address, w.chain, coin.symbol, w.label, w.updated_at,
-		balance.price,
-		balance.price_usd,
+		balance.value_crypto,
+		balance.value_usd,
 		balance.updated_at,
 		coin.id,
 		coin.symbol,
@@ -38,11 +39,11 @@ func (r *WalletRepository) List(ctx context.Context, userID string) ([]domain.Wa
 		price.market_cap_change_24h,
 		price.market_cap_change_percent_24h,
 		price.updated_at
-		FROM wallets w
-		LEFT JOIN coins coin ON coin.id = w.coin_id
-		LEFT JOIN coin_prices price ON price.id = w.coin_id
-		LEFT JOIN wallet_balances balance ON balance.id = w.id
-		ORDER BY w.updated_at ASC`
+	FROM wallets w
+	LEFT JOIN coins coin ON coin.id = w.coin_id
+	LEFT JOIN coin_prices price ON price.id = w.coin_id
+	LEFT JOIN wallet_balances balance ON balance.id = w.id
+	ORDER BY w.updated_at ASC`
 	rows, err := r.db.Pool.Query(ctx, query)
 	if err != nil {
 		return nil, err
@@ -87,18 +88,27 @@ func (r *WalletRepository) List(ctx context.Context, userID string) ([]domain.Wa
 	return wallets, nil
 }
 
-func (r *WalletRepository) Get(ctx context.Context, userID string, id uuid.UUID) (*domain.WalletWithBalance, error) {
-	query := `SELECT w.id, w.user_id, w.address, w.chain, w.label, w.updated_at,
-		p.price_usd,
-		p.market_cap_usd,
-		p.total_volume_usd,
-		p.price_change_24h,
-		p.price_change_percent_24h,
-		p.market_cap_change_24h,
-		p.market_cap_change_percent_24h,
-		p.updated_at		
+func (r *walletRepository) Get(ctx context.Context, userID string, id uuid.UUID) (*domain.WalletWithBalance, error) {
+	query := `SELECT
+			w.id, w.user_id,  w.address, w.chain, coin.symbol, w.label, w.updated_at,
+			balance.value_crypto,
+			balance.value_usd,
+			balance.updated_at,
+			coin.id,
+			coin.symbol,
+			coin.coin_name,
+			price.price_usd,
+			price.market_cap_usd,
+			price.total_volume_usd,
+			price.price_change_24h,
+			price.price_change_percent_24h,
+			price.market_cap_change_24h,
+			price.market_cap_change_percent_24h,
+			price.updated_at
 		FROM wallets w
-		JOIN coin_prices p ON p.id = w.coin_id
+		LEFT JOIN coins coin ON coin.id = w.coin_id
+		LEFT JOIN coin_prices price ON price.id = w.coin_id
+		LEFT JOIN wallet_balances balance ON balance.id = w.id
 		WHERE w.user_id = $1 AND w.id = $2`
 	rows, err := r.db.Pool.Query(ctx, query,
 		userID,
@@ -119,12 +129,22 @@ func (r *WalletRepository) Get(ctx context.Context, userID string, id uuid.UUID)
 			&w.Wallet.Symbol,
 			&w.Wallet.Label,
 			&w.Wallet.UpdatedAt,
-			&w.Balance,
-			// &wallet.Price.Change_24h,//
+			//
 			&w.Balance,
 			&w.BalanceUSD,
-			&w.HasError,
-			&w.ErrorMsg,
+			&w.BalanceUpdatedAt,
+			//
+			&w.Price.ID,
+			&w.Price.Symbol,
+			&w.Price.Name,
+			&w.Price.CurrentPrice,
+			&w.Price.MarketCap,
+			&w.Price.TotalVolume,
+			&w.Price.Change_24h,
+			&w.Price.PriceChangePercentage_24h,
+			&w.Price.MarketCapChange_24h,
+			&w.Price.MarketCapChange_percentage_24h,
+			&w.Price.UpdatedAt,
 		); err != nil {
 			return nil, err
 		}
@@ -134,7 +154,7 @@ func (r *WalletRepository) Get(ctx context.Context, userID string, id uuid.UUID)
 	return nil, core.ErrWalletNotFound
 }
 
-func (r *WalletRepository) Create(ctx context.Context, userID string, chain string, address string, symbol string, label string) (*domain.Wallet, error) {
+func (r *walletRepository) Create(ctx context.Context, userID string, chain string, address string, symbol string, label string) (*domain.Wallet, error) {
 	query := `INSERT INTO wallets (address, chain, coin_id, label, user_id)
 		VALUES (
 			$1, 
@@ -170,7 +190,7 @@ func (r *WalletRepository) Create(ctx context.Context, userID string, chain stri
 	return &out, nil
 }
 
-func (r *WalletRepository) Edit(ctx context.Context, userID string, id uuid.UUID, label string) (*domain.Wallet, error) {
+func (r *walletRepository) Edit(ctx context.Context, userID string, id uuid.UUID, label string) (*domain.Wallet, error) {
 	query := `UPDATE wallets SET label = $1
 		WHERE user_id = $2 AND id = $3
 		RETURNING id, user_id, address, chain, symbol, label, updated_at;`
@@ -194,7 +214,7 @@ func (r *WalletRepository) Edit(ctx context.Context, userID string, id uuid.UUID
 	return &out, nil
 }
 
-func (r *WalletRepository) Delete(ctx context.Context, userID string, id uuid.UUID) error {
+func (r *walletRepository) Delete(ctx context.Context, userID string, id uuid.UUID) error {
 	query := `DELETE FROM wallets WHERE id = $1`
 	res, err := r.db.Pool.Exec(ctx, query, id)
 	if res.RowsAffected() == 0 {
@@ -203,16 +223,19 @@ func (r *WalletRepository) Delete(ctx context.Context, userID string, id uuid.UU
 	return err
 }
 
-func (r *WalletRepository) SetBalance(ctx context.Context, userID string, id uuid.UUID, balance float64, balanceUSD float64) error {
-	query := `INSERT INTO wallet_balances (id, price, price_usd, updated_at)
-		VALUES ($1, 1230, 45611, NOW())
-		ON CONFLICT (id)
-		DO UPDATE SET price = EXCLUDED.price, price_usd = EXCLUDED.price_usd, updated_at = EXCLUDED.updated_at
-		RETURNING id, price, price_usd, updated_at`
+func (r *walletRepository) UpdateBalance(ctx context.Context, userID string, id uuid.UUID, crypto float64, usd float64) error {
+	query := `INSERT INTO wallet_balances 
+		(id, value_crypto, value_usd, updated_at)
+		VALUES ($1, $2, $3, NOW())
+	ON CONFLICT (id)
+	DO UPDATE SET value_crypto = EXCLUDED.value_crypto, value_usd = EXCLUDED.value_usd, updated_at = EXCLUDED.updated_at
+	RETURNING id, value_crypto, value_usd, updated_at`
 
-	res, err := r.db.Pool.Exec(ctx, query, id)
-	if res.RowsAffected() == 0 {
-		return core.ErrWalletNotFound
+	_, err := r.db.Pool.Exec(ctx, query,
+		id, crypto, usd,
+	)
+	if err != nil {
+		return err
 	}
 	return err
 }
@@ -228,19 +251,48 @@ func walletToDomain(in models.Wallet) domain.Wallet {
 	}
 }
 
-func (r *WalletRepository) ListForSync(ctx context.Context, limit int) ([]domain.Wallet, error) {
-	// query := `SELECT id FROM wallet_balances (id, price, price_usd, updated_at)
-	// 	VALUES ($1, 1230, 45611, NOW())
-	// 	ON CONFLICT (id)
-	// 	DO UPDATE SET price = EXCLUDED.price, price_usd = EXCLUDED.price_usd, updated_at = EXCLUDED.updated_at
-	// 	RETURNING id, price, price_usd, updated_at`
+func (r *walletRepository) ListForSync(ctx context.Context, limit int) ([]domain.Wallet, error) {
+	query := `SELECT 
+		wallets.id, 
+		wallets.user_id, 
+		wallets.address, 
+		wallets.chain, 
+		coins.symbol,
+		wallets.label,
+		wallets.updated_at 
+	FROM wallets
+	LEFT JOIN coins
+		ON coins.id = wallets.coin_id
+	LEFT JOIN wallet_balances balance
+		ON balance.id = wallets.id
+	WHERE balance.updated_at IS NULL OR balance.updated_at < $1`
 
-	// res, err := r.db.Pool.Exec(ctx, query, id)
-	// if res.RowsAffected() == 0 {
-	// 	return core.ErrWalletNotFound
-	// }
-	// return err
-	return nil, nil
+	rows, err := r.db.Pool.Query(ctx,
+		query,
+		time.Now().Add(-5*time.Minute),
+	)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	out := []domain.Wallet{}
+	for rows.Next() {
+		var wallet models.Wallet
+		err = rows.Scan(
+			&wallet.ID,
+			&wallet.UserID,
+			&wallet.Address,
+			&wallet.Chain,
+			&wallet.Symbol,
+			&wallet.Label,
+			&wallet.UpdatedAt,
+		)
+		if err != nil {
+			return nil, err
+		}
+		out = append(out, walletToDomain(wallet))
+	}
+	return out, nil
 }
 
 func walletToDomain2(in models.WalletBalance) domain.WalletWithBalance {

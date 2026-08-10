@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"log/slog"
 
 	"tracker/internal/core/domain"
 	"tracker/internal/messaging"
@@ -26,7 +25,7 @@ type WalletRepository interface {
 	Edit(ctx context.Context, userID string, id uuid.UUID, label string) (*domain.Wallet, error)
 	Delete(ctx context.Context, userID string, id uuid.UUID) error
 	Get(ctx context.Context, userID string, id uuid.UUID) (*domain.WalletWithBalance, error)
-	SetBalance(ctx context.Context, userID string, id uuid.UUID, balance float64, balanceUSD float64) error
+	UpdateBalance(ctx context.Context, userID string, id uuid.UUID, balance float64, balanceUSD float64) error
 	ListForSync(ctx context.Context, limit int) ([]domain.Wallet, error)
 }
 
@@ -123,64 +122,29 @@ func (s *WalletService) DeleteWallet(ctx context.Context, userID string, id uuid
 	return s.walletRepo.Delete(ctx, userID, id)
 }
 
-func (s *WalletService) SynchronizeWallet(ctx context.Context, wallet domain.Wallet) error {
+func (s *WalletService) FetchBalance(ctx context.Context, wallet domain.Wallet) (*domain.WalletWithBalance, error) {
 	priceSymbol := wallet.Symbol
 	if wallet.Chain == wallet.Symbol {
 		priceSymbol = wallet.Chain
 	}
 	token, err := s.blockchainService.tokenRegistry.GetByChainAndSymbol(wallet.Chain, priceSymbol)
 	if err != nil {
-		return fmt.Errorf("seems like unsupported token %s", priceSymbol)
+		return nil, fmt.Errorf("seems like unsupported token %s", priceSymbol)
 	}
 	price, err := s.priceService.GetPrice(ctx, token.Symbol)
 	if err != nil {
-		return fmt.Errorf("getting price for %s: %w", priceSymbol, err)
+		return nil, fmt.Errorf("getting price for %s: %w", priceSymbol, err)
 	}
 	balance, err := s.blockchainService.GetBalance(ctx, wallet.Chain, wallet.Address, wallet.Symbol)
 	if err != nil {
 		logrus.Warnf("failed to pull balance for %s on %s: %v", wallet.Address, wallet.Chain, err)
-		return nil
+		return nil, err
 	}
-	uuid, err := uuid.Parse(wallet.ID)
-	if err != nil {
-		return err
-	}
-	err = s.walletRepo.SetBalance(ctx, wallet.UserID, uuid, balance.Balance, balance.Balance*price.CurrentPrice)
-	if err != nil {
-		return err
-	}
-	return nil
-}
-
-func (s *WalletService) SynchronizeWallets(ctx context.Context) error {
-	wallets, err := s.walletRepo.ListForSync(ctx, 1000)
-	if err != nil {
-		slog.Warn("failed to fetch active wallets for sync", "error", err)
-		return err
-	}
-
-	for _, w := range wallets {
-		// Wait for rate-limiter token before hitting external gRPC/RPC
-		if err := s.rateLimiter.Wait(ctx); err != nil {
-			return
-		}
-
-		go func(wallet Wallet) {
-			provider, ok := s.providers[wallet.Chain]
-			if !ok {
-				return
-			}
-
-			balance, err := provider.GetBalance(ctx, wallet.Address)
-			if err != nil {
-				// Update DB with the error state you showed above!
-				_ = s.repo.UpdateBalanceError(ctx, wallet.ID, "Unable to fetch live balance")
-				return
-			}
-
-			// Success - clear error and set new balance
-			_ = s.repo.UpdateBalanceSuccess(ctx, wallet.ID, balance)
-		}(w)
-	}
-	return nil
+	return &domain.WalletWithBalance{
+		Wallet:     wallet,
+		Price:      price,
+		Balance:    balance.Balance,
+		BalanceUSD: balance.Balance,
+		HasError:   false,
+	}, nil
 }

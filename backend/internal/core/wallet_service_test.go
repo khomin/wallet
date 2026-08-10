@@ -16,28 +16,32 @@ type fakeWalletRepo struct {
 	err     error
 }
 
-func (f *fakeWalletRepo) ListWallets(ctx context.Context, userID string) ([]domain.WalletWithBalance, error) {
+func (f *fakeWalletRepo) List(ctx context.Context, userID string) ([]domain.WalletWithBalance, error) {
 	return nil, nil
 }
 
-func (f *fakeWalletRepo) CreateWallet(ctx context.Context, userID string, chain string, address string, symbol string, label string) (*domain.Wallet, error) {
+func (f *fakeWalletRepo) Create(ctx context.Context, userID string, chain string, address string, symbol string, label string) (*domain.Wallet, error) {
 	return nil, nil
 }
 
-func (f *fakeWalletRepo) EditWallet(ctx context.Context, userID string, id uuid.UUID, label string) (*domain.Wallet, error) {
+func (f *fakeWalletRepo) Edit(ctx context.Context, userID string, id uuid.UUID, label string) (*domain.Wallet, error) {
 	return nil, nil
 }
 
-func (f *fakeWalletRepo) DeleteWallet(ctx context.Context, userID string, id uuid.UUID) error {
+func (f *fakeWalletRepo) Delete(ctx context.Context, userID string, id uuid.UUID) error {
 	return nil
 }
 
-func (f *fakeWalletRepo) GetWallet(ctx context.Context, userID string, id uuid.UUID) (*domain.WalletWithBalance, error) {
+func (f *fakeWalletRepo) Get(ctx context.Context, userID string, id uuid.UUID) (*domain.WalletWithBalance, error) {
 	return nil, nil
 }
 
-func (f *fakeWalletRepo) SetWalletBalance(ctx context.Context, userID string, id uuid.UUID, balance float64, balanceUSD float64) error {
+func (f *fakeWalletRepo) UpdateBalance(ctx context.Context, userID string, id uuid.UUID, balance float64, balanceUSD float64) error {
 	return nil
+}
+
+func (f *fakeWalletRepo) ListForSync(ctx context.Context, limit int) ([]domain.Wallet, error) {
+	return nil, nil
 }
 
 type fakeUserRepo struct {

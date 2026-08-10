@@ -126,9 +126,13 @@ func main() {
 		EventPublisher: walletEventPublisher,
 	})
 
-	walletWorker := core.NewWalletWorker(walletService, walletEventConsumer)
+	walletWorker := core.NewWalletWorker(&core.NewWalletDeps{
+		WalletService: walletService,
+		WalletRepo:    walletRepo,
+		MqConsumer:    walletEventConsumer,
+	})
 	walletWorker.StartConsuming(ctx)
-	walletWorker.StartSyncLoop(ctx, time.Second*5)
+	go walletWorker.StartSyncLoop(ctx, time.Second*5)
 
 	go priceFetcher.StartCoinFetcher(ctx)
 

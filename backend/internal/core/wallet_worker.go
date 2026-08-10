@@ -3,10 +3,12 @@ package core
 import (
 	"context"
 	"encoding/json"
+	"log/slog"
 	"time"
 	"tracker/internal/core/domain"
 	"tracker/internal/messaging"
 
+	"github.com/google/uuid"
 	"github.com/rabbitmq/amqp091-go"
 	"github.com/sirupsen/logrus"
 	"golang.org/x/time/rate"
@@ -78,22 +80,71 @@ func (s *walletWorker) StartSyncLoop(ctx context.Context, interval time.Duration
 		case <-ctx.Done():
 			return
 		case <-tm.C:
-			s.walletService.SynchronizeWallets(ctx)
+			s.SynchronizeWallets(ctx)
 		}
 	}
 }
 
 func (w *walletWorker) handleWalletCreated(ctx context.Context, msg amqp091.Delivery) error {
-	var wallet domain.WalletCreatedEvent
-	if err := json.Unmarshal(msg.Body, &wallet); err != nil {
+	var event domain.WalletCreatedEvent
+	if err := json.Unmarshal(msg.Body, &event); err != nil {
 		return nil
 	}
-	err := w.walletService.SynchronizeWallet(ctx, domain.Wallet{
-		ID:     wallet.ID,
-		UserID: wallet.UserID,
-	})
+	walletID, err := uuid.Parse(event.ID)
+	if err != nil {
+		return nil
+	}
+	wallet, err := w.walletRepo.Get(ctx, event.UserID, walletID)
 	if err != nil {
 		return err
+	}
+	err = w.SynchronizeWallet(ctx, wallet.Wallet)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (s *walletWorker) SynchronizeWallet(ctx context.Context, wallet domain.Wallet) error {
+	balance, err := s.walletService.FetchBalance(ctx, wallet)
+	if err != nil {
+		return err
+	}
+	uuid, err := uuid.Parse(wallet.ID)
+	if err != nil {
+		return err
+	}
+	err = s.walletRepo.UpdateBalance(ctx, wallet.UserID, uuid, balance.Balance, balance.BalanceUSD)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (s *walletWorker) SynchronizeWallets(ctx context.Context) error {
+	wallets, err := s.walletRepo.ListForSync(ctx, 1000)
+	if err != nil {
+		slog.Warn("failed to fetch active wallets for sync", "error", err)
+		return err
+	}
+	for _, w := range wallets {
+		if err := s.rateLimiter.Wait(ctx); err != nil {
+			return err
+		}
+		go func(wallet domain.Wallet) {
+			balance, err := s.walletService.FetchBalance(ctx, wallet)
+			if err != nil {
+				return
+			}
+			uuid, err := uuid.Parse(wallet.ID)
+			if err != nil {
+				return
+			}
+			err = s.walletRepo.UpdateBalance(ctx, wallet.UserID, uuid, balance.Balance, balance.BalanceUSD)
+			if err != nil {
+				return
+			}
+		}(w)
 	}
 	return nil
 }
