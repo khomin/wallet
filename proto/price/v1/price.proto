@@ -5,7 +5,7 @@ package price.v1;
 import "google/protobuf/empty.proto";
 import "google/protobuf/timestamp.proto";
 
-option go_package = "github.com/yourusername/yourrepo/gen/go/price/v1;pricev1";
+option go_package = "tracker/gen/price/v1;pricev1";
 
 import "google/api/annotations.proto";
 
@@ -90,7 +90,7 @@ message Price {
   float                     price_change_percentage_24h      = 9;
   float                     market_cap_change_24h            = 10;
   float                     market_cap_change_percentage_24h = 11;
-  google.protobuf.Timestamp last_updated                     = 12;
+  google.protobuf.Timestamp updated_at                       = 12;
 }
 
 message GetCoinRequest {

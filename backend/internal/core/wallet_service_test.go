@@ -8,6 +8,7 @@ import (
 	"tracker/internal/db/models"
 
 	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5/pgtype"
 )
 
 type fakeWalletRepo struct {
@@ -35,6 +36,10 @@ func (f *fakeWalletRepo) GetWallet(ctx context.Context, userID string, id uuid.U
 	return nil, nil
 }
 
+func (f *fakeWalletRepo) SetWalletBalance(ctx context.Context, userID string, id uuid.UUID, balance float64, balanceUSD float64) error {
+	return nil
+}
+
 type fakeUserRepo struct {
 }
 
@@ -44,7 +49,10 @@ func (f *fakeUserRepo) EnsureExists(ctx context.Context, userID string) error {
 
 func TestDeleteWalletReturnsDeletedWallet(t *testing.T) {
 	want := &models.Wallet{
-		ID:      uuid.New(),
+		ID: pgtype.UUID{
+			Bytes: uuid.New(),
+			Valid: true,
+		},
 		Address: "0xabc",
 		Chain:   "ethereum",
 		Label:   "primary",
@@ -56,7 +64,7 @@ func TestDeleteWalletReturnsDeletedWallet(t *testing.T) {
 		PriceService:      &PriceService{},
 		BlockchainService: &BlockchainService{}, TokenRegistry: &TokenRegistry{}, UserRepo: &fakeUserRepo{},
 	})
-	err := svc.DeleteWallet(context.Background(), want.UserID, want.ID)
+	err := svc.DeleteWallet(context.Background(), want.UserID, want.ID.Bytes)
 	if err != nil {
 		t.Fatalf("DeleteWallet returned unexpected error: %v", err)
 	}

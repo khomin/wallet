@@ -4,7 +4,7 @@ syntax = "proto3";
 package user.v1;
 import "google/protobuf/empty.proto";
 
-option go_package = "github.com/yourusername/yourrepo/gen/go/user/v1;userv1";
+option go_package = "tracker/gen/user/v1;userv1";
 
 import "google/api/annotations.proto";
 

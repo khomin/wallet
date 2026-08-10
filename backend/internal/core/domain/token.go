@@ -46,7 +46,7 @@ type TokenPrice struct {
 	PriceChangePercentage_24h      float64   `json:"price_change_percentage_24h"`
 	MarketCapChange_24h            float64   `json:"market_cap_change_24h"`
 	MarketCapChange_percentage_24h float64   `json:"market_cap_change_percentage_24h"`
-	LastUpdated                    time.Time `json:"last_updated"`
+	UpdatedAt                      time.Time `json:"updated_at"`
 }
 
 type TokenBalance struct {

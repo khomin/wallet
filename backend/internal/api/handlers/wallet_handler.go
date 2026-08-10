@@ -3,6 +3,7 @@ package handlers
 import (
 	"context"
 	"errors"
+	pricev1 "tracker/gen/price/v1"
 	walletv1 "tracker/gen/wallet/v1"
 	"tracker/internal/api/middleware"
 	"tracker/internal/core"
@@ -12,6 +13,7 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/emptypb"
+	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
 type WalletGrpcHandler struct {
@@ -37,16 +39,29 @@ func (s *WalletGrpcHandler) GetWallets(ctx context.Context, req *walletv1.GetWal
 	out := make([]*walletv1.Wallet, 0, len(wallets))
 	for _, i := range wallets {
 		out = append(out, &walletv1.Wallet{
-			Id:                i.Wallet.ID,
-			Address:           i.Wallet.Address,
-			Chain:             i.Wallet.Chain,
-			TokenSymbol:       i.Wallet.Symbol,
-			Label:             i.Wallet.Label,
-			BalanceCrypto:     float32(i.Balance),
-			BalanceUsd:        float32(i.Balance),
-			Change_24HPercent: float32(i.Price.Change_24h),
-			HasError:          i.HasError,
-			ErrorMsg:          i.ErrorMsg,
+			Id:            i.Wallet.ID,
+			Address:       i.Wallet.Address,
+			Chain:         i.Wallet.Chain,
+			TokenSymbol:   i.Wallet.Symbol,
+			Label:         i.Wallet.Label,
+			BalanceCrypto: float32(i.Balance),
+			BalanceUsd:    float32(i.Balance),
+			HasError:      i.HasError,
+			ErrorMsg:      i.ErrorMsg,
+			Price: &pricev1.Price{
+				Symbol:                        i.Symbol,
+				Name:                          i.Price.Name,
+				PriceUsd:                      float32(i.Price.CurrentPrice),
+				MarketCap:                     float32(i.Price.MarketCap),
+				TotalVolume:                   float32(i.Price.TotalVolume),
+				High_24H:                      float32(i.Price.High_24h),
+				Low_24H:                       float32(i.Price.Low_24h),
+				PriceChange_24H:               float32(i.Price.PriceChange_24h),
+				PriceChangePercentage_24H:     float32(i.Price.PriceChangePercentage_24h),
+				MarketCapChange_24H:           float32(i.Price.MarketCapChange_24h),
+				MarketCapChangePercentage_24H: float32(i.Price.MarketCapChange_percentage_24h),
+				UpdatedAt:                     timestamppb.New(i.Price.UpdatedAt),
+			},
 		})
 	}
 	return &walletv1.GetWalletsResp{
@@ -72,16 +87,31 @@ func (s *WalletGrpcHandler) GetWallet(ctx context.Context, req *walletv1.GetWall
 		return nil, status.Error(codes.Internal, err.Error())
 	}
 	return &walletv1.GetWalletResp{
-		Id:                wallet.Wallet.ID,
-		Address:           wallet.Wallet.Address,
-		Chain:             wallet.Wallet.Chain,
-		TokenSymbol:       wallet.Wallet.Symbol,
-		Label:             wallet.Wallet.Label,
-		BalanceCrypto:     float32(wallet.Balance),
-		BalanceUsd:        float32(wallet.BalanceUSD),
-		Change_24HPercent: float32(wallet.Price.Change_24h),
-		HasError:          wallet.HasError,
-		ErrorMsg:          wallet.ErrorMsg,
+		Wallet: &walletv1.Wallet{
+			Id:            wallet.Wallet.ID,
+			Address:       wallet.Wallet.Address,
+			Chain:         wallet.Wallet.Chain,
+			TokenSymbol:   wallet.Wallet.Symbol,
+			Label:         wallet.Wallet.Label,
+			BalanceCrypto: float32(wallet.Balance),
+			BalanceUsd:    float32(wallet.BalanceUSD),
+			HasError:      wallet.HasError,
+			ErrorMsg:      wallet.ErrorMsg,
+			Price: &pricev1.Price{
+				Symbol:                        wallet.Symbol,
+				Name:                          wallet.Price.Name,
+				PriceUsd:                      float32(wallet.Price.CurrentPrice),
+				MarketCap:                     float32(wallet.Price.MarketCap),
+				TotalVolume:                   float32(wallet.Price.TotalVolume),
+				High_24H:                      float32(wallet.Price.High_24h),
+				Low_24H:                       float32(wallet.Price.Low_24h),
+				PriceChange_24H:               float32(wallet.Price.PriceChange_24h),
+				PriceChangePercentage_24H:     float32(wallet.Price.PriceChangePercentage_24h),
+				MarketCapChange_24H:           float32(wallet.Price.MarketCapChange_24h),
+				MarketCapChangePercentage_24H: float32(wallet.Price.MarketCapChange_percentage_24h),
+				UpdatedAt:                     timestamppb.New(wallet.Price.UpdatedAt),
+			},
+		},
 	}, nil
 }
 
@@ -133,18 +163,8 @@ func (s *WalletGrpcHandler) EditWallet(ctx context.Context, req *walletv1.EditWa
 		return nil, status.Error(codes.Internal, err.Error())
 	}
 	return &walletv1.EditWalletResp{
-		Wallet: &walletv1.Wallet{
-			Id:                wallet.Wallet.ID,
-			Address:           wallet.Wallet.Address,
-			Chain:             wallet.Wallet.Chain,
-			TokenSymbol:       wallet.Wallet.Symbol,
-			Label:             wallet.Wallet.Label,
-			BalanceCrypto:     float32(wallet.Balance),
-			BalanceUsd:        float32(wallet.BalanceUSD),
-			Change_24HPercent: float32(wallet.Price.Change_24h),
-			HasError:          wallet.HasError,
-			ErrorMsg:          wallet.ErrorMsg,
-		},
+		Id:    wallet.ID,
+		Label: wallet.Label,
 	}, nil
 }
 

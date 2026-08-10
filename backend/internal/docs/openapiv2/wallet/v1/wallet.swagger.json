@@ -215,24 +215,6 @@
         },
         "label": {
           "type": "string"
-        },
-        "balanceCrypto": {
-          "type": "number",
-          "format": "float"
-        },
-        "balanceUsd": {
-          "type": "number",
-          "format": "float"
-        },
-        "change24hPercent": {
-          "type": "number",
-          "format": "float"
-        },
-        "hasError": {
-          "type": "boolean"
-        },
-        "errorMsg": {
-          "type": "string"
         }
       }
     },
@@ -247,46 +229,19 @@
     "v1EditWalletResp": {
       "type": "object",
       "properties": {
-        "wallet": {
-          "$ref": "#/definitions/v1Wallet"
+        "id": {
+          "type": "string"
+        },
+        "label": {
+          "type": "string"
         }
       }
     },
     "v1GetWalletResp": {
       "type": "object",
       "properties": {
-        "id": {
-          "type": "string"
-        },
-        "address": {
-          "type": "string"
-        },
-        "chain": {
-          "type": "string"
-        },
-        "tokenSymbol": {
-          "type": "string"
-        },
-        "label": {
-          "type": "string"
-        },
-        "balanceCrypto": {
-          "type": "number",
-          "format": "float"
-        },
-        "balanceUsd": {
-          "type": "number",
-          "format": "float"
-        },
-        "change24hPercent": {
-          "type": "number",
-          "format": "float"
-        },
-        "hasError": {
-          "type": "boolean"
-        },
-        "errorMsg": {
-          "type": "string"
+        "wallet": {
+          "$ref": "#/definitions/v1Wallet"
         }
       }
     },
@@ -303,6 +258,57 @@
             "type": "object",
             "$ref": "#/definitions/v1Wallet"
           }
+        }
+      }
+    },
+    "v1Price": {
+      "type": "object",
+      "properties": {
+        "symbol": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "priceUsd": {
+          "type": "number",
+          "format": "float"
+        },
+        "marketCap": {
+          "type": "number",
+          "format": "float"
+        },
+        "totalVolume": {
+          "type": "number",
+          "format": "float"
+        },
+        "high24h": {
+          "type": "number",
+          "format": "float"
+        },
+        "low24h": {
+          "type": "number",
+          "format": "float"
+        },
+        "priceChange24h": {
+          "type": "number",
+          "format": "float"
+        },
+        "priceChangePercentage24h": {
+          "type": "number",
+          "format": "float"
+        },
+        "marketCapChange24h": {
+          "type": "number",
+          "format": "float"
+        },
+        "marketCapChangePercentage24h": {
+          "type": "number",
+          "format": "float"
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time"
         }
       }
     },
@@ -332,15 +338,14 @@
           "type": "number",
           "format": "float"
         },
-        "change24hPercent": {
-          "type": "number",
-          "format": "float"
-        },
         "hasError": {
           "type": "boolean"
         },
         "errorMsg": {
           "type": "string"
+        },
+        "price": {
+          "$ref": "#/definitions/v1Price"
         }
       }
     }

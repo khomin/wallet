@@ -129,7 +129,7 @@ func (f *PriceFetcher) fromGeckoToCoinPrice(prices []coingecko.CoinGeckoCoin) []
 			PriceChangePercentage_24h:      p.PriceChangePercent24h,
 			MarketCapChange_24h:            p.MarketCapChange24h,
 			MarketCapChange_percentage_24h: p.MarketCapChangePercent24h,
-			LastUpdated:                    p.LastUpdated,
+			UpdatedAt:                      p.LastUpdated,
 		}
 	}
 	return res

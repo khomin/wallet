@@ -6,6 +6,7 @@ import (
 	"log"
 	"net"
 	"net/http"
+	"time"
 	"tracker/bootstrap"
 	pricev1 "tracker/gen/price/v1"
 	userv1 "tracker/gen/user/v1"
@@ -127,6 +128,7 @@ func main() {
 
 	walletWorker := core.NewWalletWorker(walletService, walletEventConsumer)
 	walletWorker.StartConsuming(ctx)
+	walletWorker.StartSyncLoop(ctx, time.Second*5)
 
 	go priceFetcher.StartCoinFetcher(ctx)
 

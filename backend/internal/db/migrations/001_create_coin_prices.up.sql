@@ -6,7 +6,7 @@ CREATE TABLE IF NOT EXISTS coins (
     updated_at TIMESTAMP NOT NULL DEFAULT NOW()
 );
 
-CREATE TABLE IF NOT EXISTS coin_price_snapshots (
+CREATE TABLE IF NOT EXISTS coin_prices (
     id TEXT PRIMARY KEY REFERENCES coins(id),
     price_usd DECIMAL(40,18) NOT NULL,
     market_cap_usd DECIMAL(40,18) NOT NULL,
@@ -20,4 +20,4 @@ CREATE TABLE IF NOT EXISTS coin_price_snapshots (
 
 CREATE INDEX idx_coins_symbol ON coins(symbol);
 
-CREATE INDEX idx_coin_price_snapshots_price_usd ON coin_price_snapshots(price_usd);
+CREATE INDEX idx_coin_prices_price_usd ON coin_prices(price_usd);

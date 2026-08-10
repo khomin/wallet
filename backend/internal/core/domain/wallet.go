@@ -11,11 +11,11 @@ type Wallet struct {
 
 type WalletWithBalance struct {
 	Wallet
-	Price      TokenPrice
 	Balance    float64
 	BalanceUSD float64
 	HasError   bool
 	ErrorMsg   string
+	Price      TokenPrice
 }
 
 type WalletCreatedEvent struct {

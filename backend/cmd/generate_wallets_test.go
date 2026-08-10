@@ -1,7 +1,10 @@
-package tests
+package cmd
 
 import (
 	"context"
+	"encoding/json"
+	"os"
+	"strings"
 	"testing"
 	"tracker/bootstrap"
 	"tracker/internal/cache"
@@ -12,9 +15,9 @@ import (
 	"tracker/internal/client/solana"
 	"tracker/internal/client/tron"
 	"tracker/internal/core"
-	"tracker/internal/core/domain"
 	"tracker/internal/db"
 	"tracker/internal/db/repositories"
+	"tracker/internal/messaging"
 
 	"github.com/sirupsen/logrus"
 )
@@ -93,58 +96,56 @@ func TestGenerateWallets(t *testing.T) {
 		UserRepo:          repositories.NewUserRepo(db),
 		BlockchainService: blockchainService,
 		TokenRegistry:     tokenRegistry,
+		EventPublisher:    messaging.NewPublisherNoOp(),
 	})
 
-	userID := "ad4abec0-8bae-462a-8ea3-8502048f3071"
+	// import known wallets
+	file, err := os.ReadFile("../../resources/known_wallets.json")
+	if err != nil {
+		logrus.Fatal(err)
+	}
+	var imported KnownWallets
+	json.Unmarshal(file, &imported)
 
-	tokens := []domain.TokenRaw{}
+	// import rich wallets
+	// eth
+	file, err = os.ReadFile("./wallets/ETHEREUM/rich_01.txt")
+	if err != nil {
+		logrus.Fatal(err)
+	}
+	fileStr := string(file)
+	lines := strings.Split(fileStr, "\n")
+	for _, v := range lines {
+		imported.Tokens = append(imported.Tokens, KnownToken{
+			Chain:  "ETH",
+			Symbol: "ETH",
+			Addr:   v,
+		})
+	}
 
-	tokens = append(tokens, domain.TokenRaw{
-		Name:   "BTC",
-		Chains: []string{"BTC"},
-		Symbol: "BTC",
-		Addrs:  []string{"bc1qyyfjmtl9s8s6wn3llt2ltzze978l5szfj7hr79"},
-	})
+	// trx
+	file, err = os.ReadFile("./wallets/TRON/TetherUSDT_TRC20_Rich_Address_Balance.txt")
+	if err != nil {
+		logrus.Fatal(err)
+	}
+	fileStr = string(file)
+	lines = strings.Split(fileStr, "\n")
+	for _, v := range lines {
+		v := strings.Split(v, ",")[0]
+		imported.Tokens = append(imported.Tokens, KnownToken{
+			Chain:  "TRX",
+			Symbol: "TRX",
+			Addr:   v,
+		})
+	}
 
-	tokens = append(tokens, domain.TokenRaw{
-		Chains: []string{"ETH"},
-		Symbol: "ETH",
-		Addrs:  []string{"0xEC2dFb47E5AA06da508D816D83b4833f6eBE9532"},
-	})
-	tokens = append(tokens, domain.TokenRaw{
-		Chains: []string{"SOL"},
-		Symbol: "GOOGLX",
-		Addrs:  []string{"DDcdDmDPYw595wAR1jYNHZQTFNi8BGisd2bVa3WH3XbE"},
-	})
-	tokens = append(tokens, domain.TokenRaw{
-		Chains: []string{"SOL"},
-		Symbol: "XAUT",
-		Addrs:  []string{"9Z6qhmZ2AHWMSBSM4LmA1WrCAefs2dkr1pHnkW3vmg8z"},
-	})
-	tokens = append(tokens, domain.TokenRaw{
-		Chains: []string{"SOL"},
-		Symbol: "SOL",
-		Addrs:  []string{"9Z6qhmZ2AHWMSBSM4LmA1WrCAefs2dkr1pHnkW3vmg8z"},
-	})
-	tokens = append(tokens, domain.TokenRaw{
-		Chains: []string{"TRX"},
-		Symbol: "TRX",
-		Addrs:  []string{"TF6MrLnLa72U6PGZcx4pXhs8hSvsAgQ78t"},
-	})
-	tokens = append(tokens, domain.TokenRaw{
-		Chains: []string{"TRX"},
-		Symbol: "USDT",
-		Addrs:  []string{"TF6MrLnLa72U6PGZcx4pXhs8hSvsAgQ78t"},
-	})
-
-	print(tokens, svc, userID)
-
-	for _, token := range tokens {
-		for idx, chain := range token.Chains {
-			err = svc.AddWallet(context.Background(), userID, chain, token.Addrs[idx], token.Symbol, token.Name)
-			if err != nil {
-				t.Logf("AddWallet returned unexpected error: %v", err)
-			}
+	// add in loop
+	for _, token := range imported.Tokens {
+		if err = svc.AddWallet(context.Background(), imported.UserID, token.Chain, token.Addr, token.Symbol, token.Label); err != nil {
+			logrus.Warnf("AddWallet returned error: %v, %s", err, token.Addr)
+		} else {
+			logrus.Infof("added wallet: %s: %s", token.Chain, token.Addr)
 		}
 	}
+	logrus.Info("completed")
 }

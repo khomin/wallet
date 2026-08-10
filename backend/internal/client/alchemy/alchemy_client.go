@@ -62,7 +62,7 @@ func (c *AlchemyClient) GetPrices(ctx context.Context, symbols []string) ([]doma
 							ID:           token.Symbol,
 							Name:         token.Symbol,
 							CurrentPrice: price,
-							LastUpdated:  p.LastUpdated,
+							UpdatedAt:    p.LastUpdated,
 						})
 					}
 				}

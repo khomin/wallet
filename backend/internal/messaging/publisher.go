@@ -4,14 +4,18 @@ import (
 	"github.com/rabbitmq/amqp091-go"
 )
 
-type Publisher struct {
+type Publisher interface {
+	Publish(bytes []byte) error
+}
+
+type publisher struct {
 	mq        *RabbitMQ
 	ch        *amqp091.Channel
 	queueName string
 }
 
-func NewPublisher(mq *RabbitMQ, queueName string) (*Publisher, error) {
-	p := Publisher{
+func NewPublisher(mq *RabbitMQ, queueName string) (*publisher, error) {
+	p := publisher{
 		queueName: queueName,
 		mq:        mq,
 	}
@@ -21,7 +25,7 @@ func NewPublisher(mq *RabbitMQ, queueName string) (*Publisher, error) {
 	return &p, nil
 }
 
-func (p *Publisher) Publish(bytes []byte) error {
+func (p *publisher) Publish(bytes []byte) error {
 	if err := p.ensureChannel(); err != nil {
 		return err
 	}
@@ -39,7 +43,7 @@ func (p *Publisher) Publish(bytes []byte) error {
 	return nil
 }
 
-func (p *Publisher) ensureChannel() error {
+func (p *publisher) ensureChannel() error {
 	if p.ch != nil && !p.ch.IsClosed() {
 		return nil
 	}
@@ -60,5 +64,16 @@ func (p *Publisher) ensureChannel() error {
 		return err
 	}
 	p.ch = ch
+	return nil
+}
+
+type publisherNoOp struct{}
+
+func NewPublisherNoOp() Publisher {
+	p := publisherNoOp{}
+	return &p
+}
+
+func (p *publisherNoOp) Publish(bytes []byte) error {
 	return nil
 }

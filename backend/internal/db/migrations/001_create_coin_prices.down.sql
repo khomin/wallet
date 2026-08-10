@@ -1,0 +1,3 @@
+
+DROP TABLE IF EXISTS coin_prices;
+DROP TABLE IF EXISTS coins;

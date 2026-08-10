@@ -2,6 +2,8 @@ package models
 
 import (
 	"time"
+
+	"github.com/jackc/pgx/v5/pgtype"
 )
 
 type Coin struct {
@@ -16,15 +18,15 @@ type Price struct {
 	ID                             string
 	Name                           string
 	Symbol                         string
-	CurrentPrice                   float64
-	Change_24h                     float64
-	MarketCap                      float64
-	TotalVolume                    float64
-	High_24h                       float64
-	Low_24h                        float64
-	PriceChange_24h                float64
-	PriceChangePercentage_24h      float64
-	MarketCapChange_24h            float64
-	MarketCapChange_percentage_24h float64
-	UpdatedAt                      time.Time
+	CurrentPrice                   pgtype.Float8
+	Change_24h                     pgtype.Float8
+	MarketCap                      pgtype.Float8
+	TotalVolume                    pgtype.Float8
+	High_24h                       pgtype.Float8
+	Low_24h                        pgtype.Float8
+	PriceChange_24h                pgtype.Float8
+	PriceChangePercentage_24h      pgtype.Float8
+	MarketCapChange_24h            pgtype.Float8
+	MarketCapChange_percentage_24h pgtype.Float8
+	UpdatedAt                      pgtype.Timestamptz
 }

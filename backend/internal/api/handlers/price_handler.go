@@ -81,7 +81,7 @@ func (s *PriceGrpcHandler) GetPrices(ctx context.Context, req *pricev1.GetPrices
 			PriceChangePercentage_24H:     float32(i.PriceChangePercentage_24h),
 			MarketCapChange_24H:           float32(i.MarketCapChange_24h),
 			MarketCapChangePercentage_24H: float32(i.MarketCapChange_percentage_24h),
-			LastUpdated:                   timestamppb.New(i.LastUpdated),
+			UpdatedAt:                     timestamppb.New(i.UpdatedAt),
 		})
 	}
 	return &pricev1.GetPricesResp{
@@ -108,7 +108,7 @@ func (s *PriceGrpcHandler) GetPrice(ctx context.Context, req *pricev1.GetPriceRe
 			PriceChangePercentage_24H:     float32(price.PriceChangePercentage_24h),
 			MarketCapChange_24H:           float32(price.MarketCapChange_24h),
 			MarketCapChangePercentage_24H: float32(price.MarketCapChange_percentage_24h),
-			LastUpdated:                   timestamppb.New(price.LastUpdated),
+			UpdatedAt:                     timestamppb.New(price.UpdatedAt),
 		},
 	}, nil
 }

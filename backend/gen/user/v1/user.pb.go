@@ -85,7 +85,7 @@ const file_user_v1_user_proto_rawDesc = "" +
 	"\x04name\x18\x02 \x01(\tR\x04name2_\n" +
 	"\vUserService\x12P\n" +
 	"\aGetUser\x12\x16.google.protobuf.Empty\x1a\x1b.user.v1.GetCurrentUserResp\"\x10\x82\xd3\xe4\x93\x02\n" +
-	"\x12\b/v1/userB8Z6github.com/yourusername/yourrepo/gen/go/user/v1;userv1b\x06proto3"
+	"\x12\b/v1/userB\x1cZ\x1atracker/gen/user/v1;userv1b\x06proto3"
 
 var (
 	file_user_v1_user_proto_rawDescOnce sync.Once

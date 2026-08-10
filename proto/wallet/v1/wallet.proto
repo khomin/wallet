@@ -3,8 +3,9 @@ syntax = "proto3";
 
 package wallet.v1;
 import "google/protobuf/empty.proto";
+import "price/v1/price.proto";
 
-option go_package = "github.com/yourusername/yourrepo/gen/go/wallet/v1;walletv1";
+option go_package = "tracker/gen/wallet/v1;walletv1";
 
 import "google/api/annotations.proto";
 
@@ -50,16 +51,7 @@ message GetWalletReq {
 }
 
 message GetWalletResp {
-  string id                 = 1;
-  string address            = 2;
-  string chain              = 3;
-  string token_symbol       = 4;
-  string label              = 5;
-  float  balance_crypto     = 6;
-  float  balance_usd        = 7;
-  float  change_24h_percent = 8;
-  bool   has_error          = 9;
-  string error_msg          = 10;
+  Wallet wallet = 1;
 }
 
 message EditWalletReq {
@@ -68,7 +60,8 @@ message EditWalletReq {
 }
 
 message EditWalletResp {
-  Wallet wallet = 1;
+  string id    = 1;
+  string label = 2;
 }
 
 message DeleteWalletReq {
@@ -80,26 +73,21 @@ message DeleteWalletResp {
 }
 
 message AddWalletReq {
-  string address            = 2;
-  string chain              = 3;
-  string token_symbol       = 4;
-  string label              = 5;
-  float  balance_crypto     = 6;
-  float  balance_usd        = 7;
-  float  change_24h_percent = 8;
-  bool   has_error          = 9;
-  string error_msg          = 10;
+  string address            = 1;
+  string chain              = 2;
+  string token_symbol       = 3;
+  string label              = 4;
 }
 
 message Wallet {
-  string id                 = 1;
-  string address            = 2;
-  string chain              = 3;
-  string token_symbol       = 4;
-  string label              = 5;
-  float  balance_crypto     = 6;
-  float  balance_usd        = 7;
-  float  change_24h_percent = 8;
-  bool   has_error          = 9;
-  string error_msg          = 10;
+  string         id                 = 1;
+  string         address            = 2;
+  string         chain              = 3;
+  string         token_symbol       = 4;
+  string         label              = 5;
+  float          balance_crypto     = 6;
+  float          balance_usd        = 7;
+  bool           has_error          = 9;
+  string         error_msg          = 10;
+  price.v1.Price price              = 11;
 }

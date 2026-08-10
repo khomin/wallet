@@ -13,6 +13,7 @@ import (
 	emptypb "google.golang.org/protobuf/types/known/emptypb"
 	reflect "reflect"
 	sync "sync"
+	v1 "tracker/gen/price/v1"
 	unsafe "unsafe"
 )
 
@@ -156,19 +157,10 @@ func (x *GetWalletReq) GetId() string {
 }
 
 type GetWalletResp struct {
-	state             protoimpl.MessageState `protogen:"open.v1"`
-	Id                string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
-	Address           string                 `protobuf:"bytes,2,opt,name=address,proto3" json:"address,omitempty"`
-	Chain             string                 `protobuf:"bytes,3,opt,name=chain,proto3" json:"chain,omitempty"`
-	TokenSymbol       string                 `protobuf:"bytes,4,opt,name=token_symbol,json=tokenSymbol,proto3" json:"token_symbol,omitempty"`
-	Label             string                 `protobuf:"bytes,5,opt,name=label,proto3" json:"label,omitempty"`
-	BalanceCrypto     float32                `protobuf:"fixed32,6,opt,name=balance_crypto,json=balanceCrypto,proto3" json:"balance_crypto,omitempty"`
-	BalanceUsd        float32                `protobuf:"fixed32,7,opt,name=balance_usd,json=balanceUsd,proto3" json:"balance_usd,omitempty"`
-	Change_24HPercent float32                `protobuf:"fixed32,8,opt,name=change_24h_percent,json=change24hPercent,proto3" json:"change_24h_percent,omitempty"`
-	HasError          bool                   `protobuf:"varint,9,opt,name=has_error,json=hasError,proto3" json:"has_error,omitempty"`
-	ErrorMsg          string                 `protobuf:"bytes,10,opt,name=error_msg,json=errorMsg,proto3" json:"error_msg,omitempty"`
-	unknownFields     protoimpl.UnknownFields
-	sizeCache         protoimpl.SizeCache
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Wallet        *Wallet                `protobuf:"bytes,1,opt,name=wallet,proto3" json:"wallet,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
 }
 
 func (x *GetWalletResp) Reset() {
@@ -201,74 +193,11 @@ func (*GetWalletResp) Descriptor() ([]byte, []int) {
 	return file_wallet_v1_wallet_proto_rawDescGZIP(), []int{3}
 }
 
-func (x *GetWalletResp) GetId() string {
+func (x *GetWalletResp) GetWallet() *Wallet {
 	if x != nil {
-		return x.Id
+		return x.Wallet
 	}
-	return ""
-}
-
-func (x *GetWalletResp) GetAddress() string {
-	if x != nil {
-		return x.Address
-	}
-	return ""
-}
-
-func (x *GetWalletResp) GetChain() string {
-	if x != nil {
-		return x.Chain
-	}
-	return ""
-}
-
-func (x *GetWalletResp) GetTokenSymbol() string {
-	if x != nil {
-		return x.TokenSymbol
-	}
-	return ""
-}
-
-func (x *GetWalletResp) GetLabel() string {
-	if x != nil {
-		return x.Label
-	}
-	return ""
-}
-
-func (x *GetWalletResp) GetBalanceCrypto() float32 {
-	if x != nil {
-		return x.BalanceCrypto
-	}
-	return 0
-}
-
-func (x *GetWalletResp) GetBalanceUsd() float32 {
-	if x != nil {
-		return x.BalanceUsd
-	}
-	return 0
-}
-
-func (x *GetWalletResp) GetChange_24HPercent() float32 {
-	if x != nil {
-		return x.Change_24HPercent
-	}
-	return 0
-}
-
-func (x *GetWalletResp) GetHasError() bool {
-	if x != nil {
-		return x.HasError
-	}
-	return false
-}
-
-func (x *GetWalletResp) GetErrorMsg() string {
-	if x != nil {
-		return x.ErrorMsg
-	}
-	return ""
+	return nil
 }
 
 type EditWalletReq struct {
@@ -325,7 +254,8 @@ func (x *EditWalletReq) GetLabel() string {
 
 type EditWalletResp struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Wallet        *Wallet                `protobuf:"bytes,1,opt,name=wallet,proto3" json:"wallet,omitempty"`
+	Id            string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
+	Label         string                 `protobuf:"bytes,2,opt,name=label,proto3" json:"label,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -360,11 +290,18 @@ func (*EditWalletResp) Descriptor() ([]byte, []int) {
 	return file_wallet_v1_wallet_proto_rawDescGZIP(), []int{5}
 }
 
-func (x *EditWalletResp) GetWallet() *Wallet {
+func (x *EditWalletResp) GetId() string {
 	if x != nil {
-		return x.Wallet
+		return x.Id
 	}
-	return nil
+	return ""
+}
+
+func (x *EditWalletResp) GetLabel() string {
+	if x != nil {
+		return x.Label
+	}
+	return ""
 }
 
 type DeleteWalletReq struct {
@@ -456,18 +393,13 @@ func (x *DeleteWalletResp) GetDeletedId() string {
 }
 
 type AddWalletReq struct {
-	state             protoimpl.MessageState `protogen:"open.v1"`
-	Address           string                 `protobuf:"bytes,2,opt,name=address,proto3" json:"address,omitempty"`
-	Chain             string                 `protobuf:"bytes,3,opt,name=chain,proto3" json:"chain,omitempty"`
-	TokenSymbol       string                 `protobuf:"bytes,4,opt,name=token_symbol,json=tokenSymbol,proto3" json:"token_symbol,omitempty"`
-	Label             string                 `protobuf:"bytes,5,opt,name=label,proto3" json:"label,omitempty"`
-	BalanceCrypto     float32                `protobuf:"fixed32,6,opt,name=balance_crypto,json=balanceCrypto,proto3" json:"balance_crypto,omitempty"`
-	BalanceUsd        float32                `protobuf:"fixed32,7,opt,name=balance_usd,json=balanceUsd,proto3" json:"balance_usd,omitempty"`
-	Change_24HPercent float32                `protobuf:"fixed32,8,opt,name=change_24h_percent,json=change24hPercent,proto3" json:"change_24h_percent,omitempty"`
-	HasError          bool                   `protobuf:"varint,9,opt,name=has_error,json=hasError,proto3" json:"has_error,omitempty"`
-	ErrorMsg          string                 `protobuf:"bytes,10,opt,name=error_msg,json=errorMsg,proto3" json:"error_msg,omitempty"`
-	unknownFields     protoimpl.UnknownFields
-	sizeCache         protoimpl.SizeCache
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Address       string                 `protobuf:"bytes,1,opt,name=address,proto3" json:"address,omitempty"`
+	Chain         string                 `protobuf:"bytes,2,opt,name=chain,proto3" json:"chain,omitempty"`
+	TokenSymbol   string                 `protobuf:"bytes,3,opt,name=token_symbol,json=tokenSymbol,proto3" json:"token_symbol,omitempty"`
+	Label         string                 `protobuf:"bytes,4,opt,name=label,proto3" json:"label,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
 }
 
 func (x *AddWalletReq) Reset() {
@@ -528,55 +460,20 @@ func (x *AddWalletReq) GetLabel() string {
 	return ""
 }
 
-func (x *AddWalletReq) GetBalanceCrypto() float32 {
-	if x != nil {
-		return x.BalanceCrypto
-	}
-	return 0
-}
-
-func (x *AddWalletReq) GetBalanceUsd() float32 {
-	if x != nil {
-		return x.BalanceUsd
-	}
-	return 0
-}
-
-func (x *AddWalletReq) GetChange_24HPercent() float32 {
-	if x != nil {
-		return x.Change_24HPercent
-	}
-	return 0
-}
-
-func (x *AddWalletReq) GetHasError() bool {
-	if x != nil {
-		return x.HasError
-	}
-	return false
-}
-
-func (x *AddWalletReq) GetErrorMsg() string {
-	if x != nil {
-		return x.ErrorMsg
-	}
-	return ""
-}
-
 type Wallet struct {
-	state             protoimpl.MessageState `protogen:"open.v1"`
-	Id                string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
-	Address           string                 `protobuf:"bytes,2,opt,name=address,proto3" json:"address,omitempty"`
-	Chain             string                 `protobuf:"bytes,3,opt,name=chain,proto3" json:"chain,omitempty"`
-	TokenSymbol       string                 `protobuf:"bytes,4,opt,name=token_symbol,json=tokenSymbol,proto3" json:"token_symbol,omitempty"`
-	Label             string                 `protobuf:"bytes,5,opt,name=label,proto3" json:"label,omitempty"`
-	BalanceCrypto     float32                `protobuf:"fixed32,6,opt,name=balance_crypto,json=balanceCrypto,proto3" json:"balance_crypto,omitempty"`
-	BalanceUsd        float32                `protobuf:"fixed32,7,opt,name=balance_usd,json=balanceUsd,proto3" json:"balance_usd,omitempty"`
-	Change_24HPercent float32                `protobuf:"fixed32,8,opt,name=change_24h_percent,json=change24hPercent,proto3" json:"change_24h_percent,omitempty"`
-	HasError          bool                   `protobuf:"varint,9,opt,name=has_error,json=hasError,proto3" json:"has_error,omitempty"`
-	ErrorMsg          string                 `protobuf:"bytes,10,opt,name=error_msg,json=errorMsg,proto3" json:"error_msg,omitempty"`
-	unknownFields     protoimpl.UnknownFields
-	sizeCache         protoimpl.SizeCache
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Id            string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
+	Address       string                 `protobuf:"bytes,2,opt,name=address,proto3" json:"address,omitempty"`
+	Chain         string                 `protobuf:"bytes,3,opt,name=chain,proto3" json:"chain,omitempty"`
+	TokenSymbol   string                 `protobuf:"bytes,4,opt,name=token_symbol,json=tokenSymbol,proto3" json:"token_symbol,omitempty"`
+	Label         string                 `protobuf:"bytes,5,opt,name=label,proto3" json:"label,omitempty"`
+	BalanceCrypto float32                `protobuf:"fixed32,6,opt,name=balance_crypto,json=balanceCrypto,proto3" json:"balance_crypto,omitempty"`
+	BalanceUsd    float32                `protobuf:"fixed32,7,opt,name=balance_usd,json=balanceUsd,proto3" json:"balance_usd,omitempty"`
+	HasError      bool                   `protobuf:"varint,9,opt,name=has_error,json=hasError,proto3" json:"has_error,omitempty"`
+	ErrorMsg      string                 `protobuf:"bytes,10,opt,name=error_msg,json=errorMsg,proto3" json:"error_msg,omitempty"`
+	Price         *v1.Price              `protobuf:"bytes,11,opt,name=price,proto3" json:"price,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
 }
 
 func (x *Wallet) Reset() {
@@ -658,13 +555,6 @@ func (x *Wallet) GetBalanceUsd() float32 {
 	return 0
 }
 
-func (x *Wallet) GetChange_24HPercent() float32 {
-	if x != nil {
-		return x.Change_24HPercent
-	}
-	return 0
-}
-
 func (x *Wallet) GetHasError() bool {
 	if x != nil {
 		return x.HasError
@@ -679,52 +569,42 @@ func (x *Wallet) GetErrorMsg() string {
 	return ""
 }
 
+func (x *Wallet) GetPrice() *v1.Price {
+	if x != nil {
+		return x.Price
+	}
+	return nil
+}
+
 var File_wallet_v1_wallet_proto protoreflect.FileDescriptor
 
 const file_wallet_v1_wallet_proto_rawDesc = "" +
 	"\n" +
-	"\x16wallet/v1/wallet.proto\x12\twallet.v1\x1a\x1bgoogle/protobuf/empty.proto\x1a\x1cgoogle/api/annotations.proto\"\x0f\n" +
+	"\x16wallet/v1/wallet.proto\x12\twallet.v1\x1a\x1bgoogle/protobuf/empty.proto\x1a\x14price/v1/price.proto\x1a\x1cgoogle/api/annotations.proto\"\x0f\n" +
 	"\rGetWalletsReq\"Q\n" +
 	"\x0eGetWalletsResp\x12\x14\n" +
 	"\x05total\x18\x01 \x01(\x05R\x05total\x12)\n" +
 	"\x06wallet\x18\x02 \x03(\v2\x11.wallet.v1.WalletR\x06wallet\"\x1e\n" +
 	"\fGetWalletReq\x12\x0e\n" +
-	"\x02id\x18\x01 \x01(\tR\x02id\"\xb8\x02\n" +
-	"\rGetWalletResp\x12\x0e\n" +
-	"\x02id\x18\x01 \x01(\tR\x02id\x12\x18\n" +
-	"\aaddress\x18\x02 \x01(\tR\aaddress\x12\x14\n" +
-	"\x05chain\x18\x03 \x01(\tR\x05chain\x12!\n" +
-	"\ftoken_symbol\x18\x04 \x01(\tR\vtokenSymbol\x12\x14\n" +
-	"\x05label\x18\x05 \x01(\tR\x05label\x12%\n" +
-	"\x0ebalance_crypto\x18\x06 \x01(\x02R\rbalanceCrypto\x12\x1f\n" +
-	"\vbalance_usd\x18\a \x01(\x02R\n" +
-	"balanceUsd\x12,\n" +
-	"\x12change_24h_percent\x18\b \x01(\x02R\x10change24hPercent\x12\x1b\n" +
-	"\thas_error\x18\t \x01(\bR\bhasError\x12\x1b\n" +
-	"\terror_msg\x18\n" +
-	" \x01(\tR\berrorMsg\"5\n" +
+	"\x02id\x18\x01 \x01(\tR\x02id\":\n" +
+	"\rGetWalletResp\x12)\n" +
+	"\x06wallet\x18\x01 \x01(\v2\x11.wallet.v1.WalletR\x06wallet\"5\n" +
 	"\rEditWalletReq\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12\x14\n" +
-	"\x05label\x18\x02 \x01(\tR\x05label\";\n" +
-	"\x0eEditWalletResp\x12)\n" +
-	"\x06wallet\x18\x01 \x01(\v2\x11.wallet.v1.WalletR\x06wallet\"!\n" +
+	"\x05label\x18\x02 \x01(\tR\x05label\"6\n" +
+	"\x0eEditWalletResp\x12\x0e\n" +
+	"\x02id\x18\x01 \x01(\tR\x02id\x12\x14\n" +
+	"\x05label\x18\x02 \x01(\tR\x05label\"!\n" +
 	"\x0fDeleteWalletReq\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\"1\n" +
 	"\x10DeleteWalletResp\x12\x1d\n" +
 	"\n" +
-	"deleted_id\x18\x01 \x01(\tR\tdeletedId\"\xa7\x02\n" +
+	"deleted_id\x18\x01 \x01(\tR\tdeletedId\"w\n" +
 	"\fAddWalletReq\x12\x18\n" +
-	"\aaddress\x18\x02 \x01(\tR\aaddress\x12\x14\n" +
-	"\x05chain\x18\x03 \x01(\tR\x05chain\x12!\n" +
-	"\ftoken_symbol\x18\x04 \x01(\tR\vtokenSymbol\x12\x14\n" +
-	"\x05label\x18\x05 \x01(\tR\x05label\x12%\n" +
-	"\x0ebalance_crypto\x18\x06 \x01(\x02R\rbalanceCrypto\x12\x1f\n" +
-	"\vbalance_usd\x18\a \x01(\x02R\n" +
-	"balanceUsd\x12,\n" +
-	"\x12change_24h_percent\x18\b \x01(\x02R\x10change24hPercent\x12\x1b\n" +
-	"\thas_error\x18\t \x01(\bR\bhasError\x12\x1b\n" +
-	"\terror_msg\x18\n" +
-	" \x01(\tR\berrorMsg\"\xb1\x02\n" +
+	"\aaddress\x18\x01 \x01(\tR\aaddress\x12\x14\n" +
+	"\x05chain\x18\x02 \x01(\tR\x05chain\x12!\n" +
+	"\ftoken_symbol\x18\x03 \x01(\tR\vtokenSymbol\x12\x14\n" +
+	"\x05label\x18\x04 \x01(\tR\x05label\"\xaa\x02\n" +
 	"\x06Wallet\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12\x18\n" +
 	"\aaddress\x18\x02 \x01(\tR\aaddress\x12\x14\n" +
@@ -733,11 +613,11 @@ const file_wallet_v1_wallet_proto_rawDesc = "" +
 	"\x05label\x18\x05 \x01(\tR\x05label\x12%\n" +
 	"\x0ebalance_crypto\x18\x06 \x01(\x02R\rbalanceCrypto\x12\x1f\n" +
 	"\vbalance_usd\x18\a \x01(\x02R\n" +
-	"balanceUsd\x12,\n" +
-	"\x12change_24h_percent\x18\b \x01(\x02R\x10change24hPercent\x12\x1b\n" +
+	"balanceUsd\x12\x1b\n" +
 	"\thas_error\x18\t \x01(\bR\bhasError\x12\x1b\n" +
 	"\terror_msg\x18\n" +
-	" \x01(\tR\berrorMsg2\xda\x03\n" +
+	" \x01(\tR\berrorMsg\x12%\n" +
+	"\x05price\x18\v \x01(\v2\x0f.price.v1.PriceR\x05price2\xda\x03\n" +
 	"\rWalletService\x12V\n" +
 	"\n" +
 	"GetWallets\x12\x18.wallet.v1.GetWalletsReq\x1a\x19.wallet.v1.GetWalletsResp\"\x13\x82\xd3\xe4\x93\x02\r\x12\v/v1/wallets\x12X\n" +
@@ -745,7 +625,7 @@ const file_wallet_v1_wallet_proto_rawDesc = "" +
 	"\n" +
 	"EditWallet\x12\x18.wallet.v1.EditWalletReq\x1a\x19.wallet.v1.EditWalletResp\"\x1b\x82\xd3\xe4\x93\x02\x15:\x01*2\x10/v1/wallets/{id}\x12a\n" +
 	"\fDeleteWallet\x12\x1a.wallet.v1.DeleteWalletReq\x1a\x1b.wallet.v1.DeleteWalletResp\"\x18\x82\xd3\xe4\x93\x02\x12*\x10/v1/wallets/{id}\x12T\n" +
-	"\tAddWallet\x12\x17.wallet.v1.AddWalletReq\x1a\x16.google.protobuf.Empty\"\x16\x82\xd3\xe4\x93\x02\x10:\x01*\"\v/v1/walletsB<Z:github.com/yourusername/yourrepo/gen/go/wallet/v1;walletv1b\x06proto3"
+	"\tAddWallet\x12\x17.wallet.v1.AddWalletReq\x1a\x16.google.protobuf.Empty\"\x16\x82\xd3\xe4\x93\x02\x10:\x01*\"\v/v1/walletsB Z\x1etracker/gen/wallet/v1;walletv1b\x06proto3"
 
 var (
 	file_wallet_v1_wallet_proto_rawDescOnce sync.Once
@@ -771,26 +651,28 @@ var file_wallet_v1_wallet_proto_goTypes = []any{
 	(*DeleteWalletResp)(nil), // 7: wallet.v1.DeleteWalletResp
 	(*AddWalletReq)(nil),     // 8: wallet.v1.AddWalletReq
 	(*Wallet)(nil),           // 9: wallet.v1.Wallet
-	(*emptypb.Empty)(nil),    // 10: google.protobuf.Empty
+	(*v1.Price)(nil),         // 10: price.v1.Price
+	(*emptypb.Empty)(nil),    // 11: google.protobuf.Empty
 }
 var file_wallet_v1_wallet_proto_depIdxs = []int32{
 	9,  // 0: wallet.v1.GetWalletsResp.wallet:type_name -> wallet.v1.Wallet
-	9,  // 1: wallet.v1.EditWalletResp.wallet:type_name -> wallet.v1.Wallet
-	0,  // 2: wallet.v1.WalletService.GetWallets:input_type -> wallet.v1.GetWalletsReq
-	2,  // 3: wallet.v1.WalletService.GetWallet:input_type -> wallet.v1.GetWalletReq
-	4,  // 4: wallet.v1.WalletService.EditWallet:input_type -> wallet.v1.EditWalletReq
-	6,  // 5: wallet.v1.WalletService.DeleteWallet:input_type -> wallet.v1.DeleteWalletReq
-	8,  // 6: wallet.v1.WalletService.AddWallet:input_type -> wallet.v1.AddWalletReq
-	1,  // 7: wallet.v1.WalletService.GetWallets:output_type -> wallet.v1.GetWalletsResp
-	3,  // 8: wallet.v1.WalletService.GetWallet:output_type -> wallet.v1.GetWalletResp
-	5,  // 9: wallet.v1.WalletService.EditWallet:output_type -> wallet.v1.EditWalletResp
-	7,  // 10: wallet.v1.WalletService.DeleteWallet:output_type -> wallet.v1.DeleteWalletResp
-	10, // 11: wallet.v1.WalletService.AddWallet:output_type -> google.protobuf.Empty
-	7,  // [7:12] is the sub-list for method output_type
-	2,  // [2:7] is the sub-list for method input_type
-	2,  // [2:2] is the sub-list for extension type_name
-	2,  // [2:2] is the sub-list for extension extendee
-	0,  // [0:2] is the sub-list for field type_name
+	9,  // 1: wallet.v1.GetWalletResp.wallet:type_name -> wallet.v1.Wallet
+	10, // 2: wallet.v1.Wallet.price:type_name -> price.v1.Price
+	0,  // 3: wallet.v1.WalletService.GetWallets:input_type -> wallet.v1.GetWalletsReq
+	2,  // 4: wallet.v1.WalletService.GetWallet:input_type -> wallet.v1.GetWalletReq
+	4,  // 5: wallet.v1.WalletService.EditWallet:input_type -> wallet.v1.EditWalletReq
+	6,  // 6: wallet.v1.WalletService.DeleteWallet:input_type -> wallet.v1.DeleteWalletReq
+	8,  // 7: wallet.v1.WalletService.AddWallet:input_type -> wallet.v1.AddWalletReq
+	1,  // 8: wallet.v1.WalletService.GetWallets:output_type -> wallet.v1.GetWalletsResp
+	3,  // 9: wallet.v1.WalletService.GetWallet:output_type -> wallet.v1.GetWalletResp
+	5,  // 10: wallet.v1.WalletService.EditWallet:output_type -> wallet.v1.EditWalletResp
+	7,  // 11: wallet.v1.WalletService.DeleteWallet:output_type -> wallet.v1.DeleteWalletResp
+	11, // 12: wallet.v1.WalletService.AddWallet:output_type -> google.protobuf.Empty
+	8,  // [8:13] is the sub-list for method output_type
+	3,  // [3:8] is the sub-list for method input_type
+	3,  // [3:3] is the sub-list for extension type_name
+	3,  // [3:3] is the sub-list for extension extendee
+	0,  // [0:3] is the sub-list for field type_name
 }
 
 func init() { file_wallet_v1_wallet_proto_init() }

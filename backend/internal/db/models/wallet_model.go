@@ -1,27 +1,25 @@
 package models
 
 import (
-	"time"
-	"tracker/internal/core/domain"
-
-	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5/pgtype"
 )
 
 type Wallet struct {
-	ID        uuid.UUID
+	ID        pgtype.UUID
 	Address   string
 	Chain     string
 	Label     string
 	Symbol    string
 	UserID    string
-	UpdatedAt time.Time
+	UpdatedAt pgtype.Timestamptz
 }
 
 type WalletBalance struct {
-	Wallet
-	Price      domain.TokenPrice
-	Balance    float64
-	BalanceUSD float64
-	HasError   bool
-	ErrorMsg   string
+	Wallet           Wallet
+	Price            Price
+	Balance          pgtype.Float8
+	BalanceUSD       pgtype.Float8
+	BalanceUpdatedAt pgtype.Timestamptz
+	HasError         bool
+	ErrorMsg         string
 }

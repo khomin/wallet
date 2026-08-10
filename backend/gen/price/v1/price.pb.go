@@ -493,7 +493,7 @@ type Price struct {
 	PriceChangePercentage_24H     float32                `protobuf:"fixed32,9,opt,name=price_change_percentage_24h,json=priceChangePercentage24h,proto3" json:"price_change_percentage_24h,omitempty"`
 	MarketCapChange_24H           float32                `protobuf:"fixed32,10,opt,name=market_cap_change_24h,json=marketCapChange24h,proto3" json:"market_cap_change_24h,omitempty"`
 	MarketCapChangePercentage_24H float32                `protobuf:"fixed32,11,opt,name=market_cap_change_percentage_24h,json=marketCapChangePercentage24h,proto3" json:"market_cap_change_percentage_24h,omitempty"`
-	LastUpdated                   *timestamppb.Timestamp `protobuf:"bytes,12,opt,name=last_updated,json=lastUpdated,proto3" json:"last_updated,omitempty"`
+	UpdatedAt                     *timestamppb.Timestamp `protobuf:"bytes,12,opt,name=updated_at,json=updatedAt,proto3" json:"updated_at,omitempty"`
 	unknownFields                 protoimpl.UnknownFields
 	sizeCache                     protoimpl.SizeCache
 }
@@ -605,9 +605,9 @@ func (x *Price) GetMarketCapChangePercentage_24H() float32 {
 	return 0
 }
 
-func (x *Price) GetLastUpdated() *timestamppb.Timestamp {
+func (x *Price) GetUpdatedAt() *timestamppb.Timestamp {
 	if x != nil {
-		return x.LastUpdated
+		return x.UpdatedAt
 	}
 	return nil
 }
@@ -851,7 +851,7 @@ const file_price_v1_price_proto_rawDesc = "" +
 	"\x04text\x18\x01 \x01(\tR\x04text\"N\n" +
 	"\x0fSearchCoinsResp\x12\x14\n" +
 	"\x05total\x18\x01 \x01(\x05R\x05total\x12%\n" +
-	"\x05token\x18\x02 \x03(\v2\x0f.price.v1.TokenR\x05token\"\xe9\x03\n" +
+	"\x05token\x18\x02 \x03(\v2\x0f.price.v1.TokenR\x05token\"\xe5\x03\n" +
 	"\x05Price\x12\x16\n" +
 	"\x06symbol\x18\x01 \x01(\tR\x06symbol\x12\x12\n" +
 	"\x04name\x18\x02 \x01(\tR\x04name\x12\x1b\n" +
@@ -865,8 +865,9 @@ const file_price_v1_price_proto_rawDesc = "" +
 	"\x1bprice_change_percentage_24h\x18\t \x01(\x02R\x18priceChangePercentage24h\x121\n" +
 	"\x15market_cap_change_24h\x18\n" +
 	" \x01(\x02R\x12marketCapChange24h\x12F\n" +
-	" market_cap_change_percentage_24h\x18\v \x01(\x02R\x1cmarketCapChangePercentage24h\x12=\n" +
-	"\flast_updated\x18\f \x01(\v2\x1a.google.protobuf.TimestampR\vlastUpdated\"$\n" +
+	" market_cap_change_percentage_24h\x18\v \x01(\x02R\x1cmarketCapChangePercentage24h\x129\n" +
+	"\n" +
+	"updated_at\x18\f \x01(\v2\x1a.google.protobuf.TimestampR\tupdatedAt\"$\n" +
 	"\x0eGetCoinRequest\x12\x12\n" +
 	"\x04coin\x18\x01 \x01(\tR\x04coin\"\xa5\x01\n" +
 	"\x0fGetCoinResponse\x12\x16\n" +
@@ -890,7 +891,7 @@ const file_price_v1_price_proto_rawDesc = "" +
 	"SearchCoin\x12\x18.price.v1.SearchCoinsReq\x1a\x19.price.v1.SearchCoinsResp\"\x1b\x82\xd3\xe4\x93\x02\x15:\x01*\"\x10/v1/coins/search\x12P\n" +
 	"\tGetPrices\x12\x16.price.v1.GetPricesReq\x1a\x17.price.v1.GetPricesResp\"\x12\x82\xd3\xe4\x93\x02\f\x12\n" +
 	"/v1/prices\x12V\n" +
-	"\bGetPrice\x12\x15.price.v1.GetPriceReq\x1a\x16.price.v1.GetPriceResp\"\x1b\x82\xd3\xe4\x93\x02\x15\x12\x13/v1/prices/{symbol}B:Z8github.com/yourusername/yourrepo/gen/go/price/v1;pricev1b\x06proto3"
+	"\bGetPrice\x12\x15.price.v1.GetPriceReq\x1a\x16.price.v1.GetPriceResp\"\x1b\x82\xd3\xe4\x93\x02\x15\x12\x13/v1/prices/{symbol}B\x1eZ\x1ctracker/gen/price/v1;pricev1b\x06proto3"
 
 var (
 	file_price_v1_price_proto_rawDescOnce sync.Once
@@ -928,7 +929,7 @@ var file_price_v1_price_proto_depIdxs = []int32{
 	10, // 2: price.v1.GetPricesResp.price:type_name -> price.v1.Price
 	10, // 3: price.v1.GetPriceResp.price:type_name -> price.v1.Price
 	13, // 4: price.v1.SearchCoinsResp.token:type_name -> price.v1.Token
-	14, // 5: price.v1.Price.last_updated:type_name -> google.protobuf.Timestamp
+	14, // 5: price.v1.Price.updated_at:type_name -> google.protobuf.Timestamp
 	0,  // 6: price.v1.PriceService.GetCoins:input_type -> price.v1.GetCoinsReq
 	2,  // 7: price.v1.PriceService.GetCoin:input_type -> price.v1.GetCoinReq
 	8,  // 8: price.v1.PriceService.SearchCoin:input_type -> price.v1.SearchCoinsReq

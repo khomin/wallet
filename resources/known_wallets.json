@@ -1,0 +1,43 @@
+{
+	"userID": "ad4abec0-8bae-462a-8ea3-8502048f3071",
+	"tokens": [
+		{
+			"chains": "BTC",
+			"symbol": "BTC",
+			"addr": "bc1qyyfjmtl9s8s6wn3llt2ltzze978l5szfj7hr79"
+		},
+		{
+			"chains": "ETH",
+			"symbol": "ETH",
+			"addr": "0xEC2dFb47E5AA06da508D816D83b4833f6eBE9532"
+		},
+		{
+			"chains": "SOL",
+			"symbol": "GOOGLX",
+			"addr": "DDcdDmDPYw595wAR1jYNHZQTFNi8BGisd2bVa3WH3XbE"
+		},
+		{
+			"chains": "SOL",
+			"symbol": "XAUT",
+			"addr": "9Z6qhmZ2AHWMSBSM4LmA1WrCAefs2dkr1pHnkW3vmg8z"
+		},
+		{
+			"chains": "SOL",
+			"symbol": "SOL",
+			"label": "just sol wallet",
+			"addr": "9Z6qhmZ2AHWMSBSM4LmA1WrCAefs2dkr1pHnkW3vmg8z"
+		},
+		{
+			"chains": "TRX",
+			"symbol": "TRX",
+			"label": "just trx wallet",
+			"addr": "TF6MrLnLa72U6PGZcx4pXhs8hSvsAgQ78t"
+		},
+		{
+			"chains": "TRX",
+			"symbol": "USDT",
+			"label": "USDT wallet",
+			"addr": "TF6MrLnLa72U6PGZcx4pXhs8hSvsAgQ78t"
+		}
+	]
+}

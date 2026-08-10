@@ -9,21 +9,32 @@ import (
 
 	"github.com/rabbitmq/amqp091-go"
 	"github.com/sirupsen/logrus"
+	"golang.org/x/time/rate"
 )
 
-type WalletWorker struct {
+type walletWorker struct {
 	eventConsumer *messaging.Consumer
 	walletService *WalletService
+	rateLimiter   *rate.Limiter
+	walletRepo    WalletRepository
 }
 
-func NewWalletWorker(walletService *WalletService, mqConsumer *messaging.Consumer) *WalletWorker {
-	return &WalletWorker{
-		walletService: walletService,
-		eventConsumer: mqConsumer,
+type NewWalletDeps struct {
+	WalletService *WalletService
+	WalletRepo    WalletRepository
+	MqConsumer    *messaging.Consumer
+}
+
+func NewWalletWorker(deps *NewWalletDeps) *walletWorker {
+	return &walletWorker{
+		walletRepo:    deps.WalletRepo,
+		eventConsumer: deps.MqConsumer,
+		walletService: deps.WalletService,
+		rateLimiter:   rate.NewLimiter(rate.Limit(10), 1),
 	}
 }
 
-func (w *WalletWorker) StartConsuming(ctx context.Context) error {
+func (w *walletWorker) StartConsuming(ctx context.Context) error {
 	log := logrus.WithField("walletWorker", "StartConsuming")
 	go func() {
 		for {
@@ -59,14 +70,30 @@ func (w *WalletWorker) StartConsuming(ctx context.Context) error {
 	return nil
 }
 
-func (w *WalletWorker) handleWalletCreated(ctx context.Context, msg amqp091.Delivery) error {
-	var event domain.WalletCreatedEvent
-	if err := json.Unmarshal(msg.Body, &event); err != nil {
+func (s *walletWorker) StartSyncLoop(ctx context.Context, interval time.Duration) {
+	tm := time.NewTicker(interval)
+	defer tm.Stop()
+	for {
+		select {
+		case <-ctx.Done():
+			return
+		case <-tm.C:
+			s.walletService.SynchronizeWallets(ctx)
+		}
+	}
+}
+
+func (w *walletWorker) handleWalletCreated(ctx context.Context, msg amqp091.Delivery) error {
+	var wallet domain.WalletCreatedEvent
+	if err := json.Unmarshal(msg.Body, &wallet); err != nil {
 		return nil
 	}
-	w.walletService.FetchPortfolio(ctx, domain.Wallet{
-		ID:     event.ID,
-		UserID: event.UserID,
+	err := w.walletService.SynchronizeWallet(ctx, domain.Wallet{
+		ID:     wallet.ID,
+		UserID: wallet.UserID,
 	})
+	if err != nil {
+		return err
+	}
 	return nil
 }
