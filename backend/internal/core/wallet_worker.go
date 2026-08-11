@@ -3,6 +3,7 @@ package core
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"log/slog"
 	"time"
 	"tracker/internal/core/domain"
@@ -11,6 +12,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/rabbitmq/amqp091-go"
 	"github.com/sirupsen/logrus"
+	"golang.org/x/sync/errgroup"
 	"golang.org/x/time/rate"
 )
 
@@ -32,7 +34,7 @@ func NewWalletWorker(deps *NewWalletDeps) *walletWorker {
 		walletRepo:    deps.WalletRepo,
 		eventConsumer: deps.MqConsumer,
 		walletService: deps.WalletService,
-		rateLimiter:   rate.NewLimiter(rate.Limit(10), 1),
+		rateLimiter:   rate.NewLimiter(rate.Limit(2), 1),
 	}
 }
 
@@ -127,24 +129,56 @@ func (s *walletWorker) SynchronizeWallets(ctx context.Context) error {
 		slog.Warn("failed to fetch active wallets for sync", "error", err)
 		return err
 	}
-	for _, w := range wallets {
-		if err := s.rateLimiter.Wait(ctx); err != nil {
-			return err
-		}
-		go func(wallet domain.Wallet) {
+	g, ctx := errgroup.WithContext(ctx)
+
+	for _, wallet := range wallets {
+		w := wallet
+		g.Go(func() error {
+			if err := s.rateLimiter.Wait(ctx); err != nil {
+				return err
+			}
+			uuid, err := uuid.Parse(w.ID)
+			if err != nil {
+				return err
+			}
 			balance, err := s.walletService.FetchBalance(ctx, wallet)
 			if err != nil {
-				return
-			}
-			uuid, err := uuid.Parse(wallet.ID)
-			if err != nil {
-				return
+				if errors.Is(err, ErrProviderTimeout) {
+					return err
+				}
+				if errors.Is(err, ErrProviderRateLimit) {
+					s.increaseRateLimit()
+					return err
+				}
+				if errors.Is(err, ErrProviderUnavailable) {
+					return err
+				}
+				return err
 			}
 			err = s.walletRepo.UpdateBalance(ctx, wallet.UserID, uuid, balance.Balance, balance.BalanceUSD)
 			if err != nil {
-				return
+				return err
 			}
-		}(w)
+			slog.Info("WALLET_UPDATED", "chain", wallet.Chain, "wallet", wallet.ID, "USD", balance.BalanceUSD)
+			return nil
+		})
+		slog.Info("TEST_ADD", "wallet", wallet.ID)
 	}
-	return nil
+	err = g.Wait()
+	slog.Info("TEST_END")
+	return err
 }
+
+func (s *walletWorker) increaseRateLimit() {
+	s.rateLimiter.SetLimit(1)
+}
+
+// tm := time.NewTimer(time.Second * 3)
+// defer tm.Stop()
+// select {
+// case <-tm.C:
+// 	slog.Info("TEST_TICK", "uuid", uuid.String())
+// 	return nil
+// case <-ctx.Done():
+// 	return nil
+// }

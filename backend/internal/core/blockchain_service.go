@@ -2,6 +2,7 @@ package core
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"log/slog"
 	"strings"
@@ -10,6 +11,14 @@ import (
 	"tracker/internal/client/ethereum"
 	"tracker/internal/client/solana"
 	"tracker/internal/client/tron"
+
+	"github.com/ethereum/go-ethereum/rpc"
+)
+
+var (
+	ErrProviderTimeout     = errors.New("provider timeout")
+	ErrProviderRateLimit   = errors.New("provider rate limit")
+	ErrProviderUnavailable = errors.New("provider unavailable")
 )
 
 type ChainProvider interface {
@@ -96,6 +105,15 @@ func (s *BlockchainService) GetBalance(ctx context.Context, chain string, addres
 		}
 		balance, err := provider.GetBalance(ctx, address)
 		if err != nil {
+			var rpcErr rpc.HTTPError
+			if errors.As(err, &rpcErr) {
+				if rpcErr.StatusCode == 408 || rpcErr.StatusCode == 429 {
+					return nil, ErrProviderRateLimit
+				}
+			} else {
+				// some other?
+				return nil, err
+			}
 			return nil, err
 		}
 		if err = s.cache.SetBalanceNative(ctx, chain, address, balance); err != nil {

@@ -240,17 +240,6 @@ func (r *walletRepository) UpdateBalance(ctx context.Context, userID string, id 
 	return err
 }
 
-func walletToDomain(in models.Wallet) domain.Wallet {
-	return domain.Wallet{
-		ID:      in.ID.String(),
-		Address: in.Address,
-		Chain:   in.Chain,
-		Label:   in.Label,
-		Symbol:  in.Symbol,
-		UserID:  in.UserID,
-	}
-}
-
 func (r *walletRepository) ListForSync(ctx context.Context, limit int) ([]domain.Wallet, error) {
 	query := `SELECT 
 		wallets.id, 
@@ -265,11 +254,13 @@ func (r *walletRepository) ListForSync(ctx context.Context, limit int) ([]domain
 		ON coins.id = wallets.coin_id
 	LEFT JOIN wallet_balances balance
 		ON balance.id = wallets.id
-	WHERE balance.updated_at IS NULL OR balance.updated_at < $1`
+	WHERE balance.updated_at IS NULL OR balance.updated_at < $1
+	LIMIT $2`
 
 	rows, err := r.db.Pool.Query(ctx,
 		query,
 		time.Now().Add(-5*time.Minute),
+		limit,
 	)
 	if err != nil {
 		return nil, err
@@ -293,6 +284,17 @@ func (r *walletRepository) ListForSync(ctx context.Context, limit int) ([]domain
 		out = append(out, walletToDomain(wallet))
 	}
 	return out, nil
+}
+
+func walletToDomain(in models.Wallet) domain.Wallet {
+	return domain.Wallet{
+		ID:      in.ID.String(),
+		Address: in.Address,
+		Chain:   in.Chain,
+		Label:   in.Label,
+		Symbol:  in.Symbol,
+		UserID:  in.UserID,
+	}
 }
 
 func walletToDomain2(in models.WalletBalance) domain.WalletWithBalance {

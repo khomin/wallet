@@ -64,7 +64,7 @@ func (c *EthereumClient) GetBalance(ctx context.Context, address string) (float6
 	}
 	account := common.HexToAddress(address)
 	balance, err := c.client.BalanceAt(ctx, account, nil)
-	if err != nil {
+	if err != nil { // rpc.HTTPError
 		return 0, err
 	}
 	balanceFloat := new(big.Float).SetInt(balance)

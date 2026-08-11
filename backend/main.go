@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"log"
 	"net"
-	"net/http"
+	"strings"
 	"time"
 	"tracker/bootstrap"
 	pricev1 "tracker/gen/price/v1"
@@ -25,6 +25,9 @@ import (
 	"tracker/internal/db/repositories"
 	"tracker/internal/docs"
 	"tracker/internal/messaging"
+
+	"net/http"
+	_ "net/http/pprof"
 
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
 	"github.com/sirupsen/logrus"
@@ -131,10 +134,10 @@ func main() {
 		WalletRepo:    walletRepo,
 		MqConsumer:    walletEventConsumer,
 	})
-	walletWorker.StartConsuming(ctx)
-	go walletWorker.StartSyncLoop(ctx, time.Second*5)
 
+	walletWorker.StartConsuming(ctx)
 	go priceFetcher.StartCoinFetcher(ctx)
+	go walletWorker.StartSyncLoop(ctx, time.Second*1)
 
 	verifier, err := middleware.NewTokenVerifier(ctx, app.Cfg.Authorization.IssuerURL, app.Cfg.Authorization.ClientID)
 	if err != nil {
@@ -182,6 +185,14 @@ func main() {
 
 	runHttp(g, "http", httpAddr, httpHandler)
 	runGrpc(g, "grpc", grpcAddr, grpcServer)
+
+	if strings.Contains(app.Cfg.Server.Environment, "dev") {
+		go func() {
+			if err := http.ListenAndServe("localhost:6060", http.DefaultServeMux); err != nil {
+				log.Fatal(err)
+			}
+		}()
+	}
 
 	<-ctx.Done()
 	logrus.Info("Shutdown signal received, shutting down...")
