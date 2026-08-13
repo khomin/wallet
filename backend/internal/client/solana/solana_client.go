@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"tracker/internal/client"
 
 	"github.com/gagliardetto/solana-go"
 	"github.com/gagliardetto/solana-go/rpc"
@@ -15,7 +16,7 @@ type SolanaClient struct {
 	client *rpc.Client
 }
 
-func NewSolanaClient(rpcURL string) *SolanaClient {
+func NewSolanaClient(rpcURL string) client.ChainProvider {
 	return &SolanaClient{rpcURL: rpcURL}
 }
 

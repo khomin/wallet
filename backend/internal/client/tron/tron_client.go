@@ -6,9 +6,11 @@ import (
 	"fmt"
 	"math"
 	"math/big"
+	"strings"
+	"tracker/internal/client"
 
 	tronAddr "github.com/fbsobreira/gotron-sdk/pkg/address"
-	"github.com/fbsobreira/gotron-sdk/pkg/client"
+	tronClient "github.com/fbsobreira/gotron-sdk/pkg/client"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 )
@@ -16,10 +18,10 @@ import (
 type TronClient struct {
 	grpcURL string
 	apiKey  string
-	client  *client.GrpcClient
+	client  *tronClient.GrpcClient
 }
 
-func NewTronClient(grpcURL, apiKey string) *TronClient {
+func NewTronClient(grpcURL, apiKey string) client.ChainProvider {
 	return &TronClient{
 		grpcURL: grpcURL,
 		apiKey:  apiKey,
@@ -33,7 +35,7 @@ func (c *TronClient) Connect(ctx context.Context) error {
 	if c.grpcURL == "" {
 		return errors.New("tron grpc url is not configured")
 	}
-	grpcClient := client.NewGrpcClient(c.grpcURL)
+	grpcClient := tronClient.NewGrpcClient(c.grpcURL)
 	if c.apiKey != "" {
 		_ = grpcClient.SetAPIKey(c.apiKey)
 	}
@@ -59,6 +61,9 @@ func (c *TronClient) GetBalance(ctx context.Context, address string) (float64, e
 	}
 	account, err := c.client.GetAccountCtx(ctx, address)
 	if err != nil {
+		if strings.Contains(err.Error(), "account not found") || strings.Contains(err.Error(), "account does not exist") {
+			return 0.0, nil
+		}
 		return 0, err
 	}
 	return float64(account.GetBalance()) / 1e6, nil
@@ -74,6 +79,7 @@ func (c *TronClient) GetTokenBalance(ctx context.Context, address, tokenAddress 
 	// 1. Fetch raw token balance (*big.Int)
 	rawBalance, err := c.client.TRC20ContractBalance(address, tokenAddress)
 	if err != nil {
+
 		return 0, fmt.Errorf("failed to fetch TRC20 balance: %w", err)
 	}
 	if rawBalance == nil {

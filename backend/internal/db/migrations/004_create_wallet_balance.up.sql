@@ -1,0 +1,6 @@
+CREATE TABLE IF NOT EXISTS wallet_balances (
+    id UUID PRIMARY KEY REFERENCES wallets(id) ON DELETE CASCADE,
+    price DECIMAL(40,18) NOT NULL,
+    price_usd DECIMAL(40,18) NOT NULL,
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+)

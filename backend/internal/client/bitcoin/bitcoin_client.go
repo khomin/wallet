@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"net/http"
 	"time"
+	"tracker/internal/client"
 )
 
 type BitcoinClient struct {
@@ -24,7 +25,7 @@ type EsploraAddressResponse struct {
 	MempoolStats EsploraAddressStats `json:"mempool_stats"`
 }
 
-func NewBitcoinClient(host, user, password string) *BitcoinClient {
+func NewBitcoinClient(host, user, password string) client.ChainProvider {
 	return &BitcoinClient{
 		baseURL: host,
 		httpClient: &http.Client{

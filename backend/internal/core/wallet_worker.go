@@ -13,13 +13,11 @@ import (
 	"github.com/rabbitmq/amqp091-go"
 	"github.com/sirupsen/logrus"
 	"golang.org/x/sync/errgroup"
-	"golang.org/x/time/rate"
 )
 
 type walletWorker struct {
 	eventConsumer *messaging.Consumer
 	walletService *WalletService
-	rateLimiter   *rate.Limiter
 	walletRepo    WalletRepository
 }
 
@@ -34,7 +32,6 @@ func NewWalletWorker(deps *NewWalletDeps) *walletWorker {
 		walletRepo:    deps.WalletRepo,
 		eventConsumer: deps.MqConsumer,
 		walletService: deps.WalletService,
-		rateLimiter:   rate.NewLimiter(rate.Limit(2), 1),
 	}
 }
 
@@ -100,14 +97,15 @@ func (w *walletWorker) handleWalletCreated(ctx context.Context, msg amqp091.Deli
 	if err != nil {
 		return err
 	}
-	err = w.SynchronizeWallet(ctx, wallet.Wallet)
+	err = w.synchronizeWallet(ctx, wallet.Wallet)
 	if err != nil {
 		return err
 	}
 	return nil
 }
 
-func (s *walletWorker) SynchronizeWallet(ctx context.Context, wallet domain.Wallet) error {
+func (s *walletWorker) synchronizeWallet(ctx context.Context, wallet domain.Wallet) error {
+	// FIXME: don't think i should keep it here
 	balance, err := s.walletService.FetchBalance(ctx, wallet)
 	if err != nil {
 		return err
@@ -124,61 +122,56 @@ func (s *walletWorker) SynchronizeWallet(ctx context.Context, wallet domain.Wall
 }
 
 func (s *walletWorker) SynchronizeWallets(ctx context.Context) error {
-	wallets, err := s.walletRepo.ListForSync(ctx, 1000)
+	wallets, err := s.walletRepo.ListForSync(ctx, 100)
 	if err != nil {
 		slog.Warn("failed to fetch active wallets for sync", "error", err)
 		return err
 	}
 	g, ctx := errgroup.WithContext(ctx)
 
+	groupsByChain := map[string][]domain.Wallet{}
 	for _, wallet := range wallets {
-		w := wallet
+		groupsByChain[wallet.Chain] = append(groupsByChain[wallet.Chain], wallet)
+	}
+	for _, group := range groupsByChain {
+		group := group
 		g.Go(func() error {
-			if err := s.rateLimiter.Wait(ctx); err != nil {
-				return err
-			}
-			uuid, err := uuid.Parse(w.ID)
-			if err != nil {
-				return err
-			}
-			balance, err := s.walletService.FetchBalance(ctx, wallet)
-			if err != nil {
-				if errors.Is(err, ErrProviderTimeout) {
-					return err
+			for _, wallet := range group {
+				if err := s.handleOneBalance(ctx, wallet); err != nil {
+					slog.Info("WALLET_ERROR", "chain", wallet.Chain, "wallet", wallet.ID, "error", err)
+					continue
 				}
-				if errors.Is(err, ErrProviderRateLimit) {
-					s.increaseRateLimit()
-					return err
-				}
-				if errors.Is(err, ErrProviderUnavailable) {
-					return err
-				}
-				return err
+				slog.Info("WALLET_UPDATED", "chain", wallet.Chain, "wallet", wallet.ID)
 			}
-			err = s.walletRepo.UpdateBalance(ctx, wallet.UserID, uuid, balance.Balance, balance.BalanceUSD)
-			if err != nil {
-				return err
-			}
-			slog.Info("WALLET_UPDATED", "chain", wallet.Chain, "wallet", wallet.ID, "USD", balance.BalanceUSD)
 			return nil
 		})
-		slog.Info("TEST_ADD", "wallet", wallet.ID)
 	}
 	err = g.Wait()
 	slog.Info("TEST_END")
 	return err
 }
 
-func (s *walletWorker) increaseRateLimit() {
-	s.rateLimiter.SetLimit(1)
+func (s *walletWorker) handleOneBalance(ctx context.Context, wallet domain.Wallet) error {
+	uuid, err := uuid.Parse(wallet.ID)
+	if err != nil {
+		return err
+	}
+	balance, err := s.walletService.FetchBalance(ctx, wallet)
+	if err != nil {
+		if errors.Is(err, ErrProviderTimeout) {
+			return err
+		}
+		if errors.Is(err, ErrProviderRateLimit) {
+			return err
+		}
+		if errors.Is(err, ErrProviderUnavailable) {
+			return err
+		}
+		return err
+	}
+	err = s.walletRepo.UpdateBalance(ctx, wallet.UserID, uuid, balance.Balance, balance.BalanceUSD)
+	if err != nil {
+		return err
+	}
+	return nil
 }
-
-// tm := time.NewTimer(time.Second * 3)
-// defer tm.Stop()
-// select {
-// case <-tm.C:
-// 	slog.Info("TEST_TICK", "uuid", uuid.String())
-// 	return nil
-// case <-ctx.Done():
-// 	return nil
-// }

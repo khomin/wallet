@@ -7,6 +7,7 @@ import (
 	"math"
 	"math/big"
 	"time"
+	"tracker/internal/client"
 
 	"github.com/ethereum/go-ethereum"
 	"github.com/ethereum/go-ethereum/common"
@@ -19,6 +20,7 @@ type EthereumClient struct {
 	client  *ethclient.Client
 	timeout time.Duration
 	decimal int64
+	Rate    client.RateLimitedProvider
 }
 
 type EthConfig struct {
@@ -26,7 +28,7 @@ type EthConfig struct {
 	Decimal int64
 }
 
-func NewEthereumClient(conf EthConfig) *EthereumClient {
+func NewEthereumClient(conf EthConfig) client.ChainProvider {
 	return &EthereumClient{
 		rpcURL:  conf.RpcURL,
 		timeout: 10 * time.Second,
@@ -64,7 +66,7 @@ func (c *EthereumClient) GetBalance(ctx context.Context, address string) (float6
 	}
 	account := common.HexToAddress(address)
 	balance, err := c.client.BalanceAt(ctx, account, nil)
-	if err != nil { // rpc.HTTPError
+	if err != nil {
 		return 0, err
 	}
 	balanceFloat := new(big.Float).SetInt(balance)

@@ -255,6 +255,7 @@ func (r *walletRepository) ListForSync(ctx context.Context, limit int) ([]domain
 	LEFT JOIN wallet_balances balance
 		ON balance.id = wallets.id
 	WHERE balance.updated_at IS NULL OR balance.updated_at < $1
+	ORDER BY balance.updated_at ASC NULLS FIRST
 	LIMIT $2`
 
 	rows, err := r.db.Pool.Query(ctx,

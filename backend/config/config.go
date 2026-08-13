@@ -60,21 +60,27 @@ type CoinGeckoConfig struct {
 }
 
 type BlockchainConfig struct {
-	EthereumMainnet  string    `mapstructure:"ethereum_mainnet_rpc"`
-	EthereumArbitrum string    `mapstructure:"ethereum_arbitrum_rpc"`
-	EthereumBase     string    `mapstructure:"ethereum_base_rpc"`
-	PolygonMainnet   string    `mapstructure:"polygon_mainnet"`
-	Bnb              string    `mapstructure:"bnb"`
-	SolanaRPC        string    `mapstructure:"solana_rpc"`
-	TronGRPC         string    `mapstructure:"tron_grpc"`
-	TronAPIKey       string    `mapstructure:"tron_api_key"`
-	Bitcoin          RPCConfig `mapstructure:"bitcoin"`
+	RateLimitConfig  ChainRateLimitConfig `mapstructure:"rate_limit"`
+	EthereumMainnet  string               `mapstructure:"ethereum_mainnet_rpc"`
+	EthereumArbitrum string               `mapstructure:"ethereum_arbitrum_rpc"`
+	EthereumBase     string               `mapstructure:"ethereum_base_rpc"`
+	PolygonMainnet   string               `mapstructure:"polygon_mainnet"`
+	Bnb              string               `mapstructure:"bnb"`
+	SolanaRPC        string               `mapstructure:"solana_rpc"`
+	TronGRPC         string               `mapstructure:"tron_grpc"`
+	TronAPIKey       string               `mapstructure:"tron_api_key"`
+	Bitcoin          RPCConfig            `mapstructure:"bitcoin"`
 }
 
 type RPCConfig struct {
 	Host string `mapstructure:"host"`
 	User string `mapstructure:"user"`
 	Pass string `mapstructure:"pass"`
+}
+
+type ChainRateLimitConfig struct {
+	RPS   float64 `mapstructure:"rps"`
+	Burst int     `mapstructure:"burst"`
 }
 
 type TokenConfig struct {

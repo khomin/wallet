@@ -7,10 +7,7 @@ import (
 	"log/slog"
 	"strings"
 
-	"tracker/internal/client/bitcoin"
-	"tracker/internal/client/ethereum"
-	"tracker/internal/client/solana"
-	"tracker/internal/client/tron"
+	"tracker/internal/client"
 
 	"github.com/ethereum/go-ethereum/rpc"
 )
@@ -21,16 +18,8 @@ var (
 	ErrProviderUnavailable = errors.New("provider unavailable")
 )
 
-type ChainProvider interface {
-	GetBalance(ctx context.Context, address string) (float64, error)
-	GetTokenBalance(ctx context.Context, address, tokenAddress string) (float64, error)
-	ValidateAddress(address, tokenAddress string) error
-	Connect(ctx context.Context) error
-	Close()
-}
-
 type BlockchainService struct {
-	providers     map[string]ChainProvider
+	providers     map[string]*client.RateLimitedProvider
 	walletRepo    WalletRepository
 	tokenRegistry *TokenRegistry
 	cache         PriceCache
@@ -43,22 +32,22 @@ type AddressBalance struct {
 }
 
 type BlockchainServiceDeps struct {
-	EthMainnet    *ethereum.EthereumClient
-	EthArbitrum   *ethereum.EthereumClient
-	EthBase       *ethereum.EthereumClient
-	Polygon       *ethereum.EthereumClient
-	BNB           *ethereum.EthereumClient
-	SOL           *solana.SolanaClient
-	BTC           *bitcoin.BitcoinClient
-	Tron          *tron.TronClient
+	EthMainnet    *client.RateLimitedProvider
+	EthArbitrum   *client.RateLimitedProvider
+	EthBase       *client.RateLimitedProvider
+	Polygon       *client.RateLimitedProvider
+	BNB           *client.RateLimitedProvider
+	SOL           *client.RateLimitedProvider
+	BTC           *client.RateLimitedProvider
+	Tron          *client.RateLimitedProvider
 	WalletRepo    WalletRepository
 	TokenRegistry *TokenRegistry
 	Cache         PriceCache
 }
 
 func NewBlockchainService(deps BlockchainServiceDeps) *BlockchainService {
-	providers := map[string]ChainProvider{}
-	add := func(chain string, p ChainProvider) {
+	providers := map[string]*client.RateLimitedProvider{}
+	add := func(chain string, p *client.RateLimitedProvider) {
 		if p != nil {
 			providers[chain] = p
 		}
@@ -110,9 +99,6 @@ func (s *BlockchainService) GetBalance(ctx context.Context, chain string, addres
 				if rpcErr.StatusCode == 408 || rpcErr.StatusCode == 429 {
 					return nil, ErrProviderRateLimit
 				}
-			} else {
-				// some other?
-				return nil, err
 			}
 			return nil, err
 		}

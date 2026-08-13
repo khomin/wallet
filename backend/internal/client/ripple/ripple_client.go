@@ -3,6 +3,7 @@ package ripple
 import (
 	"context"
 	"time"
+	"tracker/internal/client"
 )
 
 // TODO: sdk ripple rubblelabs/ripple blinklabs-io/gouroboros
@@ -13,7 +14,7 @@ type RippleClient struct {
 	timeout time.Duration
 }
 
-func NewRippleClient(rpcURL string) *RippleClient {
+func NewRippleClient(rpcURL string) client.ChainProvider {
 	return &RippleClient{
 		rpcURL:  rpcURL,
 		timeout: 10 * time.Second,
@@ -62,4 +63,8 @@ func (c *RippleClient) GetBalance(ctx context.Context, address string) (float64,
 
 func (c *RippleClient) GetTokenBalance(ctx context.Context, address, tokenAddress string) (float64, error) {
 	return 0, nil
+}
+
+func (c *RippleClient) ValidateAddress(address string, tokenAddress string) error {
+	panic("unimplemented")
 }
