@@ -75,7 +75,7 @@ func (c *BitcoinClient) GetBalance(ctx context.Context, address string) (float64
 }
 
 func (c *BitcoinClient) GetTokenBalance(ctx context.Context, address, tokenAddress string) (float64, error) {
-	return 0, nil
+	return 0, fmt.Errorf("not supported")
 }
 
 func (c *BitcoinClient) ValidateAddress(address, tokenAddress string) error {

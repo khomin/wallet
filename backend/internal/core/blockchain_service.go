@@ -40,6 +40,7 @@ type BlockchainServiceDeps struct {
 	SOL           *client.RateLimitedProvider
 	BTC           *client.RateLimitedProvider
 	Tron          *client.RateLimitedProvider
+	Ripple        *client.RateLimitedProvider
 	WalletRepo    WalletRepository
 	TokenRegistry *TokenRegistry
 	Cache         PriceCache
@@ -61,6 +62,7 @@ func NewBlockchainService(deps BlockchainServiceDeps) *BlockchainService {
 	add("BSC", deps.BNB)
 	add("SOL", deps.SOL)
 	add("TRX", deps.Tron)
+	add("XRP", deps.Ripple)
 	return &BlockchainService{
 		walletRepo:    deps.WalletRepo,
 		tokenRegistry: deps.TokenRegistry,

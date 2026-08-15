@@ -3,6 +3,7 @@ package repositories
 import (
 	"context"
 	"strings"
+	"tracker/internal/core"
 	"tracker/internal/core/domain"
 	"tracker/internal/db"
 	"tracker/internal/db/models"
@@ -14,11 +15,11 @@ type PriceRepository struct {
 	db *db.DataBase
 }
 
-func NewPriceRepository(db *db.DataBase) PriceRepository {
-	return PriceRepository{db: db}
+func NewPriceRepository(db *db.DataBase) core.PriceRepository {
+	return &PriceRepository{db: db}
 }
 
-func (r *PriceRepository) GetCoinSnapshot(ctx context.Context) ([]domain.TokenID, error) {
+func (r *PriceRepository) GetCoins(ctx context.Context) ([]domain.TokenID, error) {
 	query := `SELECT id, symbol, coin_name, image_url, updated_at FROM coins`
 
 	rows, err := r.db.Pool.Query(ctx, query)
@@ -47,7 +48,7 @@ func (r *PriceRepository) GetCoinSnapshot(ctx context.Context) ([]domain.TokenID
 	return modelTokensToDomain(snapshots), nil
 }
 
-func (r *PriceRepository) SetCoinSnapshot(ctx context.Context, in []domain.TokenID) error {
+func (r *PriceRepository) SetCoins(ctx context.Context, in []domain.TokenID) error {
 	if len(in) == 0 {
 		return nil
 	}
@@ -83,7 +84,7 @@ func (r *PriceRepository) SetCoinSnapshot(ctx context.Context, in []domain.Token
 	return nil
 }
 
-func (r *PriceRepository) GetPriceSnapshot(ctx context.Context) ([]domain.TokenPrice, error) {
+func (r *PriceRepository) GetPrices(ctx context.Context) ([]domain.TokenPrice, error) {
 	query := `SELECT 
 		coins.id,
 		coins.symbol,
@@ -124,6 +125,9 @@ func (r *PriceRepository) GetPriceSnapshot(ctx context.Context) ([]domain.TokenP
 		); err != nil {
 			return nil, err
 		}
+		if snapshot.Symbol == "XRP" {
+			print("hooh")
+		}
 		snapshots = append(snapshots, snapshot)
 	}
 	if err := rows.Err(); err != nil {
@@ -132,7 +136,7 @@ func (r *PriceRepository) GetPriceSnapshot(ctx context.Context) ([]domain.TokenP
 	return modelPriceToDomain(snapshots), nil
 }
 
-func (r *PriceRepository) SetPriceSnapshot(ctx context.Context, in []domain.TokenPrice) error {
+func (r *PriceRepository) SetPrices(ctx context.Context, in []domain.TokenPrice) error {
 	if len(in) == 0 {
 		return nil
 	}
@@ -245,11 +249,20 @@ func modelPriceToDomain(in []models.Price) []domain.TokenPrice {
 	out := make([]domain.TokenPrice, 0, len(in))
 	for _, i := range in {
 		out = append(out, domain.TokenPrice{
-			ID:     i.ID,
-			Symbol: i.Symbol,
-			Name:   i.Name,
-			// Chains: i.,
-			// Address: i.,
+			ID:                             i.ID,
+			Symbol:                         i.Symbol,
+			Name:                           i.Name,
+			CurrentPrice:                   i.CurrentPrice.Float64,
+			Change_24h:                     i.Change_24h.Float64,
+			MarketCap:                      i.MarketCap.Float64,
+			TotalVolume:                    i.TotalVolume.Float64,
+			High_24h:                       i.High_24h.Float64,
+			Low_24h:                        i.Low_24h.Float64,
+			PriceChange_24h:                i.PriceChange_24h.Float64,
+			PriceChangePercentage_24h:      i.PriceChangePercentage_24h.Float64,
+			MarketCapChange_24h:            i.MarketCapChange_24h.Float64,
+			MarketCapChange_percentage_24h: i.MarketCapChange_percentage_24h.Float64,
+			UpdatedAt:                      i.UpdatedAt.Time,
 		})
 	}
 	return out

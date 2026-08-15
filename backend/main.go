@@ -19,6 +19,7 @@ import (
 	"tracker/internal/client/bitcoin"
 	"tracker/internal/client/coingecko"
 	"tracker/internal/client/ethereum"
+	"tracker/internal/client/ripple"
 	"tracker/internal/client/solana"
 	"tracker/internal/client/tron"
 	"tracker/internal/core"
@@ -83,6 +84,7 @@ func main() {
 	solanaClient := client.NewRateLimiterProvider(&app.Cfg.Blockchain.RateLimitConfig, solana.NewSolanaClient(app.Cfg.Blockchain.SolanaRPC))
 	bitcoinClient := client.NewRateLimiterProvider(&app.Cfg.Blockchain.RateLimitConfig, bitcoin.NewBitcoinClient(app.Cfg.Blockchain.Bitcoin.Host, app.Cfg.Blockchain.Bitcoin.User, app.Cfg.Blockchain.Bitcoin.Pass))
 	tronClient := client.NewRateLimiterProvider(&app.Cfg.Blockchain.RateLimitConfig, tron.NewTronClient(app.Cfg.Blockchain.TronGRPC, app.Cfg.Blockchain.TronAPIKey))
+	rippleClient := client.NewRateLimiterProvider(&app.Cfg.Blockchain.RateLimitConfig, ripple.NewRippleClient(app.Cfg.Blockchain.RippleMainnet))
 
 	priceCache := core.NewPriceCache(redisClient)
 
@@ -90,12 +92,12 @@ func main() {
 		CoinGeckoClient: coingeckoClient,
 		AlchemyClient:   alchemyClient,
 		PriceCache:      priceCache,
-		Repo:            &priceRepo,
+		PriceRepo:       priceRepo,
 		AllCoinInterval: app.Cfg.CoinGecko.PriceFetcher,
 	})
 
 	tokenRegistry := core.DefaultTokenRegistry(app.Cfg.TokenRegistry)
-	priceService := core.NewPriceService(redisClient, &priceRepo, priceFetcher, priceCache, tokenRegistry)
+	priceService := core.NewPriceService(redisClient, priceRepo, priceFetcher, priceCache, tokenRegistry)
 	blockchainService := core.NewBlockchainService(core.BlockchainServiceDeps{
 		EthMainnet:    ethMainnetClient,
 		EthArbitrum:   ethArbitrumClient,
@@ -105,6 +107,7 @@ func main() {
 		SOL:           solanaClient,
 		BTC:           bitcoinClient,
 		Tron:          tronClient,
+		Ripple:        rippleClient,
 		WalletRepo:    walletRepo,
 		TokenRegistry: tokenRegistry,
 		// Cache:         priceCache,
@@ -126,7 +129,8 @@ func main() {
 
 	walletService := core.NewWalletService(core.WalletDeps{
 		WalletRepo: walletRepo, PriceService: priceService,
-		UserRepo: userRepo, BlockchainService: blockchainService, TokenRegistry: tokenRegistry,
+		UserRepo: userRepo, BlockchainService: blockchainService,
+		TokenRegistry:  tokenRegistry,
 		EventPublisher: walletEventPublisher,
 	})
 
@@ -136,9 +140,10 @@ func main() {
 		MqConsumer:    walletEventConsumer,
 	})
 
-	walletWorker.StartConsuming(ctx)
-	go priceFetcher.StartCoinFetcher(ctx)
+	priceFetcher.LoadCache(ctx)
+	go priceFetcher.StartFetcher(ctx)
 	go walletWorker.StartSyncLoop(ctx, time.Second*1)
+	go walletWorker.StartConsuming(ctx)
 
 	verifier, err := middleware.NewTokenVerifier(ctx, app.Cfg.Authorization.IssuerURL, app.Cfg.Authorization.ClientID)
 	if err != nil {

@@ -9,17 +9,17 @@ import (
 )
 
 type TokenRegistry struct {
-	mu                  sync.RWMutex
-	tokensByName        map[string]config.TokenConfig
-	tokensByChainSymbol map[string]config.TokenConfig
-	tokensBySymbol      map[string]config.TokenConfig
+	mu            sync.RWMutex
+	byName        map[string]config.TokenConfig
+	byChainSymbol map[string]config.TokenConfig
+	bySymbol      map[string]config.TokenConfig
 }
 
 func NewTokenRegistry() *TokenRegistry {
 	return &TokenRegistry{
-		tokensByName:        make(map[string]config.TokenConfig),
-		tokensByChainSymbol: make(map[string]config.TokenConfig),
-		tokensBySymbol:      make(map[string]config.TokenConfig),
+		byName:        make(map[string]config.TokenConfig),
+		byChainSymbol: make(map[string]config.TokenConfig),
+		bySymbol:      make(map[string]config.TokenConfig),
 	}
 }
 
@@ -36,19 +36,19 @@ func (r *TokenRegistry) Register(token config.TokenConfig) {
 	defer r.mu.Unlock()
 
 	// index by name
-	r.tokensByName[token.Name] = token
+	r.byName[token.Name] = token
 
 	// index by symbol
-	r.tokensBySymbol[strings.ToUpper(token.Symbol)] = token
+	r.bySymbol[strings.ToUpper(token.Symbol)] = token
 
 	// index by chain:symbol
 	if token.Native != nil {
 		symbolKey := fmt.Sprintf("%s:%s", strings.ToUpper(token.Native.Chain), strings.ToUpper(token.Symbol))
-		r.tokensByChainSymbol[symbolKey] = token
+		r.byChainSymbol[symbolKey] = token
 	} else {
 		for chain := range token.Deployments {
 			symbolKey := fmt.Sprintf("%s:%s", strings.ToUpper(chain), strings.ToUpper(token.Symbol))
-			r.tokensByChainSymbol[symbolKey] = token
+			r.byChainSymbol[symbolKey] = token
 		}
 	}
 }
@@ -56,7 +56,7 @@ func (r *TokenRegistry) Register(token config.TokenConfig) {
 func (r *TokenRegistry) GetByChainAndSymbol(chain, symbol string) (*domain.TokenChain, error) {
 	r.mu.RLock()
 	defer r.mu.RUnlock()
-	token, ok := r.tokensByChainSymbol[fmt.Sprintf("%s:%s", strings.ToUpper(chain), strings.ToUpper(symbol))]
+	token, ok := r.byChainSymbol[fmt.Sprintf("%s:%s", strings.ToUpper(chain), strings.ToUpper(symbol))]
 	if ok {
 		for depChain, dep := range token.Deployments {
 			depChain = strings.ToUpper(depChain)
@@ -87,7 +87,7 @@ func (r *TokenRegistry) GetBySymbol(symbol string) (domain.TokenRaw, bool) {
 	r.mu.RLock()
 	defer r.mu.RUnlock()
 	symbol = strings.ToUpper(symbol)
-	token, found := r.tokensBySymbol[symbol]
+	token, found := r.bySymbol[symbol]
 	if !found {
 		return domain.TokenRaw{}, false
 	}
@@ -115,7 +115,7 @@ func (r *TokenRegistry) GetByQuery(query string) []domain.TokenRaw {
 
 	query = strings.ToUpper(query)
 	distinct := map[string]domain.TokenRaw{}
-	for _, token := range r.tokensByChainSymbol {
+	for _, token := range r.byChainSymbol {
 		matches := strings.Contains(strings.ToUpper(token.Name), query) || strings.Contains(token.Symbol, query)
 		if matches {
 			chains := make([]string, 0, len(token.Deployments))

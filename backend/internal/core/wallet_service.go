@@ -142,9 +142,9 @@ func (s *WalletService) FetchBalance(ctx context.Context, wallet domain.Wallet) 
 	}
 	return &domain.WalletWithBalance{
 		Wallet:     wallet,
-		Price:      price,
+		Price:      *price,
 		Balance:    balance.Balance,
-		BalanceUSD: balance.Balance,
+		BalanceUSD: balance.Balance * price.CurrentPrice,
 		HasError:   false,
 	}, nil
 }

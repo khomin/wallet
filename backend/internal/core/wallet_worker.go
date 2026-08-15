@@ -37,37 +37,36 @@ func NewWalletWorker(deps *NewWalletDeps) *walletWorker {
 
 func (w *walletWorker) StartConsuming(ctx context.Context) error {
 	log := logrus.WithField("walletWorker", "StartConsuming")
-	go func() {
+
+	for {
+		msgs, chanErr, err := w.eventConsumer.Consume()
+		if err != nil {
+			log.Warningf("failed to set consume: %v", err)
+			time.Sleep(time.Second * 1)
+			continue
+		}
+		log.Info("event consume set successfully")
 		for {
-			msgs, chanErr, err := w.eventConsumer.Consume()
-			if err != nil {
-				log.Warningf("failed to set consume: %v", err)
-				time.Sleep(time.Second * 1)
-				continue
+			var exitErr error
+			select {
+			case err := <-chanErr:
+				log.Infof("channel closed: %v", err)
+				exitErr = err
+			case msg := <-msgs:
+				log.Infof("event received")
+				if err := w.handleWalletCreated(ctx, msg); err != nil {
+					logrus.WithError(err).Error("failed to handle wallet created event")
+					_ = msg.Nack(false, true)
+				} else {
+					_ = msg.Ack(false)
+				}
 			}
-			log.Info("event consume set successfully")
-			for {
-				var exitErr error
-				select {
-				case err := <-chanErr:
-					log.Infof("channel closed: %v", err)
-					exitErr = err
-				case msg := <-msgs:
-					log.Infof("event received")
-					if err := w.handleWalletCreated(ctx, msg); err != nil {
-						logrus.WithError(err).Error("failed to handle wallet created event")
-						_ = msg.Nack(false, true)
-					} else {
-						_ = msg.Ack(false)
-					}
-				}
-				if exitErr != nil {
-					log.Infof("channel closed due to error: %v", err)
-					break
-				}
+			if exitErr != nil {
+				log.Infof("channel closed due to error: %v", err)
+				break
 			}
 		}
-	}()
+	}
 	return nil
 }
 
@@ -122,13 +121,12 @@ func (s *walletWorker) synchronizeWallet(ctx context.Context, wallet domain.Wall
 }
 
 func (s *walletWorker) SynchronizeWallets(ctx context.Context) error {
+	g, ctx := errgroup.WithContext(ctx)
 	wallets, err := s.walletRepo.ListForSync(ctx, 100)
 	if err != nil {
 		slog.Warn("failed to fetch active wallets for sync", "error", err)
 		return err
 	}
-	g, ctx := errgroup.WithContext(ctx)
-
 	groupsByChain := map[string][]domain.Wallet{}
 	for _, wallet := range wallets {
 		groupsByChain[wallet.Chain] = append(groupsByChain[wallet.Chain], wallet)
@@ -147,7 +145,7 @@ func (s *walletWorker) SynchronizeWallets(ctx context.Context) error {
 		})
 	}
 	err = g.Wait()
-	slog.Info("TEST_END")
+	slog.Info("WALLET_SYNC_END", "len", len(wallets))
 	return err
 }
 

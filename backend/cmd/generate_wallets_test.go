@@ -65,12 +65,12 @@ func TestGenerateWallets(t *testing.T) {
 		CoinGeckoClient: coingeckoClient,
 		AlchemyClient:   alchemyClient,
 		PriceCache:      priceCache,
-		Repo:            &priceRepo,
+		PriceRepo:       priceRepo,
 		AllCoinInterval: app.Cfg.CoinGecko.PriceFetcher,
 	})
 
 	tokenRegistry := core.DefaultTokenRegistry(app.Cfg.TokenRegistry)
-	priceService := core.NewPriceService(redisClient, &priceRepo, priceFetcher, priceCache, tokenRegistry)
+	priceService := core.NewPriceService(redisClient, priceRepo, priceFetcher, priceCache, tokenRegistry)
 	walletRepo := repositories.NewWalletRepository(db)
 	blockchainService := core.NewBlockchainService(core.BlockchainServiceDeps{
 		EthMainnet:    ethMainnetClient,
@@ -89,7 +89,7 @@ func TestGenerateWallets(t *testing.T) {
 		logrus.WithError(err).Warn("failed to connect all blockchain clients")
 	}
 
-	go priceFetcher.StartCoinFetcher(ctx)
+	go priceFetcher.StartFetcher(ctx)
 
 	svc := core.NewWalletService(core.WalletDeps{
 		WalletRepo:        walletRepo,

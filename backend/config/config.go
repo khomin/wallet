@@ -70,6 +70,7 @@ type BlockchainConfig struct {
 	TronGRPC         string               `mapstructure:"tron_grpc"`
 	TronAPIKey       string               `mapstructure:"tron_api_key"`
 	Bitcoin          RPCConfig            `mapstructure:"bitcoin"`
+	RippleMainnet    string               `mapstructure:"riplle_mainnet_rpc"`
 }
 
 type RPCConfig struct {

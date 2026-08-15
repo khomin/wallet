@@ -14,7 +14,7 @@ type PriceFetcherDeps struct {
 	CoinGeckoClient *coingecko.CoinGeckoClient
 	AlchemyClient   *alchemy.AlchemyClient
 	PriceCache      PriceCache
-	Repo            PriceRepository
+	PriceRepo       PriceRepository
 	AllCoinInterval time.Duration
 }
 
@@ -22,7 +22,7 @@ type PriceFetcher struct {
 	coingeckoClient *coingecko.CoinGeckoClient
 	alchemyClient   *alchemy.AlchemyClient
 	priceCache      PriceCache
-	repo            PriceRepository
+	priceRepo       PriceRepository
 	allCoinInterval time.Duration
 	log             *logrus.Entry
 }
@@ -32,14 +32,13 @@ func NewPriceFetcher(deps PriceFetcherDeps) *PriceFetcher {
 		coingeckoClient: deps.CoinGeckoClient,
 		alchemyClient:   deps.AlchemyClient,
 		priceCache:      deps.PriceCache,
-		repo:            deps.Repo,
+		priceRepo:       deps.PriceRepo,
 		allCoinInterval: deps.AllCoinInterval,
 		log:             logrus.WithField("component", "PriceFetcher"),
 	}
 }
 
-func (f *PriceFetcher) StartCoinFetcher(ctx context.Context) {
-	f.loadCache(ctx)
+func (f *PriceFetcher) StartFetcher(ctx context.Context) {
 	f.fetch(ctx)
 
 	ticker := time.NewTicker(f.allCoinInterval)
@@ -57,13 +56,13 @@ func (f *PriceFetcher) StartCoinFetcher(ctx context.Context) {
 	}
 }
 
-func (f *PriceFetcher) loadCache(ctx context.Context) {
-	coins, err := f.repo.GetCoinSnapshot(ctx)
+func (f *PriceFetcher) LoadCache(ctx context.Context) {
+	coins, err := f.priceRepo.GetCoins(ctx)
 	if err != nil {
 		f.log.WithError(err).Error("Failed to read coin snapshot")
 		return
 	}
-	prices, err := f.repo.GetPriceSnapshot(ctx)
+	prices, err := f.priceRepo.GetPrices(ctx)
 	if err != nil {
 		f.log.WithError(err).Error("Failed to read price snapshot")
 		return
@@ -91,10 +90,10 @@ func (f *PriceFetcher) fetch(ctx context.Context) {
 	if err := f.priceCache.SetPrices(ctx, prices); err != nil {
 		f.log.WithError(err).Error("Failed to cache prices")
 	}
-	if err := f.repo.SetCoinSnapshot(ctx, coins); err != nil {
+	if err := f.priceRepo.SetCoins(ctx, coins); err != nil {
 		f.log.WithError(err).Error("Failed to store coin snapshots")
 	}
-	if err := f.repo.SetPriceSnapshot(ctx, prices); err != nil {
+	if err := f.priceRepo.SetPrices(ctx, prices); err != nil {
 		f.log.WithError(err).Error("Failed to store price snapshots")
 	}
 }

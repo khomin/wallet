@@ -11,10 +11,10 @@ import (
 var ErrPriceNotFound = errors.New("not found")
 
 type PriceRepository interface {
-	GetCoinSnapshot(ctx context.Context) ([]domain.TokenID, error)
-	SetCoinSnapshot(ctx context.Context, in []domain.TokenID) error
-	GetPriceSnapshot(ctx context.Context) ([]domain.TokenPrice, error)
-	SetPriceSnapshot(ctx context.Context, in []domain.TokenPrice) error
+	GetCoins(ctx context.Context) ([]domain.TokenID, error)
+	SetCoins(ctx context.Context, in []domain.TokenID) error
+	GetPrices(ctx context.Context) ([]domain.TokenPrice, error)
+	SetPrices(ctx context.Context, in []domain.TokenPrice) error
 }
 
 type PriceService struct {
@@ -104,10 +104,10 @@ func (s *PriceService) GetPrices(ctx context.Context, symbols []string) ([]domai
 	return prices, nil
 }
 
-func (s *PriceService) GetPrice(ctx context.Context, symbol string) (domain.TokenPrice, error) {
+func (s *PriceService) GetPrice(ctx context.Context, symbol string) (*domain.TokenPrice, error) {
 	price := s.priceCache.GetPriceBySymbol(ctx, symbol)
 	if price != nil {
-		return *price, nil
+		return price, nil
 	}
-	return domain.TokenPrice{}, ErrPriceNotFound
+	return nil, ErrPriceNotFound
 }
