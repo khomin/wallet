@@ -46,9 +46,6 @@ func main() {
 
 	g, ctx := errgroup.WithContext(ctx)
 
-	logrus.SetFormatter(&logrus.JSONFormatter{})
-	logrus.SetLevel(logrus.InfoLevel)
-
 	app := bootstrap.App()
 
 	db, err := db.NewDatabase(app.Cfg.DSN())

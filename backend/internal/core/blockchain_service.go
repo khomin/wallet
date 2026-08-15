@@ -4,12 +4,12 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"log/slog"
 	"strings"
 
 	"tracker/internal/client"
 
 	"github.com/ethereum/go-ethereum/rpc"
+	"github.com/sirupsen/logrus"
 )
 
 var (
@@ -105,7 +105,7 @@ func (s *BlockchainService) GetBalance(ctx context.Context, chain string, addres
 			return nil, err
 		}
 		if err = s.cache.SetBalanceNative(ctx, chain, address, balance); err != nil {
-			slog.Error("failed to cache balance", "error", err)
+			logrus.Errorf("failed to cache balance %v", err)
 		}
 		return &AddressBalance{
 			Chain:   chain,
@@ -129,7 +129,7 @@ func (s *BlockchainService) GetBalance(ctx context.Context, chain string, addres
 			return nil, err
 		}
 		if err = s.cache.SetBalanceToken(ctx, chain, address, tokenSymbol, balance); err != nil {
-			slog.Error("failed to cache balance", "error", err)
+			logrus.Errorf("failed to cache balance %v", err)
 		}
 		return &AddressBalance{
 			Chain:   chain,

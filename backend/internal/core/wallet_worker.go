@@ -4,7 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
-	"log/slog"
+	"fmt"
 	"time"
 	"tracker/internal/core/domain"
 	"tracker/internal/messaging"
@@ -121,32 +121,70 @@ func (s *walletWorker) synchronizeWallet(ctx context.Context, wallet domain.Wall
 }
 
 func (s *walletWorker) SynchronizeWallets(ctx context.Context) error {
+	start := time.Now()
 	g, ctx := errgroup.WithContext(ctx)
+	log := logrus.WithContext(ctx)
+	groupsByChain := make(map[string][]domain.Wallet)
+
 	wallets, err := s.walletRepo.ListForSync(ctx, 100)
 	if err != nil {
-		slog.Warn("failed to fetch active wallets for sync", "error", err)
-		return err
+		log.WithError(err).WithField("limit", 100).Error("failed to fetch wallets for sync")
+		return fmt.Errorf("list wallets for sync: %w", err)
 	}
-	groupsByChain := map[string][]domain.Wallet{}
+	if len(wallets) == 0 {
+		log.Debug("no wallets found for synchronization")
+		return nil
+	}
+
 	for _, wallet := range wallets {
 		groupsByChain[wallet.Chain] = append(groupsByChain[wallet.Chain], wallet)
 	}
-	for _, group := range groupsByChain {
+
+	log.WithFields(logrus.Fields{
+		"total_wallets": len(wallets),
+		"chain_count":   len(groupsByChain),
+	}).Info("starting wallet synchronization batch")
+
+	for chain, group := range groupsByChain {
+		chain := chain
 		group := group
+
 		g.Go(func() error {
+			var failedCount int
+
 			for _, wallet := range group {
 				if err := s.handleOneBalance(ctx, wallet); err != nil {
-					slog.Info("WALLET_ERROR", "chain", wallet.Chain, "wallet", wallet.ID, "error", err)
+					failedCount++
+					log.WithFields(logrus.Fields{
+						"chain":     wallet.Chain,
+						"wallet_id": wallet.ID,
+					}).WithError(err).Error("failed to sync wallet balance")
 					continue
 				}
-				slog.Info("WALLET_UPDATED", "chain", wallet.Chain, "wallet", wallet.ID)
+				log.WithFields(logrus.Fields{
+					"chain":     wallet.Chain,
+					"wallet_id": wallet.ID,
+				}).Debug("wallet balance updated")
+			}
+
+			if failedCount > 0 {
+				log.WithFields(logrus.Fields{
+					"chain":  chain,
+					"total":  len(group),
+					"failed": failedCount,
+				}).Warn("chain synchronization finished with errors")
 			}
 			return nil
 		})
 	}
-	err = g.Wait()
-	slog.Info("WALLET_SYNC_END", "len", len(wallets))
-	return err
+	_ = g.Wait()
+
+	log.WithFields(logrus.Fields{
+		"total_wallets": len(wallets),
+		"duration":      time.Since(start),
+	}).Info("wallet synchronization batch completed")
+
+	return nil
 }
 
 func (s *walletWorker) handleOneBalance(ctx context.Context, wallet domain.Wallet) error {
