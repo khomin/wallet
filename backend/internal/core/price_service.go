@@ -2,13 +2,10 @@ package core
 
 import (
 	"context"
-	"errors"
 	"slices"
 	"tracker/internal/cache"
 	"tracker/internal/core/domain"
 )
-
-var ErrPriceNotFound = errors.New("not found")
 
 type PriceRepository interface {
 	GetCoins(ctx context.Context) ([]domain.TokenID, error)
@@ -62,7 +59,7 @@ func (s *PriceService) GetCoins(ctx context.Context) ([]domain.TokenWithURL, err
 func (s *PriceService) GetCoin(ctx context.Context, id string) (*domain.TokenWithURL, error) {
 	coin := s.priceCache.GetCoinBySymbol(ctx, id)
 	if coin == nil {
-		return nil, ErrPriceNotFound
+		return nil, domain.ErrPriceNotFound
 	}
 	token, found := s.tokenRegistry.GetBySymbol(coin.Symbol)
 	if found {
@@ -71,7 +68,7 @@ func (s *PriceService) GetCoin(ctx context.Context, id string) (*domain.TokenWit
 			ImageURL: coin.ImageURL,
 		}, nil
 	}
-	return nil, ErrPriceNotFound
+	return nil, domain.ErrPriceNotFound
 }
 
 func (s *PriceService) SearchCoins(ctx context.Context, text string) ([]domain.TokenWithURL, error) {
@@ -109,5 +106,5 @@ func (s *PriceService) GetPrice(ctx context.Context, symbol string) (*domain.Tok
 	if price != nil {
 		return price, nil
 	}
-	return nil, ErrPriceNotFound
+	return nil, domain.ErrPriceNotFound
 }

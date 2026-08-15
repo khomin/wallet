@@ -151,7 +151,7 @@ func (r *walletRepository) Get(ctx context.Context, userID string, id uuid.UUID)
 		out := walletToDomain2(w)
 		return &out, nil
 	}
-	return nil, core.ErrWalletNotFound
+	return nil, domain.ErrWalletNotFound
 }
 
 func (r *walletRepository) Create(ctx context.Context, userID string, chain string, address string, symbol string, label string) (*domain.Wallet, error) {
@@ -182,9 +182,9 @@ func (r *walletRepository) Create(ctx context.Context, userID string, chain stri
 	); err != nil {
 		var pgErr *pgconn.PgError
 		if errors.As(err, &pgErr) && pgErr.Code == "23505" {
-			return nil, core.ErrWalletAlreadyExists
+			return nil, domain.ErrWalletAlreadyExists
 		}
-		return nil, core.ErrWalletInternalError
+		return nil, domain.ErrWalletInternalError
 	}
 	out := walletToDomain(wallet)
 	return &out, nil
@@ -208,7 +208,7 @@ func (r *walletRepository) Edit(ctx context.Context, userID string, id uuid.UUID
 		&wallet.Label,
 		&wallet.UpdatedAt,
 	); err != nil {
-		return nil, core.ErrWalletNotFound
+		return nil, domain.ErrWalletNotFound
 	}
 	out := walletToDomain(wallet)
 	return &out, nil
@@ -218,7 +218,7 @@ func (r *walletRepository) Delete(ctx context.Context, userID string, id uuid.UU
 	query := `DELETE FROM wallets WHERE id = $1`
 	res, err := r.db.Pool.Exec(ctx, query, id)
 	if res.RowsAffected() == 0 {
-		return core.ErrWalletNotFound
+		return domain.ErrWalletNotFound
 	}
 	return err
 }

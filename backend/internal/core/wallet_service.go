@@ -3,7 +3,6 @@ package core
 import (
 	"context"
 	"encoding/json"
-	"errors"
 	"fmt"
 
 	"tracker/internal/core/domain"
@@ -11,12 +10,6 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/sirupsen/logrus"
-)
-
-var (
-	ErrWalletNotFound      = errors.New("not found")
-	ErrWalletAlreadyExists = errors.New("already exists")
-	ErrWalletInternalError = errors.New("internal error")
 )
 
 type WalletRepository interface {

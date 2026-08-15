@@ -62,11 +62,11 @@ func TestGenerateWallets(t *testing.T) {
 
 	// Create the price fetcher with 60 second interval
 	priceFetcher := core.NewPriceFetcher(core.PriceFetcherDeps{
-		CoinGeckoClient: coingeckoClient,
-		AlchemyClient:   alchemyClient,
-		PriceCache:      priceCache,
-		PriceRepo:       priceRepo,
-		AllCoinInterval: app.Cfg.CoinGecko.PriceFetcher,
+		CoinGeckoClient:    coingeckoClient,
+		AlchemyClient:      alchemyClient,
+		PriceCache:         priceCache,
+		PriceRepo:          priceRepo,
+		FetchCoinsInterval: app.Cfg.CoinGecko.PriceFetcher,
 	})
 
 	tokenRegistry := core.DefaultTokenRegistry(app.Cfg.TokenRegistry)

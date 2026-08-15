@@ -9,6 +9,17 @@ It also supports configured token assets from the registry in [backend/config.ya
 
 Note: Bitcoin wallet tracking is wired to the preconfigured Bitcoin Core node already defined in docker-compose.yml, so starting the infrastructure brings up the node automatically. Keycloak also comes with a preloaded realm configuration imported from [backend/deploy/keycloak/realm-export.json](backend/deploy/keycloak/realm-export.json).
 
+            Wallet API
+                │
+                ▼
+            Balance Service
+                │
+        ┌─────────┼─────────┐
+        ▼         ▼         ▼
+    BTC       EVM       Solana
+                │
+            Token Registry
+
 ### Dasboard previews
 ![1](/resources/demo.png)
 

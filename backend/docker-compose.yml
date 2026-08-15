@@ -69,6 +69,15 @@ services:
     volumes:
       - rabbitmq_data:/var/lib/rabbitmq
 
+  mail-relay:
+    image: juanluisbaptiste/postfix:latest
+    container_name: postfix_relay
+    restart: always
+    environment:
+      - SERVER_HOSTNAME=mail.yourdomain.com
+    ports:
+      - "25:25"
+
 volumes:
   pgdata:
   postgres_data:

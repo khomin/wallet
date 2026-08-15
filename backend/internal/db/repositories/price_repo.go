@@ -16,10 +16,10 @@ type PriceRepository struct {
 }
 
 func NewPriceRepository(db *db.DataBase) core.PriceRepository {
-	return &PriceRepository{db: db}
+	return &AlertRepository{db: db}
 }
 
-func (r *PriceRepository) GetCoins(ctx context.Context) ([]domain.TokenID, error) {
+func (r *AlertRepository) GetCoins(ctx context.Context) ([]domain.TokenID, error) {
 	query := `SELECT id, symbol, coin_name, image_url, updated_at FROM coins`
 
 	rows, err := r.db.Pool.Query(ctx, query)
@@ -48,7 +48,7 @@ func (r *PriceRepository) GetCoins(ctx context.Context) ([]domain.TokenID, error
 	return modelTokensToDomain(snapshots), nil
 }
 
-func (r *PriceRepository) SetCoins(ctx context.Context, in []domain.TokenID) error {
+func (r *AlertRepository) SetCoins(ctx context.Context, in []domain.TokenID) error {
 	if len(in) == 0 {
 		return nil
 	}
@@ -84,7 +84,7 @@ func (r *PriceRepository) SetCoins(ctx context.Context, in []domain.TokenID) err
 	return nil
 }
 
-func (r *PriceRepository) GetPrices(ctx context.Context) ([]domain.TokenPrice, error) {
+func (r *AlertRepository) GetPrices(ctx context.Context) ([]domain.TokenPrice, error) {
 	query := `SELECT 
 		coins.id,
 		coins.symbol,
@@ -136,7 +136,7 @@ func (r *PriceRepository) GetPrices(ctx context.Context) ([]domain.TokenPrice, e
 	return modelPriceToDomain(snapshots), nil
 }
 
-func (r *PriceRepository) SetPrices(ctx context.Context, in []domain.TokenPrice) error {
+func (r *AlertRepository) SetPrices(ctx context.Context, in []domain.TokenPrice) error {
 	if len(in) == 0 {
 		return nil
 	}

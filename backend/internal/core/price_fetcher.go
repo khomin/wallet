@@ -11,39 +11,38 @@ import (
 )
 
 type PriceFetcherDeps struct {
-	CoinGeckoClient *coingecko.CoinGeckoClient
-	AlchemyClient   *alchemy.AlchemyClient
-	PriceCache      PriceCache
-	PriceRepo       PriceRepository
-	AllCoinInterval time.Duration
+	CoinGeckoClient    *coingecko.CoinGeckoClient
+	AlchemyClient      *alchemy.AlchemyClient
+	PriceCache         PriceCache
+	PriceRepo          PriceRepository
+	FetchCoinsInterval time.Duration
 }
 
 type PriceFetcher struct {
-	coingeckoClient *coingecko.CoinGeckoClient
-	alchemyClient   *alchemy.AlchemyClient
-	priceCache      PriceCache
-	priceRepo       PriceRepository
-	allCoinInterval time.Duration
-	log             *logrus.Entry
+	coingeckoClient    *coingecko.CoinGeckoClient
+	alchemyClient      *alchemy.AlchemyClient
+	priceCache         PriceCache
+	priceRepo          PriceRepository
+	fetchCoinsInterval time.Duration
+	log                *logrus.Entry
 }
 
 func NewPriceFetcher(deps PriceFetcherDeps) *PriceFetcher {
 	return &PriceFetcher{
-		coingeckoClient: deps.CoinGeckoClient,
-		alchemyClient:   deps.AlchemyClient,
-		priceCache:      deps.PriceCache,
-		priceRepo:       deps.PriceRepo,
-		allCoinInterval: deps.AllCoinInterval,
-		log:             logrus.WithField("component", "PriceFetcher"),
+		coingeckoClient:    deps.CoinGeckoClient,
+		alchemyClient:      deps.AlchemyClient,
+		priceCache:         deps.PriceCache,
+		priceRepo:          deps.PriceRepo,
+		fetchCoinsInterval: deps.FetchCoinsInterval,
+		log:                logrus.WithField("component", "PriceFetcher"),
 	}
 }
 
 func (f *PriceFetcher) StartFetcher(ctx context.Context) {
-	f.fetch(ctx)
-
-	ticker := time.NewTicker(f.allCoinInterval)
+	ticker := time.NewTicker(f.fetchCoinsInterval)
 	defer ticker.Stop()
 
+	f.fetch(ctx)
 	for {
 		select {
 		case <-ctx.Done():
@@ -96,6 +95,7 @@ func (f *PriceFetcher) fetch(ctx context.Context) {
 	if err := f.priceRepo.SetPrices(ctx, prices); err != nil {
 		f.log.WithError(err).Error("Failed to store price snapshots")
 	}
+	//
 }
 
 func (f *PriceFetcher) fromGeckoToCoin(prices []coingecko.CoinGeckoCoin) []domain.TokenID {

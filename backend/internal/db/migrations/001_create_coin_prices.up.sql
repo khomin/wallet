@@ -18,6 +18,7 @@ CREATE TABLE IF NOT EXISTS coin_prices (
     updated_at TIMESTAMP NOT NULL DEFAULT NOW()
 );
 
-CREATE INDEX idx_coins_symbol ON coins(symbol);
-
-CREATE INDEX idx_coin_prices_price_usd ON coin_prices(price_usd);
+CREATE INDEX idx_coins_symbol 
+    ON coins(symbol);
+CREATE INDEX idx_coin_prices_price_usd
+    ON coin_prices(price_usd);

@@ -15,7 +15,9 @@ CREATE TABLE IF NOT EXISTS wallet_balances (
     updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
-CREATE UNIQUE INDEX IF NOT EXISTS idx_wallets_address_chain ON wallets (address, chain, coin_id);
-CREATE UNIQUE INDEX IF NOT EXISTS idx_wallet_updated ON wallets (updated_at);
-
-CREATE UNIQUE INDEX IF NOT EXISTS idx_wallet_balance_updatd_at ON wallet_balances (updated_at);
+CREATE UNIQUE INDEX IF NOT EXISTS idx_wallets_address_chain 
+    ON wallets (address, chain, coin_id);
+CREATE UNIQUE INDEX IF NOT EXISTS idx_wallet_updated 
+    ON wallets (updated_at);
+CREATE UNIQUE INDEX IF NOT EXISTS idx_wallet_balance_updatd_at
+    ON wallet_balances (updated_at);

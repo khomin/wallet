@@ -7,6 +7,7 @@ import (
 	walletv1 "tracker/gen/wallet/v1"
 	"tracker/internal/api/middleware"
 	"tracker/internal/core"
+	"tracker/internal/core/domain"
 
 	"github.com/google/uuid"
 
@@ -80,7 +81,7 @@ func (s *WalletGrpcHandler) GetWallet(ctx context.Context, req *walletv1.GetWall
 	}
 	wallet, err := s.walletService.GetWallet(ctx, user.Subject, uuid)
 	if err != nil {
-		if errors.Is(err, core.ErrWalletNotFound) {
+		if errors.Is(err, domain.ErrWalletNotFound) {
 			return nil, status.Error(codes.NotFound, "wallet not found")
 		}
 		return nil, status.Error(codes.Internal, err.Error())
@@ -121,9 +122,9 @@ func (s *WalletGrpcHandler) CreateWallet(ctx context.Context, req *walletv1.Crea
 	}
 	err := s.walletService.AddWallet(ctx, user.Subject, req.Chain, req.Address, req.TokenSymbol, req.Label)
 	if err != nil {
-		if errors.Is(err, core.ErrWalletNotFound) {
+		if errors.Is(err, domain.ErrWalletNotFound) {
 			return nil, status.Error(codes.NotFound, "wallet not found")
-		} else if errors.Is(err, core.ErrWalletAlreadyExists) {
+		} else if errors.Is(err, domain.ErrWalletAlreadyExists) {
 			return nil, status.Error(codes.AlreadyExists, "wallet already exists")
 		}
 		return nil, status.Error(codes.Internal, err.Error())
@@ -142,7 +143,7 @@ func (s *WalletGrpcHandler) EditWallet(ctx context.Context, req *walletv1.EditWa
 	}
 	wallet, err := s.walletService.EditWallet(ctx, user.Subject, uuid, req.Label)
 	if err != nil {
-		if errors.Is(err, core.ErrWalletNotFound) {
+		if errors.Is(err, domain.ErrWalletNotFound) {
 			return nil, status.Error(codes.NotFound, "wallet not found")
 		}
 		return nil, status.Error(codes.Internal, err.Error())
@@ -164,7 +165,7 @@ func (s *WalletGrpcHandler) DeleteWallet(ctx context.Context, req *walletv1.Dele
 	}
 	err = s.walletService.DeleteWallet(ctx, user.Subject, uuid)
 	if err != nil {
-		if errors.Is(err, core.ErrWalletNotFound) {
+		if errors.Is(err, domain.ErrWalletNotFound) {
 			return nil, status.Error(codes.NotFound, err.Error())
 		}
 		return nil, status.Error(codes.Internal, err.Error())

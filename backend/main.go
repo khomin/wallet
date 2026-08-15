@@ -86,11 +86,11 @@ func main() {
 	priceCache := core.NewPriceCache(redisClient)
 
 	priceFetcher := core.NewPriceFetcher(core.PriceFetcherDeps{
-		CoinGeckoClient: coingeckoClient,
-		AlchemyClient:   alchemyClient,
-		PriceCache:      priceCache,
-		PriceRepo:       priceRepo,
-		AllCoinInterval: app.Cfg.CoinGecko.PriceFetcher,
+		CoinGeckoClient:    coingeckoClient,
+		AlchemyClient:      alchemyClient,
+		PriceCache:         priceCache,
+		PriceRepo:          priceRepo,
+		FetchCoinsInterval: app.Cfg.CoinGecko.PriceFetcher,
 	})
 
 	tokenRegistry := core.DefaultTokenRegistry(app.Cfg.TokenRegistry)

@@ -37,7 +37,7 @@ func NewWalletWorker(deps *NewWalletDeps) *walletWorker {
 
 func (w *walletWorker) StartConsuming(ctx context.Context) error {
 	log := logrus.WithField("walletWorker", "StartConsuming")
-
+	// FIXME: handle ctx.Done()
 	for {
 		msgs, chanErr, err := w.eventConsumer.Consume()
 		if err != nil {
@@ -67,10 +67,9 @@ func (w *walletWorker) StartConsuming(ctx context.Context) error {
 			}
 		}
 	}
-	return nil
 }
 
-func (s *walletWorker) StartSyncLoop(ctx context.Context, interval time.Duration) {
+func (w *walletWorker) StartSyncLoop(ctx context.Context, interval time.Duration) {
 	tm := time.NewTicker(interval)
 	defer tm.Stop()
 	for {
@@ -78,55 +77,18 @@ func (s *walletWorker) StartSyncLoop(ctx context.Context, interval time.Duration
 		case <-ctx.Done():
 			return
 		case <-tm.C:
-			s.SynchronizeWallets(ctx)
+			w.synchronizeWallets(ctx)
 		}
 	}
 }
 
-func (w *walletWorker) handleWalletCreated(ctx context.Context, msg amqp091.Delivery) error {
-	var event domain.WalletCreatedEvent
-	if err := json.Unmarshal(msg.Body, &event); err != nil {
-		return nil
-	}
-	walletID, err := uuid.Parse(event.ID)
-	if err != nil {
-		return nil
-	}
-	wallet, err := w.walletRepo.Get(ctx, event.UserID, walletID)
-	if err != nil {
-		return err
-	}
-	err = w.synchronizeWallet(ctx, wallet.Wallet)
-	if err != nil {
-		return err
-	}
-	return nil
-}
-
-func (s *walletWorker) synchronizeWallet(ctx context.Context, wallet domain.Wallet) error {
-	// FIXME: don't think i should keep it here
-	balance, err := s.walletService.FetchBalance(ctx, wallet)
-	if err != nil {
-		return err
-	}
-	uuid, err := uuid.Parse(wallet.ID)
-	if err != nil {
-		return err
-	}
-	err = s.walletRepo.UpdateBalance(ctx, wallet.UserID, uuid, balance.Balance, balance.BalanceUSD)
-	if err != nil {
-		return err
-	}
-	return nil
-}
-
-func (s *walletWorker) SynchronizeWallets(ctx context.Context) error {
+func (w *walletWorker) synchronizeWallets(ctx context.Context) error {
 	start := time.Now()
 	g, ctx := errgroup.WithContext(ctx)
 	log := logrus.WithContext(ctx)
 	groupsByChain := make(map[string][]domain.Wallet)
 
-	wallets, err := s.walletRepo.ListForSync(ctx, 100)
+	wallets, err := w.walletRepo.ListForSync(ctx, 100)
 	if err != nil {
 		log.WithError(err).WithField("limit", 100).Error("failed to fetch wallets for sync")
 		return fmt.Errorf("list wallets for sync: %w", err)
@@ -153,7 +115,7 @@ func (s *walletWorker) SynchronizeWallets(ctx context.Context) error {
 			var failedCount int
 
 			for _, wallet := range group {
-				if err := s.handleOneBalance(ctx, wallet); err != nil {
+				if err := w.updateBalance(ctx, wallet); err != nil {
 					failedCount++
 					log.WithFields(logrus.Fields{
 						"chain":     wallet.Chain,
@@ -187,12 +149,12 @@ func (s *walletWorker) SynchronizeWallets(ctx context.Context) error {
 	return nil
 }
 
-func (s *walletWorker) handleOneBalance(ctx context.Context, wallet domain.Wallet) error {
+func (w *walletWorker) updateBalance(ctx context.Context, wallet domain.Wallet) error {
 	uuid, err := uuid.Parse(wallet.ID)
 	if err != nil {
 		return err
 	}
-	balance, err := s.walletService.FetchBalance(ctx, wallet)
+	balance, err := w.walletService.FetchBalance(ctx, wallet)
 	if err != nil {
 		if errors.Is(err, ErrProviderTimeout) {
 			return err
@@ -205,9 +167,25 @@ func (s *walletWorker) handleOneBalance(ctx context.Context, wallet domain.Walle
 		}
 		return err
 	}
-	err = s.walletRepo.UpdateBalance(ctx, wallet.UserID, uuid, balance.Balance, balance.BalanceUSD)
+	err = w.walletRepo.UpdateBalance(ctx, wallet.UserID, uuid, balance.Balance, balance.BalanceUSD)
 	if err != nil {
 		return err
 	}
 	return nil
+}
+
+func (w *walletWorker) handleWalletCreated(ctx context.Context, msg amqp091.Delivery) error {
+	var event domain.WalletCreatedEvent
+	if err := json.Unmarshal(msg.Body, &event); err != nil {
+		return nil
+	}
+	uuid, err := uuid.Parse(event.ID)
+	if err != nil {
+		return nil
+	}
+	wallet, err := w.walletRepo.Get(ctx, event.UserID, uuid)
+	if err != nil {
+		return err
+	}
+	return w.updateBalance(ctx, wallet.Wallet)
 }
