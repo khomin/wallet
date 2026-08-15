@@ -35,30 +35,30 @@ var (
 	_ = metadata.Join
 )
 
-func request_PriceService_GetCoins_0(ctx context.Context, marshaler runtime.Marshaler, client PriceServiceClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+func request_PriceService_ListCoins_0(ctx context.Context, marshaler runtime.Marshaler, client PriceServiceClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
 	var (
-		protoReq GetCoinsReq
+		protoReq ListCoinsRequest
 		metadata runtime.ServerMetadata
 	)
 	if req.Body != nil {
 		_, _ = io.Copy(io.Discard, req.Body)
 	}
-	msg, err := client.GetCoins(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
+	msg, err := client.ListCoins(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
 	return msg, metadata, err
 }
 
-func local_request_PriceService_GetCoins_0(ctx context.Context, marshaler runtime.Marshaler, server PriceServiceServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+func local_request_PriceService_ListCoins_0(ctx context.Context, marshaler runtime.Marshaler, server PriceServiceServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
 	var (
-		protoReq GetCoinsReq
+		protoReq ListCoinsRequest
 		metadata runtime.ServerMetadata
 	)
-	msg, err := server.GetCoins(ctx, &protoReq)
+	msg, err := server.ListCoins(ctx, &protoReq)
 	return msg, metadata, err
 }
 
 func request_PriceService_GetCoin_0(ctx context.Context, marshaler runtime.Marshaler, client PriceServiceClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
 	var (
-		protoReq GetCoinReq
+		protoReq GetCoinRequest
 		metadata runtime.ServerMetadata
 		err      error
 	)
@@ -79,7 +79,7 @@ func request_PriceService_GetCoin_0(ctx context.Context, marshaler runtime.Marsh
 
 func local_request_PriceService_GetCoin_0(ctx context.Context, marshaler runtime.Marshaler, server PriceServiceServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
 	var (
-		protoReq GetCoinReq
+		protoReq GetCoinRequest
 		metadata runtime.ServerMetadata
 		err      error
 	)
@@ -97,7 +97,7 @@ func local_request_PriceService_GetCoin_0(ctx context.Context, marshaler runtime
 
 func request_PriceService_SearchCoin_0(ctx context.Context, marshaler runtime.Marshaler, client PriceServiceClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
 	var (
-		protoReq SearchCoinsReq
+		protoReq SearchCoinsRequest
 		metadata runtime.ServerMetadata
 	)
 	if err := marshaler.NewDecoder(req.Body).Decode(&protoReq); err != nil && !errors.Is(err, io.EOF) {
@@ -112,7 +112,7 @@ func request_PriceService_SearchCoin_0(ctx context.Context, marshaler runtime.Ma
 
 func local_request_PriceService_SearchCoin_0(ctx context.Context, marshaler runtime.Marshaler, server PriceServiceServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
 	var (
-		protoReq SearchCoinsReq
+		protoReq SearchCoinsRequest
 		metadata runtime.ServerMetadata
 	)
 	if err := marshaler.NewDecoder(req.Body).Decode(&protoReq); err != nil && !errors.Is(err, io.EOF) {
@@ -126,7 +126,7 @@ var filter_PriceService_GetPrices_0 = &utilities.DoubleArray{Encoding: map[strin
 
 func request_PriceService_GetPrices_0(ctx context.Context, marshaler runtime.Marshaler, client PriceServiceClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
 	var (
-		protoReq GetPricesReq
+		protoReq GetPricesRequest
 		metadata runtime.ServerMetadata
 	)
 	if req.Body != nil {
@@ -144,7 +144,7 @@ func request_PriceService_GetPrices_0(ctx context.Context, marshaler runtime.Mar
 
 func local_request_PriceService_GetPrices_0(ctx context.Context, marshaler runtime.Marshaler, server PriceServiceServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
 	var (
-		protoReq GetPricesReq
+		protoReq GetPricesRequest
 		metadata runtime.ServerMetadata
 	)
 	if err := req.ParseForm(); err != nil {
@@ -159,7 +159,7 @@ func local_request_PriceService_GetPrices_0(ctx context.Context, marshaler runti
 
 func request_PriceService_GetPrice_0(ctx context.Context, marshaler runtime.Marshaler, client PriceServiceClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
 	var (
-		protoReq GetPriceReq
+		protoReq GetPriceRequest
 		metadata runtime.ServerMetadata
 		err      error
 	)
@@ -180,7 +180,7 @@ func request_PriceService_GetPrice_0(ctx context.Context, marshaler runtime.Mars
 
 func local_request_PriceService_GetPrice_0(ctx context.Context, marshaler runtime.Marshaler, server PriceServiceServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
 	var (
-		protoReq GetPriceReq
+		protoReq GetPriceRequest
 		metadata runtime.ServerMetadata
 		err      error
 	)
@@ -202,25 +202,25 @@ func local_request_PriceService_GetPrice_0(ctx context.Context, marshaler runtim
 // Note that using this registration option will cause many gRPC library features to stop working. Consider using RegisterPriceServiceHandlerFromEndpoint instead.
 // GRPC interceptors will not work for this type of registration. To use interceptors, you must use the "runtime.WithMiddlewares" option in the "runtime.NewServeMux" call.
 func RegisterPriceServiceHandlerServer(ctx context.Context, mux *runtime.ServeMux, server PriceServiceServer) error {
-	mux.Handle(http.MethodGet, pattern_PriceService_GetCoins_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+	mux.Handle(http.MethodGet, pattern_PriceService_ListCoins_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		var stream runtime.ServerTransportStream
 		ctx = grpc.NewContextWithServerTransportStream(ctx, &stream)
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		annotatedContext, err := runtime.AnnotateIncomingContext(ctx, mux, req, "/price.v1.PriceService/GetCoins", runtime.WithHTTPPathPattern("/v1/coins"))
+		annotatedContext, err := runtime.AnnotateIncomingContext(ctx, mux, req, "/price.v1.PriceService/ListCoins", runtime.WithHTTPPathPattern("/v1/coins"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
-		resp, md, err := local_request_PriceService_GetCoins_0(annotatedContext, inboundMarshaler, server, req, pathParams)
+		resp, md, err := local_request_PriceService_ListCoins_0(annotatedContext, inboundMarshaler, server, req, pathParams)
 		md.HeaderMD, md.TrailerMD = metadata.Join(md.HeaderMD, stream.Header()), metadata.Join(md.TrailerMD, stream.Trailer())
 		annotatedContext = runtime.NewServerMetadataContext(annotatedContext, md)
 		if err != nil {
 			runtime.HTTPError(annotatedContext, mux, outboundMarshaler, w, req, err)
 			return
 		}
-		forward_PriceService_GetCoins_0(annotatedContext, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+		forward_PriceService_ListCoins_0(annotatedContext, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
 	})
 	mux.Handle(http.MethodGet, pattern_PriceService_GetCoin_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
@@ -342,22 +342,22 @@ func RegisterPriceServiceHandler(ctx context.Context, mux *runtime.ServeMux, con
 // doesn't go through the normal gRPC flow (creating a gRPC client etc.) then it will be up to the passed in
 // "PriceServiceClient" to call the correct interceptors. This client ignores the HTTP middlewares.
 func RegisterPriceServiceHandlerClient(ctx context.Context, mux *runtime.ServeMux, client PriceServiceClient) error {
-	mux.Handle(http.MethodGet, pattern_PriceService_GetCoins_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+	mux.Handle(http.MethodGet, pattern_PriceService_ListCoins_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		annotatedContext, err := runtime.AnnotateContext(ctx, mux, req, "/price.v1.PriceService/GetCoins", runtime.WithHTTPPathPattern("/v1/coins"))
+		annotatedContext, err := runtime.AnnotateContext(ctx, mux, req, "/price.v1.PriceService/ListCoins", runtime.WithHTTPPathPattern("/v1/coins"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
-		resp, md, err := request_PriceService_GetCoins_0(annotatedContext, inboundMarshaler, client, req, pathParams)
+		resp, md, err := request_PriceService_ListCoins_0(annotatedContext, inboundMarshaler, client, req, pathParams)
 		annotatedContext = runtime.NewServerMetadataContext(annotatedContext, md)
 		if err != nil {
 			runtime.HTTPError(annotatedContext, mux, outboundMarshaler, w, req, err)
 			return
 		}
-		forward_PriceService_GetCoins_0(annotatedContext, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+		forward_PriceService_ListCoins_0(annotatedContext, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
 	})
 	mux.Handle(http.MethodGet, pattern_PriceService_GetCoin_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
@@ -431,7 +431,7 @@ func RegisterPriceServiceHandlerClient(ctx context.Context, mux *runtime.ServeMu
 }
 
 var (
-	pattern_PriceService_GetCoins_0   = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1}, []string{"v1", "coins"}, ""))
+	pattern_PriceService_ListCoins_0  = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1}, []string{"v1", "coins"}, ""))
 	pattern_PriceService_GetCoin_0    = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 1, 0, 4, 1, 5, 2}, []string{"v1", "coins", "id"}, ""))
 	pattern_PriceService_SearchCoin_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2}, []string{"v1", "coins", "search"}, ""))
 	pattern_PriceService_GetPrices_0  = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1}, []string{"v1", "prices"}, ""))
@@ -439,7 +439,7 @@ var (
 )
 
 var (
-	forward_PriceService_GetCoins_0   = runtime.ForwardResponseMessage
+	forward_PriceService_ListCoins_0  = runtime.ForwardResponseMessage
 	forward_PriceService_GetCoin_0    = runtime.ForwardResponseMessage
 	forward_PriceService_SearchCoin_0 = runtime.ForwardResponseMessage
 	forward_PriceService_GetPrices_0  = runtime.ForwardResponseMessage

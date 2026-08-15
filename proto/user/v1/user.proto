@@ -9,14 +9,18 @@ option go_package = "tracker/gen/user/v1;userv1";
 import "google/api/annotations.proto";
 
 service UserService {
-  rpc GetUser(google.protobuf.Empty) returns (GetCurrentUserResp) {
+  rpc GetUser(GetCurrentUserRequest) returns (GetCurrentUserResponse) {
     option (google.api.http) = {
       get: "/v1/user"
     };
   }
 }
 
-message GetCurrentUserResp {
+message GetCurrentUserRequest {
+  
+}
+
+message GetCurrentUserResponse {
   string id   = 1;
   string name = 2;
 }

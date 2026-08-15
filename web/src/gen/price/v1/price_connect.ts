@@ -3,7 +3,7 @@
 /* eslint-disable */
 // @ts-nocheck
 
-import { GetCoinReq, GetCoinResp, GetCoinsReq, GetCoinsResp, GetPriceReq, GetPriceResp, GetPricesReq, GetPricesResp, SearchCoinsReq, SearchCoinsResp } from "./price_pb.js";
+import { GetCoinRequest, GetCoinResponse, GetPriceRequest, GetPriceResponse, GetPricesRequest, GetPricesResponse, ListCoinsRequest, ListCoinsResponse, SearchCoinsRequest, SearchCoinsResponse } from "./price_pb.js";
 import { MethodKind } from "@bufbuild/protobuf";
 
 /**
@@ -13,12 +13,12 @@ export const PriceService = {
   typeName: "price.v1.PriceService",
   methods: {
     /**
-     * @generated from rpc price.v1.PriceService.GetCoins
+     * @generated from rpc price.v1.PriceService.ListCoins
      */
-    getCoins: {
-      name: "GetCoins",
-      I: GetCoinsReq,
-      O: GetCoinsResp,
+    listCoins: {
+      name: "ListCoins",
+      I: ListCoinsRequest,
+      O: ListCoinsResponse,
       kind: MethodKind.Unary,
     },
     /**
@@ -26,8 +26,8 @@ export const PriceService = {
      */
     getCoin: {
       name: "GetCoin",
-      I: GetCoinReq,
-      O: GetCoinResp,
+      I: GetCoinRequest,
+      O: GetCoinResponse,
       kind: MethodKind.Unary,
     },
     /**
@@ -35,8 +35,8 @@ export const PriceService = {
      */
     searchCoin: {
       name: "SearchCoin",
-      I: SearchCoinsReq,
-      O: SearchCoinsResp,
+      I: SearchCoinsRequest,
+      O: SearchCoinsResponse,
       kind: MethodKind.Unary,
     },
     /**
@@ -44,8 +44,8 @@ export const PriceService = {
      */
     getPrices: {
       name: "GetPrices",
-      I: GetPricesReq,
-      O: GetPricesResp,
+      I: GetPricesRequest,
+      O: GetPricesResponse,
       kind: MethodKind.Unary,
     },
     /**
@@ -53,8 +53,8 @@ export const PriceService = {
      */
     getPrice: {
       name: "GetPrice",
-      I: GetPriceReq,
-      O: GetPriceResp,
+      I: GetPriceRequest,
+      O: GetPriceResponse,
       kind: MethodKind.Unary,
     },
   }

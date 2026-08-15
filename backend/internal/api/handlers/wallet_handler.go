@@ -12,7 +12,6 @@ import (
 
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
-	"google.golang.org/protobuf/types/known/emptypb"
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
@@ -21,13 +20,13 @@ type WalletGrpcHandler struct {
 	walletService *core.WalletService
 }
 
-func NewWalletGrpcHandler(walletService *core.WalletService) *WalletGrpcHandler {
+func NewWalletGrpcHandler(walletService *core.WalletService) walletv1.WalletServiceServer {
 	return &WalletGrpcHandler{
 		walletService: walletService,
 	}
 }
 
-func (s *WalletGrpcHandler) GetWallets(ctx context.Context, req *walletv1.GetWalletsReq) (*walletv1.GetWalletsResp, error) {
+func (s *WalletGrpcHandler) ListWallets(ctx context.Context, req *walletv1.ListWalletsRequest) (*walletv1.ListWalletsResponse, error) {
 	user, ok := middleware.GetOAUTH(ctx)
 	if !ok {
 		return nil, status.Error(codes.Unauthenticated, "unauthorized")
@@ -64,13 +63,13 @@ func (s *WalletGrpcHandler) GetWallets(ctx context.Context, req *walletv1.GetWal
 			},
 		})
 	}
-	return &walletv1.GetWalletsResp{
+	return &walletv1.ListWalletsResponse{
 		Total:  int32(len(wallets)),
 		Wallet: out,
 	}, nil
 }
 
-func (s *WalletGrpcHandler) GetWallet(ctx context.Context, req *walletv1.GetWalletReq) (*walletv1.GetWalletResp, error) {
+func (s *WalletGrpcHandler) GetWallet(ctx context.Context, req *walletv1.GetWalletRequest) (*walletv1.GetWalletResponse, error) {
 	user, ok := middleware.GetOAUTH(ctx)
 	if !ok {
 		return nil, status.Error(codes.Unauthenticated, "unauthorized")
@@ -86,7 +85,7 @@ func (s *WalletGrpcHandler) GetWallet(ctx context.Context, req *walletv1.GetWall
 		}
 		return nil, status.Error(codes.Internal, err.Error())
 	}
-	return &walletv1.GetWalletResp{
+	return &walletv1.GetWalletResponse{
 		Wallet: &walletv1.Wallet{
 			Id:            wallet.Wallet.ID,
 			Address:       wallet.Wallet.Address,
@@ -115,7 +114,7 @@ func (s *WalletGrpcHandler) GetWallet(ctx context.Context, req *walletv1.GetWall
 	}, nil
 }
 
-func (s *WalletGrpcHandler) AddWallet(ctx context.Context, req *walletv1.AddWalletReq) (*emptypb.Empty, error) {
+func (s *WalletGrpcHandler) CreateWallet(ctx context.Context, req *walletv1.CreateWalletRequest) (*walletv1.CreateWalletResponse, error) {
 	user, ok := middleware.GetOAUTH(ctx)
 	if !ok {
 		return nil, status.Error(codes.Unauthenticated, "unauthorized")
@@ -129,24 +128,10 @@ func (s *WalletGrpcHandler) AddWallet(ctx context.Context, req *walletv1.AddWall
 		}
 		return nil, status.Error(codes.Internal, err.Error())
 	}
-	// return &walletv1.AddWalletResp{
-	// 	Wallet: &walletv1.Wallet{
-	// 		Id:                wallet.Wallet.ID,
-	// 		Address:           wallet.Wallet.Address,
-	// 		Chain:             wallet.Wallet.Chain,
-	// 		TokenSymbol:       wallet.Wallet.Symbol,
-	// 		Label:             wallet.Wallet.Label,
-	// 		BalanceCrypto:     float32(wallet.Balance),
-	// 		BalanceUsd:        float32(wallet.BalanceUSD),
-	// 		Change_24HPercent: float32(wallet.Price.Change_24h),
-	// 		HasError:          wallet.HasError,
-	// 		ErrorMsg:          wallet.ErrorMsg,
-	// 	},
-	// }, nil
-	return &emptypb.Empty{}, nil
+	return &walletv1.CreateWalletResponse{}, nil
 }
 
-func (s *WalletGrpcHandler) EditWallet(ctx context.Context, req *walletv1.EditWalletReq) (*walletv1.EditWalletResp, error) {
+func (s *WalletGrpcHandler) EditWallet(ctx context.Context, req *walletv1.EditWalletRequest) (*walletv1.EditWalletResponse, error) {
 	user, ok := middleware.GetOAUTH(ctx)
 	if !ok {
 		return nil, status.Error(codes.Unauthenticated, "unauthorized")
@@ -162,13 +147,13 @@ func (s *WalletGrpcHandler) EditWallet(ctx context.Context, req *walletv1.EditWa
 		}
 		return nil, status.Error(codes.Internal, err.Error())
 	}
-	return &walletv1.EditWalletResp{
+	return &walletv1.EditWalletResponse{
 		Id:    wallet.ID,
 		Label: wallet.Label,
 	}, nil
 }
 
-func (s *WalletGrpcHandler) DeleteWallet(ctx context.Context, req *walletv1.DeleteWalletReq) (*walletv1.DeleteWalletResp, error) {
+func (s *WalletGrpcHandler) DeleteWallet(ctx context.Context, req *walletv1.DeleteWalletRequest) (*walletv1.DeleteWalletResponse, error) {
 	user, ok := middleware.GetOAUTH(ctx)
 	if !ok {
 		return nil, status.Error(codes.Unauthenticated, "unauthorized")
@@ -184,7 +169,7 @@ func (s *WalletGrpcHandler) DeleteWallet(ctx context.Context, req *walletv1.Dele
 		}
 		return nil, status.Error(codes.Internal, err.Error())
 	}
-	return &walletv1.DeleteWalletResp{
+	return &walletv1.DeleteWalletResponse{
 		DeletedId: uuid.String(),
 	}, nil
 }

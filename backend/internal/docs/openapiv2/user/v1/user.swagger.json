@@ -23,7 +23,7 @@
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/v1GetCurrentUserResp"
+              "$ref": "#/definitions/v1GetCurrentUserResponse"
             }
           },
           "default": {
@@ -68,7 +68,7 @@
         }
       }
     },
-    "v1GetCurrentUserResp": {
+    "v1GetCurrentUserResponse": {
       "type": "object",
       "properties": {
         "id": {

@@ -18,12 +18,12 @@
   "paths": {
     "/v1/coins": {
       "get": {
-        "operationId": "PriceService_GetCoins",
+        "operationId": "PriceService_ListCoins",
         "responses": {
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/v1GetCoinsResp"
+              "$ref": "#/definitions/v1ListCoinsResponse"
             }
           },
           "default": {
@@ -45,7 +45,7 @@
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/v1SearchCoinsResp"
+              "$ref": "#/definitions/v1SearchCoinsResponse"
             }
           },
           "default": {
@@ -61,7 +61,7 @@
             "in": "body",
             "required": true,
             "schema": {
-              "$ref": "#/definitions/v1SearchCoinsReq"
+              "$ref": "#/definitions/v1SearchCoinsRequest"
             }
           }
         ],
@@ -77,7 +77,7 @@
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/v1GetCoinResp"
+              "$ref": "#/definitions/v1GetCoinResponse"
             }
           },
           "default": {
@@ -107,7 +107,7 @@
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/v1GetPricesResp"
+              "$ref": "#/definitions/v1GetPricesResponse"
             }
           },
           "default": {
@@ -141,7 +141,7 @@
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/v1GetPriceResp"
+              "$ref": "#/definitions/v1GetPriceResponse"
             }
           },
           "default": {
@@ -194,7 +194,7 @@
         }
       }
     },
-    "v1GetCoinResp": {
+    "v1GetCoinResponse": {
       "type": "object",
       "properties": {
         "token": {
@@ -202,23 +202,7 @@
         }
       }
     },
-    "v1GetCoinsResp": {
-      "type": "object",
-      "properties": {
-        "total": {
-          "type": "integer",
-          "format": "int32"
-        },
-        "token": {
-          "type": "array",
-          "items": {
-            "type": "object",
-            "$ref": "#/definitions/v1Token"
-          }
-        }
-      }
-    },
-    "v1GetPriceResp": {
+    "v1GetPriceResponse": {
       "type": "object",
       "properties": {
         "price": {
@@ -226,7 +210,7 @@
         }
       }
     },
-    "v1GetPricesResp": {
+    "v1GetPricesResponse": {
       "type": "object",
       "properties": {
         "total": {
@@ -238,6 +222,22 @@
           "items": {
             "type": "object",
             "$ref": "#/definitions/v1Price"
+          }
+        }
+      }
+    },
+    "v1ListCoinsResponse": {
+      "type": "object",
+      "properties": {
+        "total": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "token": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v1Token"
           }
         }
       }
@@ -293,7 +293,7 @@
         }
       }
     },
-    "v1SearchCoinsReq": {
+    "v1SearchCoinsRequest": {
       "type": "object",
       "properties": {
         "text": {
@@ -301,7 +301,7 @@
         }
       }
     },
-    "v1SearchCoinsResp": {
+    "v1SearchCoinsResponse": {
       "type": "object",
       "properties": {
         "total": {

@@ -3,8 +3,8 @@
 /* eslint-disable */
 // @ts-nocheck
 
-import { Empty, MethodKind } from "@bufbuild/protobuf";
-import { GetCurrentUserResp } from "./user_pb.js";
+import { GetCurrentUserRequest, GetCurrentUserResponse } from "./user_pb.js";
+import { MethodKind } from "@bufbuild/protobuf";
 
 /**
  * @generated from service user.v1.UserService
@@ -17,8 +17,8 @@ export const UserService = {
      */
     getUser: {
       name: "GetUser",
-      I: Empty,
-      O: GetCurrentUserResp,
+      I: GetCurrentUserRequest,
+      O: GetCurrentUserResponse,
       kind: MethodKind.Unary,
     },
   }

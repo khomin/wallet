@@ -16,31 +16,14 @@ type PriceGrpcHandler struct {
 	log          *logrus.Entry
 }
 
-func NewPriceGrpcHandler(service *core.PriceService) *PriceGrpcHandler {
+func NewPriceGrpcHandler(service *core.PriceService) pricev1.PriceServiceServer {
 	return &PriceGrpcHandler{
 		priceService: service,
 		log:          logrus.WithField("component", "PriceGrpcHandler"),
 	}
 }
 
-func (s *PriceGrpcHandler) GetCoin(ctx context.Context, req *pricev1.GetCoinReq) (*pricev1.GetCoinResp, error) {
-	coin, err := s.priceService.GetCoin(ctx, req.Id)
-	if err != nil {
-		return nil, err
-	}
-	return &pricev1.GetCoinResp{
-		Token: &pricev1.Token{
-			Symbol:   coin.Symbol,
-			Name:     coin.Name,
-			Chains:   coin.Chains,
-			Addrs:    coin.Addrs,
-			IsNative: coin.IsNative,
-			ImageUrl: coin.ImageURL,
-		},
-	}, nil
-}
-
-func (s *PriceGrpcHandler) GetCoins(ctx context.Context, req *pricev1.GetCoinsReq) (*pricev1.GetCoinsResp, error) {
+func (s *PriceGrpcHandler) ListCoins(ctx context.Context, req *pricev1.ListCoinsRequest) (*pricev1.ListCoinsResponse, error) {
 	coins, err := s.priceService.GetCoins(ctx)
 	if err != nil {
 		return nil, err
@@ -56,13 +39,30 @@ func (s *PriceGrpcHandler) GetCoins(ctx context.Context, req *pricev1.GetCoinsRe
 			ImageUrl: i.ImageURL,
 		})
 	}
-	return &pricev1.GetCoinsResp{
+	return &pricev1.ListCoinsResponse{
 		Total: int32(len(coins)),
 		Token: out,
 	}, nil
 }
 
-func (s *PriceGrpcHandler) GetPrices(ctx context.Context, req *pricev1.GetPricesReq) (*pricev1.GetPricesResp, error) {
+func (s *PriceGrpcHandler) GetCoin(ctx context.Context, req *pricev1.GetCoinRequest) (*pricev1.GetCoinResponse, error) {
+	coin, err := s.priceService.GetCoin(ctx, req.Id)
+	if err != nil {
+		return nil, err
+	}
+	return &pricev1.GetCoinResponse{
+		Token: &pricev1.Token{
+			Symbol:   coin.Symbol,
+			Name:     coin.Name,
+			Chains:   coin.Chains,
+			Addrs:    coin.Addrs,
+			IsNative: coin.IsNative,
+			ImageUrl: coin.ImageURL,
+		},
+	}, nil
+}
+
+func (s *PriceGrpcHandler) GetPrices(ctx context.Context, req *pricev1.GetPricesRequest) (*pricev1.GetPricesResponse, error) {
 	prices, err := s.priceService.GetPrices(ctx, req.Symbols)
 	if err != nil {
 		return nil, err
@@ -84,18 +84,18 @@ func (s *PriceGrpcHandler) GetPrices(ctx context.Context, req *pricev1.GetPrices
 			UpdatedAt:                     timestamppb.New(i.UpdatedAt),
 		})
 	}
-	return &pricev1.GetPricesResp{
+	return &pricev1.GetPricesResponse{
 		Total: int32(len(prices)),
 		Price: out,
 	}, nil
 }
 
-func (s *PriceGrpcHandler) GetPrice(ctx context.Context, req *pricev1.GetPriceReq) (*pricev1.GetPriceResp, error) {
+func (s *PriceGrpcHandler) GetPrice(ctx context.Context, req *pricev1.GetPriceRequest) (*pricev1.GetPriceResponse, error) {
 	price, err := s.priceService.GetPrice(ctx, req.Symbol)
 	if err != nil {
 		return nil, err
 	}
-	return &pricev1.GetPriceResp{
+	return &pricev1.GetPriceResponse{
 		Price: &pricev1.Price{
 			Symbol:                        price.Symbol,
 			Name:                          price.Name,
@@ -113,7 +113,7 @@ func (s *PriceGrpcHandler) GetPrice(ctx context.Context, req *pricev1.GetPriceRe
 	}, nil
 }
 
-func (s *PriceGrpcHandler) SearchCoin(ctx context.Context, req *pricev1.SearchCoinsReq) (*pricev1.SearchCoinsResp, error) {
+func (s *PriceGrpcHandler) SearchCoin(ctx context.Context, req *pricev1.SearchCoinsRequest) (*pricev1.SearchCoinsResponse, error) {
 	tokens, err := s.priceService.SearchCoins(ctx, req.Text)
 	if err != nil {
 		return nil, err
@@ -129,7 +129,7 @@ func (s *PriceGrpcHandler) SearchCoin(ctx context.Context, req *pricev1.SearchCo
 			ImageUrl: i.ImageURL,
 		})
 	}
-	return &pricev1.SearchCoinsResp{
+	return &pricev1.SearchCoinsResponse{
 		Total: int32(len(tokens)),
 		Token: out,
 	}, nil

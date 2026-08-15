@@ -10,70 +10,70 @@ option go_package = "tracker/gen/price/v1;pricev1";
 import "google/api/annotations.proto";
 
 service PriceService {
-  rpc GetCoins(GetCoinsReq) returns (GetCoinsResp) {
+  rpc ListCoins(ListCoinsRequest) returns (ListCoinsResponse) {
     option (google.api.http) = {
       get: "/v1/coins"
     };
   }
-  rpc GetCoin(GetCoinReq) returns (GetCoinResp) {
+  rpc GetCoin(GetCoinRequest) returns (GetCoinResponse) {
     option (google.api.http) = {
       get: "/v1/coins/{id}"
     };
   }
-  rpc SearchCoin(SearchCoinsReq) returns (SearchCoinsResp) {
+  rpc SearchCoin(SearchCoinsRequest) returns (SearchCoinsResponse) {
     option (google.api.http) = {
       post: "/v1/coins/search",
       body: "*"
     };
   }
 
-  rpc GetPrices(GetPricesReq) returns (GetPricesResp) {
+  rpc GetPrices(GetPricesRequest) returns (GetPricesResponse) {
     option (google.api.http) = {
       get: "/v1/prices"
     };
   }
-  rpc GetPrice(GetPriceReq) returns (GetPriceResp) {
+  rpc GetPrice(GetPriceRequest) returns (GetPriceResponse) {
     option (google.api.http) = {
       get: "/v1/prices/{symbol}"
     };
   }
 }
 
-message GetCoinsReq {}
+message ListCoinsRequest {}
 
-message GetCoinsResp {
+message ListCoinsResponse {
   int32          total = 1;
   repeated Token token = 2;
 }
 
-message GetCoinReq {
+message GetCoinRequest {
   string id = 1;
 }
-message GetCoinResp {
+message GetCoinResponse {
   Token token = 1;
 }
 
-message GetPricesReq {
+message GetPricesRequest {
   repeated string symbols = 1;
 }
 
-message GetPricesResp {
+message GetPricesResponse {
   int32          total = 1;
   repeated Price price = 2;
 }
 
-message GetPriceReq {
+message GetPriceRequest {
   string symbol = 1;
 }
 
-message GetPriceResp {
+message GetPriceResponse {
   Price price = 1;
 }
 
-message SearchCoinsReq {
+message SearchCoinsRequest {
   string text = 1;
 }
-message SearchCoinsResp {
+message SearchCoinsResponse {
   int32          total = 1;
   repeated Token token = 2;
 }
@@ -92,20 +92,6 @@ message Price {
   float                     market_cap_change_percentage_24h = 11;
   google.protobuf.Timestamp updated_at                       = 12;
 }
-
-message GetCoinRequest {
-  string coin = 1;
-}
-
-message GetCoinResponse {
-  string          symbol    = 2;
-  string          name      = 3;
-  repeated string chains    = 4;
-  repeated string addrs     = 5;
-  bool            is_native = 6;
-  string          image_url = 7;
-}
-
 message Token {
   string          symbol    = 2;
   string          name      = 3;

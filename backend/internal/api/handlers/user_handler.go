@@ -8,7 +8,6 @@ import (
 
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
-	"google.golang.org/protobuf/types/known/emptypb"
 )
 
 type UserHandler struct {
@@ -16,18 +15,18 @@ type UserHandler struct {
 	userRepo core.UserRepo
 }
 
-func NewUserHandler(repo core.UserRepo) *UserHandler {
+func NewUserHandler(repo core.UserRepo) userv1.UserServiceServer {
 	return &UserHandler{
 		userRepo: repo,
 	}
 }
 
-func (p *UserHandler) GetUser(ctx context.Context, req *emptypb.Empty) (*userv1.GetCurrentUserResp, error) {
+func (p *UserHandler) GetUser(ctx context.Context, req *userv1.GetCurrentUserRequest) (*userv1.GetCurrentUserResponse, error) {
 	user, ok := middleware.GetOAUTH(ctx)
 	if !ok {
 		return nil, status.Error(codes.Unauthenticated, "unauthorized")
 	}
-	return &userv1.GetCurrentUserResp{
+	return &userv1.GetCurrentUserResponse{
 		Id:   user.Subject,
 		Name: user.Name,
 	}, nil

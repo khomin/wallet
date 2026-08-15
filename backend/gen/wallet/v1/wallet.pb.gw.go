@@ -35,30 +35,30 @@ var (
 	_ = metadata.Join
 )
 
-func request_WalletService_GetWallets_0(ctx context.Context, marshaler runtime.Marshaler, client WalletServiceClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+func request_WalletService_ListWallets_0(ctx context.Context, marshaler runtime.Marshaler, client WalletServiceClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
 	var (
-		protoReq GetWalletsReq
+		protoReq ListWalletsRequest
 		metadata runtime.ServerMetadata
 	)
 	if req.Body != nil {
 		_, _ = io.Copy(io.Discard, req.Body)
 	}
-	msg, err := client.GetWallets(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
+	msg, err := client.ListWallets(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
 	return msg, metadata, err
 }
 
-func local_request_WalletService_GetWallets_0(ctx context.Context, marshaler runtime.Marshaler, server WalletServiceServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+func local_request_WalletService_ListWallets_0(ctx context.Context, marshaler runtime.Marshaler, server WalletServiceServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
 	var (
-		protoReq GetWalletsReq
+		protoReq ListWalletsRequest
 		metadata runtime.ServerMetadata
 	)
-	msg, err := server.GetWallets(ctx, &protoReq)
+	msg, err := server.ListWallets(ctx, &protoReq)
 	return msg, metadata, err
 }
 
 func request_WalletService_GetWallet_0(ctx context.Context, marshaler runtime.Marshaler, client WalletServiceClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
 	var (
-		protoReq GetWalletReq
+		protoReq GetWalletRequest
 		metadata runtime.ServerMetadata
 		err      error
 	)
@@ -79,7 +79,7 @@ func request_WalletService_GetWallet_0(ctx context.Context, marshaler runtime.Ma
 
 func local_request_WalletService_GetWallet_0(ctx context.Context, marshaler runtime.Marshaler, server WalletServiceServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
 	var (
-		protoReq GetWalletReq
+		protoReq GetWalletRequest
 		metadata runtime.ServerMetadata
 		err      error
 	)
@@ -97,7 +97,7 @@ func local_request_WalletService_GetWallet_0(ctx context.Context, marshaler runt
 
 func request_WalletService_EditWallet_0(ctx context.Context, marshaler runtime.Marshaler, client WalletServiceClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
 	var (
-		protoReq EditWalletReq
+		protoReq EditWalletRequest
 		metadata runtime.ServerMetadata
 		err      error
 	)
@@ -121,7 +121,7 @@ func request_WalletService_EditWallet_0(ctx context.Context, marshaler runtime.M
 
 func local_request_WalletService_EditWallet_0(ctx context.Context, marshaler runtime.Marshaler, server WalletServiceServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
 	var (
-		protoReq EditWalletReq
+		protoReq EditWalletRequest
 		metadata runtime.ServerMetadata
 		err      error
 	)
@@ -142,7 +142,7 @@ func local_request_WalletService_EditWallet_0(ctx context.Context, marshaler run
 
 func request_WalletService_DeleteWallet_0(ctx context.Context, marshaler runtime.Marshaler, client WalletServiceClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
 	var (
-		protoReq DeleteWalletReq
+		protoReq DeleteWalletRequest
 		metadata runtime.ServerMetadata
 		err      error
 	)
@@ -163,7 +163,7 @@ func request_WalletService_DeleteWallet_0(ctx context.Context, marshaler runtime
 
 func local_request_WalletService_DeleteWallet_0(ctx context.Context, marshaler runtime.Marshaler, server WalletServiceServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
 	var (
-		protoReq DeleteWalletReq
+		protoReq DeleteWalletRequest
 		metadata runtime.ServerMetadata
 		err      error
 	)
@@ -179,9 +179,9 @@ func local_request_WalletService_DeleteWallet_0(ctx context.Context, marshaler r
 	return msg, metadata, err
 }
 
-func request_WalletService_AddWallet_0(ctx context.Context, marshaler runtime.Marshaler, client WalletServiceClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+func request_WalletService_CreateWallet_0(ctx context.Context, marshaler runtime.Marshaler, client WalletServiceClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
 	var (
-		protoReq AddWalletReq
+		protoReq CreateWalletRequest
 		metadata runtime.ServerMetadata
 	)
 	if err := marshaler.NewDecoder(req.Body).Decode(&protoReq); err != nil && !errors.Is(err, io.EOF) {
@@ -190,19 +190,19 @@ func request_WalletService_AddWallet_0(ctx context.Context, marshaler runtime.Ma
 	if req.Body != nil {
 		_, _ = io.Copy(io.Discard, req.Body)
 	}
-	msg, err := client.AddWallet(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
+	msg, err := client.CreateWallet(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
 	return msg, metadata, err
 }
 
-func local_request_WalletService_AddWallet_0(ctx context.Context, marshaler runtime.Marshaler, server WalletServiceServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+func local_request_WalletService_CreateWallet_0(ctx context.Context, marshaler runtime.Marshaler, server WalletServiceServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
 	var (
-		protoReq AddWalletReq
+		protoReq CreateWalletRequest
 		metadata runtime.ServerMetadata
 	)
 	if err := marshaler.NewDecoder(req.Body).Decode(&protoReq); err != nil && !errors.Is(err, io.EOF) {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
 	}
-	msg, err := server.AddWallet(ctx, &protoReq)
+	msg, err := server.CreateWallet(ctx, &protoReq)
 	return msg, metadata, err
 }
 
@@ -212,25 +212,25 @@ func local_request_WalletService_AddWallet_0(ctx context.Context, marshaler runt
 // Note that using this registration option will cause many gRPC library features to stop working. Consider using RegisterWalletServiceHandlerFromEndpoint instead.
 // GRPC interceptors will not work for this type of registration. To use interceptors, you must use the "runtime.WithMiddlewares" option in the "runtime.NewServeMux" call.
 func RegisterWalletServiceHandlerServer(ctx context.Context, mux *runtime.ServeMux, server WalletServiceServer) error {
-	mux.Handle(http.MethodGet, pattern_WalletService_GetWallets_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+	mux.Handle(http.MethodGet, pattern_WalletService_ListWallets_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		var stream runtime.ServerTransportStream
 		ctx = grpc.NewContextWithServerTransportStream(ctx, &stream)
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		annotatedContext, err := runtime.AnnotateIncomingContext(ctx, mux, req, "/wallet.v1.WalletService/GetWallets", runtime.WithHTTPPathPattern("/v1/wallets"))
+		annotatedContext, err := runtime.AnnotateIncomingContext(ctx, mux, req, "/wallet.v1.WalletService/ListWallets", runtime.WithHTTPPathPattern("/v1/wallets"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
-		resp, md, err := local_request_WalletService_GetWallets_0(annotatedContext, inboundMarshaler, server, req, pathParams)
+		resp, md, err := local_request_WalletService_ListWallets_0(annotatedContext, inboundMarshaler, server, req, pathParams)
 		md.HeaderMD, md.TrailerMD = metadata.Join(md.HeaderMD, stream.Header()), metadata.Join(md.TrailerMD, stream.Trailer())
 		annotatedContext = runtime.NewServerMetadataContext(annotatedContext, md)
 		if err != nil {
 			runtime.HTTPError(annotatedContext, mux, outboundMarshaler, w, req, err)
 			return
 		}
-		forward_WalletService_GetWallets_0(annotatedContext, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+		forward_WalletService_ListWallets_0(annotatedContext, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
 	})
 	mux.Handle(http.MethodGet, pattern_WalletService_GetWallet_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
@@ -292,25 +292,25 @@ func RegisterWalletServiceHandlerServer(ctx context.Context, mux *runtime.ServeM
 		}
 		forward_WalletService_DeleteWallet_0(annotatedContext, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
 	})
-	mux.Handle(http.MethodPost, pattern_WalletService_AddWallet_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+	mux.Handle(http.MethodPost, pattern_WalletService_CreateWallet_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		var stream runtime.ServerTransportStream
 		ctx = grpc.NewContextWithServerTransportStream(ctx, &stream)
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		annotatedContext, err := runtime.AnnotateIncomingContext(ctx, mux, req, "/wallet.v1.WalletService/AddWallet", runtime.WithHTTPPathPattern("/v1/wallets"))
+		annotatedContext, err := runtime.AnnotateIncomingContext(ctx, mux, req, "/wallet.v1.WalletService/CreateWallet", runtime.WithHTTPPathPattern("/v1/wallets"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
-		resp, md, err := local_request_WalletService_AddWallet_0(annotatedContext, inboundMarshaler, server, req, pathParams)
+		resp, md, err := local_request_WalletService_CreateWallet_0(annotatedContext, inboundMarshaler, server, req, pathParams)
 		md.HeaderMD, md.TrailerMD = metadata.Join(md.HeaderMD, stream.Header()), metadata.Join(md.TrailerMD, stream.Trailer())
 		annotatedContext = runtime.NewServerMetadataContext(annotatedContext, md)
 		if err != nil {
 			runtime.HTTPError(annotatedContext, mux, outboundMarshaler, w, req, err)
 			return
 		}
-		forward_WalletService_AddWallet_0(annotatedContext, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+		forward_WalletService_CreateWallet_0(annotatedContext, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
 	})
 
 	return nil
@@ -352,22 +352,22 @@ func RegisterWalletServiceHandler(ctx context.Context, mux *runtime.ServeMux, co
 // doesn't go through the normal gRPC flow (creating a gRPC client etc.) then it will be up to the passed in
 // "WalletServiceClient" to call the correct interceptors. This client ignores the HTTP middlewares.
 func RegisterWalletServiceHandlerClient(ctx context.Context, mux *runtime.ServeMux, client WalletServiceClient) error {
-	mux.Handle(http.MethodGet, pattern_WalletService_GetWallets_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+	mux.Handle(http.MethodGet, pattern_WalletService_ListWallets_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		annotatedContext, err := runtime.AnnotateContext(ctx, mux, req, "/wallet.v1.WalletService/GetWallets", runtime.WithHTTPPathPattern("/v1/wallets"))
+		annotatedContext, err := runtime.AnnotateContext(ctx, mux, req, "/wallet.v1.WalletService/ListWallets", runtime.WithHTTPPathPattern("/v1/wallets"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
-		resp, md, err := request_WalletService_GetWallets_0(annotatedContext, inboundMarshaler, client, req, pathParams)
+		resp, md, err := request_WalletService_ListWallets_0(annotatedContext, inboundMarshaler, client, req, pathParams)
 		annotatedContext = runtime.NewServerMetadataContext(annotatedContext, md)
 		if err != nil {
 			runtime.HTTPError(annotatedContext, mux, outboundMarshaler, w, req, err)
 			return
 		}
-		forward_WalletService_GetWallets_0(annotatedContext, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+		forward_WalletService_ListWallets_0(annotatedContext, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
 	})
 	mux.Handle(http.MethodGet, pattern_WalletService_GetWallet_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
@@ -420,38 +420,38 @@ func RegisterWalletServiceHandlerClient(ctx context.Context, mux *runtime.ServeM
 		}
 		forward_WalletService_DeleteWallet_0(annotatedContext, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
 	})
-	mux.Handle(http.MethodPost, pattern_WalletService_AddWallet_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+	mux.Handle(http.MethodPost, pattern_WalletService_CreateWallet_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		annotatedContext, err := runtime.AnnotateContext(ctx, mux, req, "/wallet.v1.WalletService/AddWallet", runtime.WithHTTPPathPattern("/v1/wallets"))
+		annotatedContext, err := runtime.AnnotateContext(ctx, mux, req, "/wallet.v1.WalletService/CreateWallet", runtime.WithHTTPPathPattern("/v1/wallets"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
-		resp, md, err := request_WalletService_AddWallet_0(annotatedContext, inboundMarshaler, client, req, pathParams)
+		resp, md, err := request_WalletService_CreateWallet_0(annotatedContext, inboundMarshaler, client, req, pathParams)
 		annotatedContext = runtime.NewServerMetadataContext(annotatedContext, md)
 		if err != nil {
 			runtime.HTTPError(annotatedContext, mux, outboundMarshaler, w, req, err)
 			return
 		}
-		forward_WalletService_AddWallet_0(annotatedContext, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+		forward_WalletService_CreateWallet_0(annotatedContext, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
 	})
 	return nil
 }
 
 var (
-	pattern_WalletService_GetWallets_0   = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1}, []string{"v1", "wallets"}, ""))
+	pattern_WalletService_ListWallets_0  = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1}, []string{"v1", "wallets"}, ""))
 	pattern_WalletService_GetWallet_0    = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 1, 0, 4, 1, 5, 2}, []string{"v1", "wallets", "id"}, ""))
 	pattern_WalletService_EditWallet_0   = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 1, 0, 4, 1, 5, 2}, []string{"v1", "wallets", "id"}, ""))
 	pattern_WalletService_DeleteWallet_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 1, 0, 4, 1, 5, 2}, []string{"v1", "wallets", "id"}, ""))
-	pattern_WalletService_AddWallet_0    = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1}, []string{"v1", "wallets"}, ""))
+	pattern_WalletService_CreateWallet_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1}, []string{"v1", "wallets"}, ""))
 )
 
 var (
-	forward_WalletService_GetWallets_0   = runtime.ForwardResponseMessage
+	forward_WalletService_ListWallets_0  = runtime.ForwardResponseMessage
 	forward_WalletService_GetWallet_0    = runtime.ForwardResponseMessage
 	forward_WalletService_EditWallet_0   = runtime.ForwardResponseMessage
 	forward_WalletService_DeleteWallet_0 = runtime.ForwardResponseMessage
-	forward_WalletService_AddWallet_0    = runtime.ForwardResponseMessage
+	forward_WalletService_CreateWallet_0 = runtime.ForwardResponseMessage
 )

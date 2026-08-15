@@ -19,7 +19,7 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
-	PriceService_GetCoins_FullMethodName   = "/price.v1.PriceService/GetCoins"
+	PriceService_ListCoins_FullMethodName  = "/price.v1.PriceService/ListCoins"
 	PriceService_GetCoin_FullMethodName    = "/price.v1.PriceService/GetCoin"
 	PriceService_SearchCoin_FullMethodName = "/price.v1.PriceService/SearchCoin"
 	PriceService_GetPrices_FullMethodName  = "/price.v1.PriceService/GetPrices"
@@ -30,11 +30,11 @@ const (
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type PriceServiceClient interface {
-	GetCoins(ctx context.Context, in *GetCoinsReq, opts ...grpc.CallOption) (*GetCoinsResp, error)
-	GetCoin(ctx context.Context, in *GetCoinReq, opts ...grpc.CallOption) (*GetCoinResp, error)
-	SearchCoin(ctx context.Context, in *SearchCoinsReq, opts ...grpc.CallOption) (*SearchCoinsResp, error)
-	GetPrices(ctx context.Context, in *GetPricesReq, opts ...grpc.CallOption) (*GetPricesResp, error)
-	GetPrice(ctx context.Context, in *GetPriceReq, opts ...grpc.CallOption) (*GetPriceResp, error)
+	ListCoins(ctx context.Context, in *ListCoinsRequest, opts ...grpc.CallOption) (*ListCoinsResponse, error)
+	GetCoin(ctx context.Context, in *GetCoinRequest, opts ...grpc.CallOption) (*GetCoinResponse, error)
+	SearchCoin(ctx context.Context, in *SearchCoinsRequest, opts ...grpc.CallOption) (*SearchCoinsResponse, error)
+	GetPrices(ctx context.Context, in *GetPricesRequest, opts ...grpc.CallOption) (*GetPricesResponse, error)
+	GetPrice(ctx context.Context, in *GetPriceRequest, opts ...grpc.CallOption) (*GetPriceResponse, error)
 }
 
 type priceServiceClient struct {
@@ -45,19 +45,19 @@ func NewPriceServiceClient(cc grpc.ClientConnInterface) PriceServiceClient {
 	return &priceServiceClient{cc}
 }
 
-func (c *priceServiceClient) GetCoins(ctx context.Context, in *GetCoinsReq, opts ...grpc.CallOption) (*GetCoinsResp, error) {
+func (c *priceServiceClient) ListCoins(ctx context.Context, in *ListCoinsRequest, opts ...grpc.CallOption) (*ListCoinsResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(GetCoinsResp)
-	err := c.cc.Invoke(ctx, PriceService_GetCoins_FullMethodName, in, out, cOpts...)
+	out := new(ListCoinsResponse)
+	err := c.cc.Invoke(ctx, PriceService_ListCoins_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *priceServiceClient) GetCoin(ctx context.Context, in *GetCoinReq, opts ...grpc.CallOption) (*GetCoinResp, error) {
+func (c *priceServiceClient) GetCoin(ctx context.Context, in *GetCoinRequest, opts ...grpc.CallOption) (*GetCoinResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(GetCoinResp)
+	out := new(GetCoinResponse)
 	err := c.cc.Invoke(ctx, PriceService_GetCoin_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
@@ -65,9 +65,9 @@ func (c *priceServiceClient) GetCoin(ctx context.Context, in *GetCoinReq, opts .
 	return out, nil
 }
 
-func (c *priceServiceClient) SearchCoin(ctx context.Context, in *SearchCoinsReq, opts ...grpc.CallOption) (*SearchCoinsResp, error) {
+func (c *priceServiceClient) SearchCoin(ctx context.Context, in *SearchCoinsRequest, opts ...grpc.CallOption) (*SearchCoinsResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(SearchCoinsResp)
+	out := new(SearchCoinsResponse)
 	err := c.cc.Invoke(ctx, PriceService_SearchCoin_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
@@ -75,9 +75,9 @@ func (c *priceServiceClient) SearchCoin(ctx context.Context, in *SearchCoinsReq,
 	return out, nil
 }
 
-func (c *priceServiceClient) GetPrices(ctx context.Context, in *GetPricesReq, opts ...grpc.CallOption) (*GetPricesResp, error) {
+func (c *priceServiceClient) GetPrices(ctx context.Context, in *GetPricesRequest, opts ...grpc.CallOption) (*GetPricesResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(GetPricesResp)
+	out := new(GetPricesResponse)
 	err := c.cc.Invoke(ctx, PriceService_GetPrices_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
@@ -85,9 +85,9 @@ func (c *priceServiceClient) GetPrices(ctx context.Context, in *GetPricesReq, op
 	return out, nil
 }
 
-func (c *priceServiceClient) GetPrice(ctx context.Context, in *GetPriceReq, opts ...grpc.CallOption) (*GetPriceResp, error) {
+func (c *priceServiceClient) GetPrice(ctx context.Context, in *GetPriceRequest, opts ...grpc.CallOption) (*GetPriceResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(GetPriceResp)
+	out := new(GetPriceResponse)
 	err := c.cc.Invoke(ctx, PriceService_GetPrice_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
@@ -99,11 +99,11 @@ func (c *priceServiceClient) GetPrice(ctx context.Context, in *GetPriceReq, opts
 // All implementations must embed UnimplementedPriceServiceServer
 // for forward compatibility.
 type PriceServiceServer interface {
-	GetCoins(context.Context, *GetCoinsReq) (*GetCoinsResp, error)
-	GetCoin(context.Context, *GetCoinReq) (*GetCoinResp, error)
-	SearchCoin(context.Context, *SearchCoinsReq) (*SearchCoinsResp, error)
-	GetPrices(context.Context, *GetPricesReq) (*GetPricesResp, error)
-	GetPrice(context.Context, *GetPriceReq) (*GetPriceResp, error)
+	ListCoins(context.Context, *ListCoinsRequest) (*ListCoinsResponse, error)
+	GetCoin(context.Context, *GetCoinRequest) (*GetCoinResponse, error)
+	SearchCoin(context.Context, *SearchCoinsRequest) (*SearchCoinsResponse, error)
+	GetPrices(context.Context, *GetPricesRequest) (*GetPricesResponse, error)
+	GetPrice(context.Context, *GetPriceRequest) (*GetPriceResponse, error)
 	mustEmbedUnimplementedPriceServiceServer()
 }
 
@@ -114,19 +114,19 @@ type PriceServiceServer interface {
 // pointer dereference when methods are called.
 type UnimplementedPriceServiceServer struct{}
 
-func (UnimplementedPriceServiceServer) GetCoins(context.Context, *GetCoinsReq) (*GetCoinsResp, error) {
-	return nil, status.Error(codes.Unimplemented, "method GetCoins not implemented")
+func (UnimplementedPriceServiceServer) ListCoins(context.Context, *ListCoinsRequest) (*ListCoinsResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method ListCoins not implemented")
 }
-func (UnimplementedPriceServiceServer) GetCoin(context.Context, *GetCoinReq) (*GetCoinResp, error) {
+func (UnimplementedPriceServiceServer) GetCoin(context.Context, *GetCoinRequest) (*GetCoinResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method GetCoin not implemented")
 }
-func (UnimplementedPriceServiceServer) SearchCoin(context.Context, *SearchCoinsReq) (*SearchCoinsResp, error) {
+func (UnimplementedPriceServiceServer) SearchCoin(context.Context, *SearchCoinsRequest) (*SearchCoinsResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method SearchCoin not implemented")
 }
-func (UnimplementedPriceServiceServer) GetPrices(context.Context, *GetPricesReq) (*GetPricesResp, error) {
+func (UnimplementedPriceServiceServer) GetPrices(context.Context, *GetPricesRequest) (*GetPricesResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method GetPrices not implemented")
 }
-func (UnimplementedPriceServiceServer) GetPrice(context.Context, *GetPriceReq) (*GetPriceResp, error) {
+func (UnimplementedPriceServiceServer) GetPrice(context.Context, *GetPriceRequest) (*GetPriceResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method GetPrice not implemented")
 }
 func (UnimplementedPriceServiceServer) mustEmbedUnimplementedPriceServiceServer() {}
@@ -150,26 +150,26 @@ func RegisterPriceServiceServer(s grpc.ServiceRegistrar, srv PriceServiceServer)
 	s.RegisterService(&PriceService_ServiceDesc, srv)
 }
 
-func _PriceService_GetCoins_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(GetCoinsReq)
+func _PriceService_ListCoins_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ListCoinsRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(PriceServiceServer).GetCoins(ctx, in)
+		return srv.(PriceServiceServer).ListCoins(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: PriceService_GetCoins_FullMethodName,
+		FullMethod: PriceService_ListCoins_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(PriceServiceServer).GetCoins(ctx, req.(*GetCoinsReq))
+		return srv.(PriceServiceServer).ListCoins(ctx, req.(*ListCoinsRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
 func _PriceService_GetCoin_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(GetCoinReq)
+	in := new(GetCoinRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -181,13 +181,13 @@ func _PriceService_GetCoin_Handler(srv interface{}, ctx context.Context, dec fun
 		FullMethod: PriceService_GetCoin_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(PriceServiceServer).GetCoin(ctx, req.(*GetCoinReq))
+		return srv.(PriceServiceServer).GetCoin(ctx, req.(*GetCoinRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
 func _PriceService_SearchCoin_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(SearchCoinsReq)
+	in := new(SearchCoinsRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -199,13 +199,13 @@ func _PriceService_SearchCoin_Handler(srv interface{}, ctx context.Context, dec 
 		FullMethod: PriceService_SearchCoin_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(PriceServiceServer).SearchCoin(ctx, req.(*SearchCoinsReq))
+		return srv.(PriceServiceServer).SearchCoin(ctx, req.(*SearchCoinsRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
 func _PriceService_GetPrices_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(GetPricesReq)
+	in := new(GetPricesRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -217,13 +217,13 @@ func _PriceService_GetPrices_Handler(srv interface{}, ctx context.Context, dec f
 		FullMethod: PriceService_GetPrices_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(PriceServiceServer).GetPrices(ctx, req.(*GetPricesReq))
+		return srv.(PriceServiceServer).GetPrices(ctx, req.(*GetPricesRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
 func _PriceService_GetPrice_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(GetPriceReq)
+	in := new(GetPriceRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -235,7 +235,7 @@ func _PriceService_GetPrice_Handler(srv interface{}, ctx context.Context, dec fu
 		FullMethod: PriceService_GetPrice_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(PriceServiceServer).GetPrice(ctx, req.(*GetPriceReq))
+		return srv.(PriceServiceServer).GetPrice(ctx, req.(*GetPriceRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -248,8 +248,8 @@ var PriceService_ServiceDesc = grpc.ServiceDesc{
 	HandlerType: (*PriceServiceServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{
-			MethodName: "GetCoins",
-			Handler:    _PriceService_GetCoins_Handler,
+			MethodName: "ListCoins",
+			Handler:    _PriceService_ListCoins_Handler,
 		},
 		{
 			MethodName: "GetCoin",

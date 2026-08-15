@@ -18,12 +18,12 @@
   "paths": {
     "/v1/wallets": {
       "get": {
-        "operationId": "WalletService_GetWallets",
+        "operationId": "WalletService_ListWallets",
         "responses": {
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/v1GetWalletsResp"
+              "$ref": "#/definitions/v1ListWalletsResponse"
             }
           },
           "default": {
@@ -38,13 +38,12 @@
         ]
       },
       "post": {
-        "operationId": "WalletService_AddWallet",
+        "operationId": "WalletService_CreateWallet",
         "responses": {
           "200": {
             "description": "A successful response.",
             "schema": {
-              "type": "object",
-              "properties": {}
+              "$ref": "#/definitions/v1CreateWalletResponse"
             }
           },
           "default": {
@@ -60,7 +59,7 @@
             "in": "body",
             "required": true,
             "schema": {
-              "$ref": "#/definitions/v1AddWalletReq"
+              "$ref": "#/definitions/v1CreateWalletRequest"
             }
           }
         ],
@@ -76,7 +75,7 @@
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/v1GetWalletResp"
+              "$ref": "#/definitions/v1GetWalletResponse"
             }
           },
           "default": {
@@ -104,7 +103,7 @@
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/v1DeleteWalletResp"
+              "$ref": "#/definitions/v1DeleteWalletResponse"
             }
           },
           "default": {
@@ -132,7 +131,7 @@
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/v1EditWalletResp"
+              "$ref": "#/definitions/v1EditWalletResponse"
             }
           },
           "default": {
@@ -201,7 +200,7 @@
         }
       }
     },
-    "v1AddWalletReq": {
+    "v1CreateWalletRequest": {
       "type": "object",
       "properties": {
         "address": {
@@ -218,7 +217,10 @@
         }
       }
     },
-    "v1DeleteWalletResp": {
+    "v1CreateWalletResponse": {
+      "type": "object"
+    },
+    "v1DeleteWalletResponse": {
       "type": "object",
       "properties": {
         "deletedId": {
@@ -226,7 +228,7 @@
         }
       }
     },
-    "v1EditWalletResp": {
+    "v1EditWalletResponse": {
       "type": "object",
       "properties": {
         "id": {
@@ -237,7 +239,7 @@
         }
       }
     },
-    "v1GetWalletResp": {
+    "v1GetWalletResponse": {
       "type": "object",
       "properties": {
         "wallet": {
@@ -245,7 +247,7 @@
         }
       }
     },
-    "v1GetWalletsResp": {
+    "v1ListWalletsResponse": {
       "type": "object",
       "properties": {
         "total": {

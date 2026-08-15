@@ -10,28 +10,28 @@ option go_package = "tracker/gen/wallet/v1;walletv1";
 import "google/api/annotations.proto";
 
 service WalletService {
-  rpc GetWallets(GetWalletsReq) returns (GetWalletsResp) {
+  rpc ListWallets(ListWalletsRequest) returns (ListWalletsResponse) {
     option (google.api.http) = {
       get: "/v1/wallets"
     };
   }
-  rpc GetWallet(GetWalletReq) returns (GetWalletResp) {
+  rpc GetWallet(GetWalletRequest) returns (GetWalletResponse) {
     option (google.api.http) = {
       get: "/v1/wallets/{id}"
     };
   }
-  rpc EditWallet(EditWalletReq) returns (EditWalletResp) {
+  rpc EditWallet(EditWalletRequest) returns (EditWalletResponse) {
     option (google.api.http) = {
       patch: "/v1/wallets/{id}"
       body : "*"
     };
   }
-  rpc DeleteWallet(DeleteWalletReq) returns (DeleteWalletResp) {
+  rpc DeleteWallet(DeleteWalletRequest) returns (DeleteWalletResponse) {
     option (google.api.http) = {
       delete: "/v1/wallets/{id}"
     };
   }
-  rpc AddWallet(AddWalletReq) returns (google.protobuf.Empty) {
+  rpc CreateWallet(CreateWalletRequest) returns (CreateWalletResponse) {
     option (google.api.http) = {
       post: "/v1/wallets"
       body: "*"
@@ -39,44 +39,48 @@ service WalletService {
   }
 }
 
-message GetWalletsReq {}
+message ListWalletsRequest {}
 
-message GetWalletsResp {
+message ListWalletsResponse {
   int32           total  = 1;
   repeated Wallet wallet = 2;
 }
 
-message GetWalletReq {
+message GetWalletRequest {
   string id = 1;
 }
 
-message GetWalletResp {
+message GetWalletResponse {
   Wallet wallet = 1;
 }
 
-message EditWalletReq {
+message EditWalletRequest {
   string id    = 1;
   string label = 2;
 }
 
-message EditWalletResp {
+message EditWalletResponse {
   string id    = 1;
   string label = 2;
 }
 
-message DeleteWalletReq {
+message DeleteWalletRequest {
   string id = 1;
 }
 
-message DeleteWalletResp {
+message DeleteWalletResponse {
   string deleted_id = 1;
 }
 
-message AddWalletReq {
+message CreateWalletRequest {
   string address            = 1;
   string chain              = 2;
   string token_symbol       = 3;
   string label              = 4;
+}
+
+message CreateWalletResponse {
+  
 }
 
 message Wallet {

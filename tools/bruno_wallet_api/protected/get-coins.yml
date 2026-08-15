@@ -6,6 +6,7 @@ info:
 http:
   method: GET
   url: "{{url}}/v1/coins"
+  auth: inherit
 
 settings:
   encodeUrl: true

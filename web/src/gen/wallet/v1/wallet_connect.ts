@@ -3,8 +3,8 @@
 /* eslint-disable */
 // @ts-nocheck
 
-import { AddWalletReq, DeleteWalletReq, DeleteWalletResp, EditWalletReq, EditWalletResp, GetWalletReq, GetWalletResp, GetWalletsReq, GetWalletsResp } from "./wallet_pb.js";
-import { Empty, MethodKind } from "@bufbuild/protobuf";
+import { CreateWalletRequest, CreateWalletResponse, DeleteWalletRequest, DeleteWalletResponse, EditWalletRequest, EditWalletResponse, GetWalletRequest, GetWalletResponse, ListWalletsRequest, ListWalletsResponse } from "./wallet_pb.js";
+import { MethodKind } from "@bufbuild/protobuf";
 
 /**
  * @generated from service wallet.v1.WalletService
@@ -13,12 +13,12 @@ export const WalletService = {
   typeName: "wallet.v1.WalletService",
   methods: {
     /**
-     * @generated from rpc wallet.v1.WalletService.GetWallets
+     * @generated from rpc wallet.v1.WalletService.ListWallets
      */
-    getWallets: {
-      name: "GetWallets",
-      I: GetWalletsReq,
-      O: GetWalletsResp,
+    listWallets: {
+      name: "ListWallets",
+      I: ListWalletsRequest,
+      O: ListWalletsResponse,
       kind: MethodKind.Unary,
     },
     /**
@@ -26,8 +26,8 @@ export const WalletService = {
      */
     getWallet: {
       name: "GetWallet",
-      I: GetWalletReq,
-      O: GetWalletResp,
+      I: GetWalletRequest,
+      O: GetWalletResponse,
       kind: MethodKind.Unary,
     },
     /**
@@ -35,8 +35,8 @@ export const WalletService = {
      */
     editWallet: {
       name: "EditWallet",
-      I: EditWalletReq,
-      O: EditWalletResp,
+      I: EditWalletRequest,
+      O: EditWalletResponse,
       kind: MethodKind.Unary,
     },
     /**
@@ -44,17 +44,17 @@ export const WalletService = {
      */
     deleteWallet: {
       name: "DeleteWallet",
-      I: DeleteWalletReq,
-      O: DeleteWalletResp,
+      I: DeleteWalletRequest,
+      O: DeleteWalletResponse,
       kind: MethodKind.Unary,
     },
     /**
-     * @generated from rpc wallet.v1.WalletService.AddWallet
+     * @generated from rpc wallet.v1.WalletService.CreateWallet
      */
-    addWallet: {
-      name: "AddWallet",
-      I: AddWalletReq,
-      O: Empty,
+    createWallet: {
+      name: "CreateWallet",
+      I: CreateWalletRequest,
+      O: CreateWalletResponse,
       kind: MethodKind.Unary,
     },
   }
