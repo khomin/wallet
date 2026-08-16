@@ -23,6 +23,11 @@ redis:
 rabbit:
   url: 	"amqp://admin:supersecretpassword@localhost:5672"
 
+email:
+  smtp_host: "127.0.0.1"
+  smtp_port: 25
+  from: "alerts@test.local"
+
 alchemy:
   api_key: ""
 

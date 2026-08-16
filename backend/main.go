@@ -28,6 +28,7 @@ import (
 	"tracker/internal/db/repositories"
 	"tracker/internal/docs"
 	"tracker/internal/messaging"
+	"tracker/internal/notification"
 
 	"net/http"
 	_ "net/http/pprof"
@@ -75,6 +76,15 @@ func main() {
 	coingeckoClient := coingecko.NewCoinGeckoClient(app.Cfg.CoinGecko.APIKey)
 	alchemyClient := alchemy.NewAlchemyClient(app.Cfg.Alchemy.APIKey)
 
+	emailSender, err := notification.NewSMTPSender(
+		app.Cfg.Email.SMTPHost,
+		app.Cfg.Email.SMTPPort,
+		app.Cfg.Email.From,
+	)
+	if err != nil {
+		logrus.WithError(err).Fatal("failed to configure alert email sender")
+	}
+
 	ethMainnetClient := client.NewRateLimiterProvider(&app.Cfg.Blockchain.RateLimitConfig, ethereum.NewEthereumClient(ethereum.EthConfig{RpcURL: app.Cfg.Blockchain.EthereumMainnet, Decimal: 18}))
 	ethArbitrumClient := client.NewRateLimiterProvider(&app.Cfg.Blockchain.RateLimitConfig, ethereum.NewEthereumClient(ethereum.EthConfig{RpcURL: app.Cfg.Blockchain.EthereumArbitrum, Decimal: 18}))
 	ethBaseClient := client.NewRateLimiterProvider(&app.Cfg.Blockchain.RateLimitConfig, ethereum.NewEthereumClient(ethereum.EthConfig{RpcURL: app.Cfg.Blockchain.EthereumBase, Decimal: 18}))
@@ -94,6 +104,7 @@ func main() {
 		PriceRepo:          priceRepo,
 		AlertRepo:          alertRepo,
 		UserRepo:           userRepo,
+		EmailSender:        emailSender,
 		FetchCoinsInterval: app.Cfg.CoinGecko.PriceFetcher,
 	})
 

@@ -2,6 +2,7 @@ package config
 
 import (
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/sirupsen/logrus"
@@ -16,6 +17,7 @@ type Config struct {
 	Rabbit        RabbitMqConfig   `mapstructure:"rabbit"`
 	Alchemy       AlchemyConfig    `mapstructure:"alchemy"`
 	CoinGecko     CoinGeckoConfig  `mapstructure:"coingecko"`
+	Email         EmailConfig      `mapstructure:"email"`
 	Blockchain    BlockchainConfig `mapstructure:"blockchain"`
 	TokenRegistry TokenRegistry    `mapstructure:"token_registry"`
 }
@@ -57,6 +59,12 @@ type AlchemyConfig struct {
 type CoinGeckoConfig struct {
 	APIKey       string        `mapstructure:"api_key"`
 	PriceFetcher time.Duration `mapstructure:"price_fetcher"`
+}
+
+type EmailConfig struct {
+	SMTPHost string `mapstructure:"smtp_host"`
+	SMTPPort int    `mapstructure:"smtp_port"`
+	From     string `mapstructure:"from"`
 }
 
 type BlockchainConfig struct {
@@ -107,6 +115,14 @@ type TokenRegistry struct {
 
 func NewConfig() *Config {
 	config := Config{}
+	// Safe local defaults for the mail-relay service exposed by docker-compose.
+	// Every value can be overridden in config.yaml or with TRACKER_EMAIL_* env vars.
+	viper.SetDefault("email.smtp_host", "localhost")
+	viper.SetDefault("email.smtp_port", 25)
+	viper.SetDefault("email.from", "alerts@localhost")
+	viper.SetEnvPrefix("TRACKER")
+	viper.SetEnvKeyReplacer(strings.NewReplacer(".", "_"))
+	viper.AutomaticEnv()
 	viper.SetConfigName("config")
 	viper.SetConfigType("yaml")
 	viper.AddConfigPath(".")

@@ -12,7 +12,7 @@ http:
       {
         "coin_id": "ETH",
         "condition": "CONDITION_ABOVE",
-        "price": 4000
+        "price": 1880.45
       }
   auth: inherit
 

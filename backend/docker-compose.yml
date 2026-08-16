@@ -70,11 +70,13 @@ services:
       - rabbitmq_data:/var/lib/rabbitmq
 
   mail-relay:
-    image: juanluisbaptiste/postfix:latest
+    image: boky/postfix:latest
     container_name: postfix_relay
-    restart: always
+    restart: unless-stopped
     environment:
-      - SERVER_HOSTNAME=mail.yourdomain.com
+      HOSTNAME: mail.example.com
+      ALLOWED_SENDER_DOMAINS: test.local
+      POSTFIX_smtpd_tls_security_level: none
     ports:
       - "25:25"
 

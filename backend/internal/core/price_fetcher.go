@@ -2,6 +2,7 @@ package core
 
 import (
 	"context"
+	"fmt"
 	"time"
 	"tracker/internal/client/alchemy"
 	"tracker/internal/client/coingecko"
@@ -9,6 +10,10 @@ import (
 
 	"github.com/sirupsen/logrus"
 )
+
+type EmailSender interface {
+	Send(ctx context.Context, recipient, subject, body string) error
+}
 
 type PriceFetcherDeps struct {
 	CoinGeckoClient    *coingecko.CoinGeckoClient
@@ -18,6 +23,7 @@ type PriceFetcherDeps struct {
 	FetchCoinsInterval time.Duration
 	AlertRepo          AlertRepository
 	UserRepo           UserRepo
+	EmailSender        EmailSender
 }
 
 type PriceFetcher struct {
@@ -27,6 +33,7 @@ type PriceFetcher struct {
 	priceRepo          PriceRepository
 	alertRepo          AlertRepository
 	userRepo           UserRepo
+	emailSender        EmailSender
 	fetchCoinsInterval time.Duration
 	log                *logrus.Entry
 }
@@ -39,6 +46,7 @@ func NewPriceFetcher(deps PriceFetcherDeps) *PriceFetcher {
 		priceRepo:          deps.PriceRepo,
 		alertRepo:          deps.AlertRepo,
 		userRepo:           deps.UserRepo,
+		emailSender:        deps.EmailSender,
 		fetchCoinsInterval: deps.FetchCoinsInterval,
 		log:                logrus.WithField("component", "PriceFetcher"),
 	}
@@ -122,7 +130,7 @@ func (f *PriceFetcher) alerts(ctx context.Context) {
 			}
 			price := f.priceCache.GetPriceBySymbol(ctx, alert.CoinSymbol)
 			if price == nil {
-				f.log.WithError(err).Errorf("Failed to fetch price: %s", alert.CoinSymbol)
+				f.log.Errorf("failed to fetch price: %s", alert.CoinSymbol)
 				continue
 			}
 			triggered := false
@@ -140,9 +148,19 @@ func (f *PriceFetcher) alerts(ctx context.Context) {
 				continue
 			}
 			f.log.WithField("alert triggered", alert.ID).Infof("target %v, current %v", alert.Price, price.CurrentPrice)
-			// disable alert
-			f.alertRepo.Disable(ctx, user.ID, alert.ID)
-			// send email
+			if f.emailSender == nil {
+				f.log.WithField("alert_id", alert.ID).Error("alert email sender is not configured")
+				continue
+			}
+			subject := fmt.Sprintf("%s price alert triggered", alert.CoinSymbol)
+			body := fmt.Sprintf("Hello %s,\n\nYour %s price alert was triggered.\n\nCondition: %s\nTarget price: %v\nCurrent price: %v\n\nThis alert has been disabled.", user.Name, alert.CoinSymbol, alert.Condition, alert.Price, price.CurrentPrice)
+			if err := f.emailSender.Send(ctx, user.Email, subject, body); err != nil {
+				f.log.WithError(err).WithField("alert_id", alert.ID).Error("failed to send alert email")
+				continue
+			}
+			if err := f.alertRepo.Disable(ctx, user.ID, alert.ID); err != nil {
+				f.log.WithError(err).WithField("alert_id", alert.ID).Error("failed to disable triggered alert")
+			}
 		}
 	}
 }
