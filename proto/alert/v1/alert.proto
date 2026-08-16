@@ -1,0 +1,65 @@
+
+syntax = "proto3";
+
+package alert.v1;
+import "google/protobuf/empty.proto";
+import "google/protobuf/timestamp.proto";
+
+option go_package = "tracker/gen/alert/v1;alertv1";
+
+import "google/api/annotations.proto";
+
+service AlertService {
+  rpc ListAlerts(ListAlertsRequest) returns (ListAlertsResponse) {
+    option (google.api.http) = {
+      get: "/v1/alerts"
+    };
+  }
+  rpc CreateAlert(CreateAlertRequest) returns (Alert) {
+    option (google.api.http) = {
+      post: "/v1/alerts"
+      body: "*"
+    };
+  }
+  rpc DeleteAlert(DeleteAlertRequest) returns (DeleteAlertResponse) {
+    option (google.api.http) = {
+      delete: "/v1/alerts/{id}"
+    };
+  }
+}
+
+message Alert {
+  string                             id           = 1;
+  string                             user_id      = 2;
+  string                             coin_symbol  = 3;
+  Condition                          condition    = 4;
+  double                             price        = 5;
+  bool                               enabled      = 6;
+  optional google.protobuf.Timestamp triggered_at = 7;
+  google.protobuf.Timestamp          created_at   = 8;
+  google.protobuf.Timestamp          updated_at   = 9;
+}
+
+enum Condition {
+  CONDITION_UNSPECIFIED = 0;
+  CONDITION_ABOVE       = 1;
+  CONDITION_BELOW       = 2;
+}
+
+message CreateAlertRequest {
+  string    coin_id   = 2;
+  Condition condition = 3;
+  double    price     = 4;
+}
+
+message ListAlertsRequest {}
+
+message ListAlertsResponse {
+  repeated Alert alerts = 1;
+}
+
+message DeleteAlertRequest {
+  string id = 1;
+}
+
+message DeleteAlertResponse {}

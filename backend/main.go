@@ -8,6 +8,7 @@ import (
 	"strings"
 	"time"
 	"tracker/bootstrap"
+	alertv1 "tracker/gen/alert/v1"
 	pricev1 "tracker/gen/price/v1"
 	userv1 "tracker/gen/user/v1"
 	walletv1 "tracker/gen/wallet/v1"
@@ -69,6 +70,7 @@ func main() {
 	priceRepo := repositories.NewPriceRepository(db)
 	walletRepo := repositories.NewWalletRepository(db)
 	userRepo := repositories.NewUserRepo(db)
+	alertRepo := repositories.NewAlertRepository(db)
 
 	coingeckoClient := coingecko.NewCoinGeckoClient(app.Cfg.CoinGecko.APIKey)
 	alchemyClient := alchemy.NewAlchemyClient(app.Cfg.Alchemy.APIKey)
@@ -90,6 +92,8 @@ func main() {
 		AlchemyClient:      alchemyClient,
 		PriceCache:         priceCache,
 		PriceRepo:          priceRepo,
+		AlertRepo:          alertRepo,
+		UserRepo:           userRepo,
 		FetchCoinsInterval: app.Cfg.CoinGecko.PriceFetcher,
 	})
 
@@ -107,8 +111,8 @@ func main() {
 		Ripple:        rippleClient,
 		WalletRepo:    walletRepo,
 		TokenRegistry: tokenRegistry,
-		// Cache:         priceCache,
-		Cache: core.NewNoOpCache(), // no cache for testing
+		Cache:         priceCache,
+		// Cache: core.NewNoOpCache(), // no cache for testing
 	})
 
 	if err := blockchainService.ConnectAll(ctx); err != nil {
@@ -169,10 +173,12 @@ func main() {
 	priceGrpcServer := handlers.NewPriceGrpcHandler(priceService)
 	walletGrpcServer := handlers.NewWalletGrpcHandler(walletService)
 	userServer := handlers.NewUserHandler(userRepo)
+	alertServer := handlers.NewAlertHandler(alertRepo, userRepo)
 
 	pricev1.RegisterPriceServiceServer(grpcServer, priceGrpcServer)
 	walletv1.RegisterWalletServiceServer(grpcServer, walletGrpcServer)
 	userv1.RegisterUserServiceServer(grpcServer, userServer)
+	alertv1.RegisterAlertServiceServer(grpcServer, alertServer)
 
 	if err := pricev1.RegisterPriceServiceHandlerFromEndpoint(ctx, gwmux, grpcAddr, opts); err != nil {
 		logrus.Fatalf("failed to register price gateway: %v", err)
@@ -182,6 +188,9 @@ func main() {
 	}
 	if err := userv1.RegisterUserServiceHandlerFromEndpoint(ctx, gwmux, grpcAddr, opts); err != nil {
 		logrus.Fatalf("failed to register user gateway: %v", err)
+	}
+	if err := alertv1.RegisterAlertServiceHandlerFromEndpoint(ctx, gwmux, grpcAddr, opts); err != nil {
+		logrus.Fatalf("failed to register alert gateway: %v", err)
 	}
 
 	httpHandler := setupHttpHandler(gwmux)

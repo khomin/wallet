@@ -16,6 +16,7 @@ import (
 	"tracker/internal/client/solana"
 	"tracker/internal/client/tron"
 	"tracker/internal/core"
+	"tracker/internal/core/domain"
 	"tracker/internal/db"
 	"tracker/internal/db/repositories"
 	"tracker/internal/messaging"
@@ -41,6 +42,7 @@ func TestGenerateWallets(t *testing.T) {
 		app.Cfg.Redis.DB,
 	)
 	priceRepo := repositories.NewPriceRepository(db)
+	alertRepo := repositories.NewAlertRepository(db)
 
 	coingeckoClient := coingecko.NewCoinGeckoClient(app.Cfg.CoinGecko.APIKey)
 	alchemyClient := alchemy.NewAlchemyClient(app.Cfg.Alchemy.APIKey)
@@ -66,6 +68,7 @@ func TestGenerateWallets(t *testing.T) {
 		AlchemyClient:      alchemyClient,
 		PriceCache:         priceCache,
 		PriceRepo:          priceRepo,
+		AlertRepo:          alertRepo,
 		FetchCoinsInterval: app.Cfg.CoinGecko.PriceFetcher,
 	})
 
@@ -142,7 +145,11 @@ func TestGenerateWallets(t *testing.T) {
 
 	// add in loop
 	for _, token := range imported.Tokens {
-		if err = svc.AddWallet(context.Background(), imported.UserID, token.Chain, token.Addr, token.Symbol, token.Label); err != nil {
+		if err = svc.CreateWallet(context.Background(), domain.User{
+			ID:    imported.UserID,
+			Name:  imported.UserID,
+			Email: imported.UserID,
+		}, token.Chain, token.Addr, token.Symbol, token.Label); err != nil {
 			logrus.Warnf("AddWallet returned error: %v, %s", err, token.Addr)
 		} else {
 			logrus.Infof("added wallet: %s: %s", token.Chain, token.Addr)

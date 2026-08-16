@@ -16,6 +16,8 @@ type PriceFetcherDeps struct {
 	PriceCache         PriceCache
 	PriceRepo          PriceRepository
 	FetchCoinsInterval time.Duration
+	AlertRepo          AlertRepository
+	UserRepo           UserRepo
 }
 
 type PriceFetcher struct {
@@ -23,6 +25,8 @@ type PriceFetcher struct {
 	alchemyClient      *alchemy.AlchemyClient
 	priceCache         PriceCache
 	priceRepo          PriceRepository
+	alertRepo          AlertRepository
+	userRepo           UserRepo
 	fetchCoinsInterval time.Duration
 	log                *logrus.Entry
 }
@@ -33,6 +37,8 @@ func NewPriceFetcher(deps PriceFetcherDeps) *PriceFetcher {
 		alchemyClient:      deps.AlchemyClient,
 		priceCache:         deps.PriceCache,
 		priceRepo:          deps.PriceRepo,
+		alertRepo:          deps.AlertRepo,
+		userRepo:           deps.UserRepo,
 		fetchCoinsInterval: deps.FetchCoinsInterval,
 		log:                logrus.WithField("component", "PriceFetcher"),
 	}
@@ -95,7 +101,50 @@ func (f *PriceFetcher) fetch(ctx context.Context) {
 	if err := f.priceRepo.SetPrices(ctx, prices); err != nil {
 		f.log.WithError(err).Error("Failed to store price snapshots")
 	}
-	//
+	f.alerts(ctx)
+}
+
+func (f *PriceFetcher) alerts(ctx context.Context) {
+	users, err := f.userRepo.List(ctx)
+	if err != nil {
+		f.log.WithError(err).Error("failed to fetch users")
+		return
+	}
+	for _, user := range users {
+		alerts, err := f.alertRepo.ListByUser(ctx, user.ID)
+		if err != nil {
+			f.log.WithError(err).Error("failed to fetch alerts")
+			continue
+		}
+		for _, alert := range alerts {
+			if !alert.Enabled {
+				continue
+			}
+			price := f.priceCache.GetPriceBySymbol(ctx, alert.CoinSymbol)
+			if price == nil {
+				f.log.WithError(err).Errorf("Failed to fetch price: %s", alert.CoinSymbol)
+				continue
+			}
+			triggered := false
+			switch alert.Condition {
+			case domain.AlertConditionAbove:
+				triggered = price.GreaterThanOrEqual(alert.Price)
+			case domain.AlertConditionBelow:
+				triggered = price.LessThanOrEqual(alert.Price)
+			default:
+				f.log.WithField("condition", alert.Condition).Error("unknown alert condition")
+				continue
+			}
+			if !triggered {
+				f.log.WithField("alert skipped", alert.ID).Infof("target %v, current %v", alert.Price, price.CurrentPrice)
+				continue
+			}
+			f.log.WithField("alert triggered", alert.ID).Infof("target %v, current %v", alert.Price, price.CurrentPrice)
+			// disable alert
+			f.alertRepo.Disable(ctx, user.ID, alert.ID)
+			// send email
+		}
+	}
 }
 
 func (f *PriceFetcher) fromGeckoToCoin(prices []coingecko.CoinGeckoCoin) []domain.TokenID {

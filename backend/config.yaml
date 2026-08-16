@@ -28,7 +28,7 @@ alchemy:
 
 coingecko:
    api_key: ""
-   price_fetcher: "15s"
+   price_fetcher: "30s"
 
 blockchain:
   rate_limit:

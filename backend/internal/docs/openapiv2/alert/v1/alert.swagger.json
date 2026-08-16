@@ -1,0 +1,207 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "title": "alert/v1/alert.proto",
+    "version": "version not set"
+  },
+  "tags": [
+    {
+      "name": "AlertService"
+    }
+  ],
+  "consumes": [
+    "application/json"
+  ],
+  "produces": [
+    "application/json"
+  ],
+  "paths": {
+    "/v1/alerts": {
+      "get": {
+        "operationId": "AlertService_ListAlerts",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1ListAlertsResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "tags": [
+          "AlertService"
+        ]
+      },
+      "post": {
+        "operationId": "AlertService_CreateAlert",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1Alert"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/v1CreateAlertRequest"
+            }
+          }
+        ],
+        "tags": [
+          "AlertService"
+        ]
+      }
+    },
+    "/v1/alerts/{id}": {
+      "delete": {
+        "operationId": "AlertService_DeleteAlert",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1DeleteAlertResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "AlertService"
+        ]
+      }
+    }
+  },
+  "definitions": {
+    "protobufAny": {
+      "type": "object",
+      "properties": {
+        "@type": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": {}
+    },
+    "rpcStatus": {
+      "type": "object",
+      "properties": {
+        "code": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "message": {
+          "type": "string"
+        },
+        "details": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/protobufAny"
+          }
+        }
+      }
+    },
+    "v1Alert": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "userId": {
+          "type": "string"
+        },
+        "coinSymbol": {
+          "type": "string"
+        },
+        "condition": {
+          "$ref": "#/definitions/v1Condition"
+        },
+        "price": {
+          "type": "number",
+          "format": "double"
+        },
+        "enabled": {
+          "type": "boolean"
+        },
+        "triggeredAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      }
+    },
+    "v1Condition": {
+      "type": "string",
+      "enum": [
+        "CONDITION_UNSPECIFIED",
+        "CONDITION_ABOVE",
+        "CONDITION_BELOW"
+      ],
+      "default": "CONDITION_UNSPECIFIED"
+    },
+    "v1CreateAlertRequest": {
+      "type": "object",
+      "properties": {
+        "coinId": {
+          "type": "string"
+        },
+        "condition": {
+          "$ref": "#/definitions/v1Condition"
+        },
+        "price": {
+          "type": "number",
+          "format": "double"
+        }
+      }
+    },
+    "v1DeleteAlertResponse": {
+      "type": "object"
+    },
+    "v1ListAlertsResponse": {
+      "type": "object",
+      "properties": {
+        "alerts": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v1Alert"
+          }
+        }
+      }
+    }
+  }
+}

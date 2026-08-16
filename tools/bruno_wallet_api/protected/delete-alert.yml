@@ -1,11 +1,11 @@
 info:
-  name: get-user-id
+  name: delete-alert
   type: http
-  seq: 12
+  seq: 15
 
 http:
-  method: GET
-  url: "{{url}}/v1/wallets"
+  method: DELETE
+  url: "{{url}}/v1/alerts/9ea79093-b7b1-4143-a93a-4440ac8c3be0"
   auth: inherit
 
 settings:

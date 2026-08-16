@@ -1,7 +1,11 @@
 package core
 
-import "context"
+import (
+	"context"
+	"tracker/internal/core/domain"
+)
 
 type UserRepo interface {
-	EnsureExists(ctx context.Context, userID string) error
+	List(ctx context.Context) ([]domain.User, error)
+	EnsureExists(ctx context.Context, user domain.User) error
 }

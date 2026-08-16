@@ -1,11 +1,11 @@
 info:
-  name: get-wallet-one
+  name: list-alerts
   type: http
-  seq: 6
+  seq: 13
 
 http:
   method: GET
-  url: "{{url}}/v1/wallets/4e4e27d5-b47c-4584-bac9-a998e3d8798c"
+  url: "{{url}}/v1/alerts"
   auth: inherit
 
 settings:

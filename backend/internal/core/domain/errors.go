@@ -7,4 +7,5 @@ var (
 	ErrWalletAlreadyExists = errors.New("already exists")
 	ErrWalletInternalError = errors.New("internal error")
 	ErrPriceNotFound       = errors.New("not found")
+	ErrAlertNotFound       = errors.New("not found")
 )

@@ -32,7 +32,7 @@ func (s *WalletGrpcHandler) ListWallets(ctx context.Context, req *walletv1.ListW
 	if !ok {
 		return nil, status.Error(codes.Unauthenticated, "unauthorized")
 	}
-	wallets, err := s.walletService.ListWallets(ctx, user.Subject)
+	wallets, err := s.walletService.ListWallets(ctx, domain.User{ID: user.Subject, Name: user.Name, Email: user.Email})
 	if err != nil {
 		return nil, err
 	}
@@ -79,7 +79,7 @@ func (s *WalletGrpcHandler) GetWallet(ctx context.Context, req *walletv1.GetWall
 	if err != nil {
 		return nil, status.Error(codes.InvalidArgument, "id parameter is required")
 	}
-	wallet, err := s.walletService.GetWallet(ctx, user.Subject, uuid)
+	wallet, err := s.walletService.GetWallet(ctx, domain.User{ID: user.Subject, Name: user.Name, Email: user.Email}, uuid)
 	if err != nil {
 		if errors.Is(err, domain.ErrWalletNotFound) {
 			return nil, status.Error(codes.NotFound, "wallet not found")
@@ -120,7 +120,7 @@ func (s *WalletGrpcHandler) CreateWallet(ctx context.Context, req *walletv1.Crea
 	if !ok {
 		return nil, status.Error(codes.Unauthenticated, "unauthorized")
 	}
-	err := s.walletService.AddWallet(ctx, user.Subject, req.Chain, req.Address, req.TokenSymbol, req.Label)
+	err := s.walletService.CreateWallet(ctx, domain.User{ID: user.Subject, Name: user.Name, Email: user.Email}, req.Chain, req.Address, req.TokenSymbol, req.Label)
 	if err != nil {
 		if errors.Is(err, domain.ErrWalletNotFound) {
 			return nil, status.Error(codes.NotFound, "wallet not found")
@@ -141,7 +141,7 @@ func (s *WalletGrpcHandler) EditWallet(ctx context.Context, req *walletv1.EditWa
 	if err != nil {
 		return nil, status.Error(codes.InvalidArgument, "id parameter is required")
 	}
-	wallet, err := s.walletService.EditWallet(ctx, user.Subject, uuid, req.Label)
+	wallet, err := s.walletService.EditWallet(ctx, domain.User{ID: user.Subject, Name: user.Name, Email: user.Email}, uuid, req.Label)
 	if err != nil {
 		if errors.Is(err, domain.ErrWalletNotFound) {
 			return nil, status.Error(codes.NotFound, "wallet not found")
@@ -163,7 +163,7 @@ func (s *WalletGrpcHandler) DeleteWallet(ctx context.Context, req *walletv1.Dele
 	if err != nil {
 		return nil, status.Error(codes.InvalidArgument, "id parameter is required")
 	}
-	err = s.walletService.DeleteWallet(ctx, user.Subject, uuid)
+	err = s.walletService.DeleteWallet(ctx, domain.User{ID: user.Subject, Name: user.Name, Email: user.Email}, uuid)
 	if err != nil {
 		if errors.Is(err, domain.ErrWalletNotFound) {
 			return nil, status.Error(codes.NotFound, err.Error())

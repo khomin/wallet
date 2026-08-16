@@ -51,42 +51,42 @@ func NewWalletService(deps WalletDeps) *WalletService {
 	}
 }
 
-func (s *WalletService) GetWallet(ctx context.Context, userID string, id uuid.UUID) (*domain.WalletWithBalance, error) {
-	if err := s.userRepo.EnsureExists(ctx, userID); err != nil {
+func (s *WalletService) GetWallet(ctx context.Context, user domain.User, id uuid.UUID) (*domain.WalletWithBalance, error) {
+	if err := s.userRepo.EnsureExists(ctx, user); err != nil {
 		return nil, err
 	}
-	wallet, err := s.walletRepo.Get(ctx, userID, id)
+	wallet, err := s.walletRepo.Get(ctx, user.ID, id)
 	if err != nil {
 		return nil, err
 	}
 	return wallet, nil
 }
 
-func (s *WalletService) ListWallets(ctx context.Context, userID string) ([]domain.WalletWithBalance, error) {
-	if err := s.userRepo.EnsureExists(ctx, userID); err != nil {
+func (s *WalletService) ListWallets(ctx context.Context, user domain.User) ([]domain.WalletWithBalance, error) {
+	if err := s.userRepo.EnsureExists(ctx, user); err != nil {
 		return nil, err
 	}
-	wallets, err := s.walletRepo.List(ctx, userID)
+	wallets, err := s.walletRepo.List(ctx, user.ID)
 	if err != nil {
 		return nil, err
 	}
 	return wallets, nil
 }
 
-func (s *WalletService) AddWallet(ctx context.Context, userID string, chain string, address string, symbol string, label string) error {
-	if err := s.userRepo.EnsureExists(ctx, userID); err != nil {
+func (s *WalletService) CreateWallet(ctx context.Context, user domain.User, chain string, address string, symbol string, label string) error {
+	if err := s.userRepo.EnsureExists(ctx, user); err != nil {
 		return nil
 	}
 	if err := s.blockchainService.ValidateAddress(chain, address, symbol); err != nil {
 		return err
 	}
-	wallet, err := s.walletRepo.Create(ctx, userID, chain, address, symbol, label)
+	wallet, err := s.walletRepo.Create(ctx, user.ID, chain, address, symbol, label)
 	if err != nil {
 		return err
 	}
 	if bytes, err := json.Marshal(domain.WalletCreatedEvent{
 		ID:     wallet.ID,
-		UserID: userID,
+		UserID: user.ID,
 	}); err != nil {
 		return nil
 	} else {
@@ -97,22 +97,22 @@ func (s *WalletService) AddWallet(ctx context.Context, userID string, chain stri
 	return nil
 }
 
-func (s *WalletService) EditWallet(ctx context.Context, userID string, id uuid.UUID, label string) (*domain.Wallet, error) {
-	if err := s.userRepo.EnsureExists(ctx, userID); err != nil {
+func (s *WalletService) EditWallet(ctx context.Context, user domain.User, id uuid.UUID, label string) (*domain.Wallet, error) {
+	if err := s.userRepo.EnsureExists(ctx, user); err != nil {
 		return nil, err
 	}
-	wallet, err := s.walletRepo.Edit(ctx, userID, id, label)
+	wallet, err := s.walletRepo.Edit(ctx, user.ID, id, label)
 	if err != nil {
 		return nil, err
 	}
 	return wallet, nil
 }
 
-func (s *WalletService) DeleteWallet(ctx context.Context, userID string, id uuid.UUID) error {
-	if err := s.userRepo.EnsureExists(ctx, userID); err != nil {
+func (s *WalletService) DeleteWallet(ctx context.Context, user domain.User, id uuid.UUID) error {
+	if err := s.userRepo.EnsureExists(ctx, user); err != nil {
 		return err
 	}
-	return s.walletRepo.Delete(ctx, userID, id)
+	return s.walletRepo.Delete(ctx, user.ID, id)
 }
 
 func (s *WalletService) FetchBalance(ctx context.Context, wallet domain.Wallet) (*domain.WalletWithBalance, error) {

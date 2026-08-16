@@ -65,3 +65,11 @@ type AddressBalance struct {
 	Native  *TokenBalance  `json:"native"` // ETH, BNB, etc.
 	Tokens  []TokenBalance `json:"tokens"` // All ERC20 tokens
 }
+
+func (t *TokenPrice) LessThanOrEqual(price float64) bool {
+	return t.CurrentPrice <= price
+}
+
+func (t *TokenPrice) GreaterThanOrEqual(price float64) bool {
+	return t.CurrentPrice >= price
+}

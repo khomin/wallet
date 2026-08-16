@@ -2,18 +2,21 @@ package domain
 
 import (
 	"time"
-
-	"github.com/google/uuid"
 )
 
 type Alert struct {
-	id          uuid.UUID
+	ID          string
 	UserID      string
-	coin_id     string
-	condition   string
-	price       float64
+	CoinSymbol  string
+	Condition   string
+	Price       float64
 	Enabled     bool
 	TriggeredAt *time.Time
 	UpdatedAt   time.Time
 	CreatedAt   time.Time
 }
+
+const (
+	AlertConditionAbove = "above"
+	AlertConditionBelow = "below"
+)

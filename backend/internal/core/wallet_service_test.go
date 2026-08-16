@@ -47,7 +47,11 @@ func (f *fakeWalletRepo) ListForSync(ctx context.Context, limit int) ([]domain.W
 type fakeUserRepo struct {
 }
 
-func (f *fakeUserRepo) EnsureExists(ctx context.Context, userID string) error {
+func (r *fakeUserRepo) List(ctx context.Context) ([]domain.User, error) {
+	return nil, nil
+}
+
+func (f *fakeUserRepo) EnsureExists(ctx context.Context, user domain.User) error {
 	return nil
 }
 
@@ -66,9 +70,15 @@ func TestDeleteWalletReturnsDeletedWallet(t *testing.T) {
 	svc := NewWalletService(WalletDeps{
 		WalletRepo:        &fakeWalletRepo{},
 		PriceService:      &PriceService{},
-		BlockchainService: &BlockchainService{}, TokenRegistry: &TokenRegistry{}, UserRepo: &fakeUserRepo{},
+		BlockchainService: &BlockchainService{},
+		TokenRegistry:     &TokenRegistry{},
+		UserRepo:          &fakeUserRepo{},
 	})
-	err := svc.DeleteWallet(context.Background(), want.UserID, want.ID.Bytes)
+	err := svc.DeleteWallet(context.Background(), domain.User{
+		ID:    want.UserID,
+		Name:  want.UserID,
+		Email: want.UserID,
+	}, want.ID.Bytes)
 	if err != nil {
 		t.Fatalf("DeleteWallet returned unexpected error: %v", err)
 	}

@@ -20,5 +20,6 @@ CREATE TABLE IF NOT EXISTS coin_prices (
 
 CREATE INDEX idx_coins_symbol 
     ON coins(symbol);
+
 CREATE INDEX idx_coin_prices_price_usd
     ON coin_prices(price_usd);
