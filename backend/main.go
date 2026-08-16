@@ -105,6 +105,7 @@ func main() {
 		AlertRepo:          alertRepo,
 		UserRepo:           userRepo,
 		EmailSender:        emailSender,
+		AlertService:       core.NewAlertService(alertRepo, userRepo, priceCache, emailSender),
 		FetchCoinsInterval: app.Cfg.CoinGecko.PriceFetcher,
 	})
 
@@ -123,7 +124,6 @@ func main() {
 		WalletRepo:    walletRepo,
 		TokenRegistry: tokenRegistry,
 		Cache:         priceCache,
-		// Cache: core.NewNoOpCache(), // no cache for testing
 	})
 
 	if err := blockchainService.ConnectAll(ctx); err != nil {

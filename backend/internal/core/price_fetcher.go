@@ -2,7 +2,6 @@ package core
 
 import (
 	"context"
-	"fmt"
 	"time"
 	"tracker/internal/client/alchemy"
 	"tracker/internal/client/coingecko"
@@ -23,6 +22,7 @@ type PriceFetcherDeps struct {
 	FetchCoinsInterval time.Duration
 	AlertRepo          AlertRepository
 	UserRepo           UserRepo
+	AlertService       *AlertService
 	EmailSender        EmailSender
 }
 
@@ -35,6 +35,7 @@ type PriceFetcher struct {
 	userRepo           UserRepo
 	emailSender        EmailSender
 	fetchCoinsInterval time.Duration
+	alertService       *AlertService
 	log                *logrus.Entry
 }
 
@@ -48,6 +49,7 @@ func NewPriceFetcher(deps PriceFetcherDeps) *PriceFetcher {
 		userRepo:           deps.UserRepo,
 		emailSender:        deps.EmailSender,
 		fetchCoinsInterval: deps.FetchCoinsInterval,
+		alertService:       deps.AlertService,
 		log:                logrus.WithField("component", "PriceFetcher"),
 	}
 }
@@ -103,66 +105,10 @@ func (f *PriceFetcher) fetch(ctx context.Context) {
 	if err := f.priceCache.SetPrices(ctx, prices); err != nil {
 		f.log.WithError(err).Error("Failed to cache prices")
 	}
-	if err := f.priceRepo.SetCoins(ctx, coins); err != nil {
-		f.log.WithError(err).Error("Failed to store coin snapshots")
-	}
-	if err := f.priceRepo.SetPrices(ctx, prices); err != nil {
-		f.log.WithError(err).Error("Failed to store price snapshots")
-	}
-	f.alerts(ctx)
-}
+	_ = f.priceRepo.SetCoins(ctx, coins)
+	_ = f.priceRepo.SetPrices(ctx, prices)
 
-func (f *PriceFetcher) alerts(ctx context.Context) {
-	users, err := f.userRepo.List(ctx)
-	if err != nil {
-		f.log.WithError(err).Error("failed to fetch users")
-		return
-	}
-	for _, user := range users {
-		alerts, err := f.alertRepo.ListByUser(ctx, user.ID)
-		if err != nil {
-			f.log.WithError(err).Error("failed to fetch alerts")
-			continue
-		}
-		for _, alert := range alerts {
-			if !alert.Enabled {
-				continue
-			}
-			price := f.priceCache.GetPriceBySymbol(ctx, alert.CoinSymbol)
-			if price == nil {
-				f.log.Errorf("failed to fetch price: %s", alert.CoinSymbol)
-				continue
-			}
-			triggered := false
-			switch alert.Condition {
-			case domain.AlertConditionAbove:
-				triggered = price.GreaterThanOrEqual(alert.Price)
-			case domain.AlertConditionBelow:
-				triggered = price.LessThanOrEqual(alert.Price)
-			default:
-				f.log.WithField("condition", alert.Condition).Error("unknown alert condition")
-				continue
-			}
-			if !triggered {
-				f.log.WithField("alert skipped", alert.ID).Infof("target %v, current %v", alert.Price, price.CurrentPrice)
-				continue
-			}
-			f.log.WithField("alert triggered", alert.ID).Infof("target %v, current %v", alert.Price, price.CurrentPrice)
-			if f.emailSender == nil {
-				f.log.WithField("alert_id", alert.ID).Error("alert email sender is not configured")
-				continue
-			}
-			subject := fmt.Sprintf("%s price alert triggered", alert.CoinSymbol)
-			body := fmt.Sprintf("Hello %s,\n\nYour %s price alert was triggered.\n\nCondition: %s\nTarget price: %v\nCurrent price: %v\n\nThis alert has been disabled.", user.Name, alert.CoinSymbol, alert.Condition, alert.Price, price.CurrentPrice)
-			if err := f.emailSender.Send(ctx, user.Email, subject, body); err != nil {
-				f.log.WithError(err).WithField("alert_id", alert.ID).Error("failed to send alert email")
-				continue
-			}
-			if err := f.alertRepo.Disable(ctx, user.ID, alert.ID); err != nil {
-				f.log.WithError(err).WithField("alert_id", alert.ID).Error("failed to disable triggered alert")
-			}
-		}
-	}
+	go f.alertService.EvaluateAlerts(ctx)
 }
 
 func (f *PriceFetcher) fromGeckoToCoin(prices []coingecko.CoinGeckoCoin) []domain.TokenID {

@@ -37,7 +37,6 @@ func (s *AlertService) EvaluateAlerts(ctx context.Context) {
 		s.log.WithError(err).Error("failed to fetch users")
 		return
 	}
-
 	for _, user := range users {
 		s.processUserAlerts(ctx, user)
 	}
@@ -49,17 +48,14 @@ func (s *AlertService) processUserAlerts(ctx context.Context, user domain.User) 
 		s.log.WithError(err).Error("failed to fetch alerts")
 		return
 	}
-
 	for _, alert := range alerts {
 		if !alert.Enabled {
 			continue
 		}
-
 		price := s.priceCache.GetPriceBySymbol(ctx, alert.CoinSymbol)
 		if price == nil {
 			continue
 		}
-
 		if s.isTriggered(alert, price) {
 			s.triggerAlert(ctx, user, alert, price)
 		}
@@ -84,13 +80,12 @@ func (s *AlertService) triggerAlert(ctx context.Context, user domain.User, alert
 		subject := fmt.Sprintf("%s price alert triggered", alert.CoinSymbol)
 		body := fmt.Sprintf("Hello %s,\n\nYour %s price alert was triggered.", user.Name, alert.CoinSymbol)
 
-		// In a scaled setup, push this to a RabbitMQ queue instead of blocking!
+		// TODO: push this to a RabbitMQ queue instead of blocking
 		if err := s.emailSender.Send(ctx, user.Email, subject, body); err != nil {
 			s.log.WithError(err).Error("failed to send alert email")
 			return
 		}
 	}
-
 	if err := s.alertRepo.Disable(ctx, user.ID, alert.ID); err != nil {
 		s.log.WithError(err).Error("failed to disable triggered alert")
 	}
