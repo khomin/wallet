@@ -1,127 +1,222 @@
-### Crypto Wallet Tracker
+# Whale Tracker
 
-A Go-based backend for tracking crypto prices, wallet activity, and future alerting workflows. The project is still in its early stages.
+A crypto wallet and market intelligence platform built with Go, gRPC, grpc-gateway, and a React frontend. The backend now exposes both native gRPC services and HTTP REST endpoints generated from protobuf definitions under [proto](proto).
 
-The service includes wallet tracking across chains such as:
-    `SOL, ETH, TRX, ADA, BTC`
+## What this project does
 
-It also supports configured token assets from the registry in [backend/config.yaml](backend/config.yaml), including major tokens such as `USDC`, `USDT`, `WBTC`, `PAXG`, and other chain-specific assets.
+- Track wallet balances across multiple blockchains and token deployments
+- Aggregate live price data from providers such as CoinGecko and chain-specific RPCs
+- Keep token metadata in a config-driven registry for native assets and contracts
+- Publish price and wallet events through RabbitMQ
+- Cache price and wallet state in Redis
+- Trigger alert workflows and email notifications
+- Expose a REST API through grpc-gateway alongside the gRPC server
 
-Note: Bitcoin wallet tracking is wired to the preconfigured Bitcoin Core node already defined in docker-compose.yml, so starting the infrastructure brings up the node automatically. Keycloak also comes with a preloaded realm configuration imported from [backend/deploy/keycloak/realm-export.json](backend/deploy/keycloak/realm-export.json).
+## Current architecture
 
-            Wallet API
-                │
-                ▼
-            Balance Service
-                │
-        ┌─────────┼─────────┐
-        ▼         ▼         ▼
-    BTC       EVM       Solana
-                │
-            Token Registry
+The backend is organized around a service-oriented model with these major pieces:
 
-### Dasboard previews
-![1](/resources/demo.png)
+- HTTP + gRPC gateway entrypoint in [backend/main.go](backend/main.go)
+- Protocol definitions in [proto](proto)
+- Generated Go code in [backend/gen](backend/gen)
+- API handlers in [backend/internal/api/handlers](backend/internal/api/handlers)
+- Core domain services in [backend/internal/core](backend/internal/core)
+- Repositories and Postgres models in [backend/internal/db](backend/internal/db)
+- Redis and message bus integration in [backend/internal/cache](backend/internal/cache) and [backend/internal/messaging](backend/internal/messaging)
+- Frontend app in [web](web)
 
-### Tech stack
+### Service overview
 
-- Gin, PostgreSQL, Keycloak, Redis, Docker Compose, Viper
+- Price service: token catalogs, market prices, streaming refreshes, metadata lookup
+- Wallet service: wallet create/list/edit/delete flows and balance retrieval
+- User service: users and identity-related flows
+- Alert service: user alerts and notifications
+- Blockchain service: ETH, Arbitrum, Base, Polygon, BNB, Solana, Bitcoin, Tron, XRP integrations
 
-- SDK used:
+## Tech stack
 
+- Go
+- gRPC
+- grpc-gateway v2
+- Protocol Buffers / Buf
+- PostgreSQL
+- Redis
+- RabbitMQ
+- Keycloak
+- Docker Compose
+- Vite + React + TypeScript
+- Swagger/OpenAPI generation from proto
+
+## Project layout
+
+```text
+.
+├── backend/
+│   ├── config.yaml
+│   ├── main.go
+│   ├── bootstrap/
+│   ├── cmd/
+│   ├── gen/
+│   ├── internal/
+│   ├── deploy/
+│   └── docker-compose.yml
+├── proto/
+│   ├── alert/
+│   ├── price/
+│   ├── user/
+│   └── wallet/
+├── web/
+│   ├── src/
+│   ├── package.json
+│   └── vite.config.ts
+├── buf.yaml
+├── buf.gen.yaml
+├── resources/
+└── README.md
 ```
-    github.com/btcsuite/btcd
-    github.com/ethereum/go-ethereum
-    github.com/fbsobreira/gotron-sdk
-    github.com/gagliardetto/solana-go
-    github.com/blinklabs-io/gouroboros
-    github.com/blinklabs-io/cardano-node-api
-```
+
+## Supported chains and assets
+
+The app is built for multi-chain wallet tracking and token-aware balances. The current configuration includes native assets and token deployments for chains such as:
+
+- BTC
+- ETH
+- ARB
+- SOL
+- TRX
+- POL / Polygon
+- BNB
+- XRP
+- various token deployments such as USDC, USDT, WBTC, PAXG, RLUSD, and xStocks
+
+The active token registry is configured in [backend/config.yaml](backend/config.yaml).
+
+## gRPC and HTTP API
+
+The project uses protobuf definitions as the source of truth. The generated code lives under [backend/gen](backend/gen) and the source files live under [proto](proto).
+
+### Proto packages
+
+- [proto/price/v1/price.proto](proto/price/v1/price.proto)
+- [proto/wallet/v1/wallet.proto](proto/wallet/v1/wallet.proto)
+- [proto/user/v1/user.proto](proto/user/v1/user.proto)
+- [proto/alert/v1/alert.proto](proto/alert/v1/alert.proto)
+
+### HTTP routes exposed via grpc-gateway
+
+These are generated from the proto annotations and served by the gateway on the HTTP port configured in [backend/config.yaml](backend/config.yaml).
+
+#### Price routes
+
+- `GET /v1/coins`
+- `GET /v1/coins/{id}`
+- `POST /v1/coins/search`
+- `GET /v1/prices`
+- `GET /v1/prices/{symbol}`
+- `GET /v1/prices/stream`
+
+#### Wallet routes
+
+- `GET /v1/wallets`
+- `GET /v1/wallets/{id}`
+- `POST /v1/wallets`
+- `PATCH /v1/wallets/{id}`
+- `DELETE /v1/wallets/{id}`
+
+#### Additional service routes
+
+The user and alert services are also exposed via grpc-gateway, with their generated handlers registered in [backend/main.go](backend/main.go).
+
+## Local development
 
 ### Prerequisites
 
-- Go 1.26+
+- Go 1.22+
 - Docker and Docker Compose
+- Node.js + npm
+- Buf CLI
 
-### Configuration
-
-The backend configuration is in [backend/config.yaml](backend/config.yaml). Before
-using TRON wallet tracking, set `blockchain.tron_api_key` to a valid TronGrid API key (trongrid.io):
-
-```yaml
-blockchain:
-    tron_grpc: "grpc.trongrid.io:50051"
-    tron_api_key: "your-trongrid-api-key"
-```
-
-The public RPC endpoints may be rate-limited or require provider-specific access,
-so replace them with your own endpoints when needed. Bitcoin also requires a
-locally running node matching the credentials in the configuration.
-
-### Launch the services
-
-Start the supporting infrastructure from the backend workspace:
+### Start infrastructure
 
 ```bash
-cd ./backend
+cd backend
 docker compose up -d
 ```
 
-Run the backend API in a separate terminal:
+This starts the backing services used by the app, including Postgres, Redis, RabbitMQ, and the configured Bitcoin/Keycloak setup shown in the compose config and deployment assets.
+
+### Start the backend
 
 ```bash
-cd ./backend
+cd backend
 go run .
 ```
 
-Launch the frontend client in another terminal:
+The service exposes:
+
+- gRPC on the configured gRPC port
+- HTTP/gateway on the configured HTTP port
+- Swagger docs under the docs handler
+
+### Start the frontend
 
 ```bash
-cd ./web
+cd web
 npm install
 npm run dev
 ```
 
-This brings up the Go backend alongside the Vite-based frontend so both layers of the application can be used locally.
+## Configuration
 
-#### Public endpoints
+The main runtime config is [backend/config.yaml](backend/config.yaml). It includes:
 
-- `GET /api/v1/coins` List available supported coins and tokens.
-- `GET /api/v1/coins/:id`  Get metadata for a specific coin.
-- `GET /api/v1/prices` Retrieve current price data for tracked assets.
-- `GET /api/v1/prices/:id` Retrieve current price data for a specific asset.
-- `GET /health` Check service health and uptime.
-#### Bearer token required
-- `GET /api/v1/wallets` List saved wallets.
-- `POST /api/v1/wallets` Add a new wallet to the tracker.
-- `PUT /api/v1/wallets` Update wallet details.
-- `GET /api/v1/wallets/balance` Fetch aggregated wallet balances.
-- `DELETE /api/v1/wallets` Remove a wallet from tracking.
+- HTTP and gRPC server ports
+- Postgres DSN settings
+- Redis and RabbitMQ connection info
+- Email settings
+- RPC endpoints for supported chains
+- Keycloak authorization settings
+- Token registry definitions
 
-### Current goals
+Before using Tron support, ensure you have a valid TronGrid API key configured in the blockchain section.
 
-The project is aimed at becoming a crypto monitoring platform for:
+## Proto generation
 
-- wallet tracking
-- whale movement monitoring
-- price alerts
-- future mobile app integration
+The project generates Go, gRPC, gateway, OpenAPI, and TypeScript artifacts from the `.proto` definitions.
 
-### Database migration notes
-```
-go install -tags 'postgres' github.com/golang-migrate/migrate/v4/cmd/migrate@latest
-
-migrate -path $PWD/internal/db/migrations -database "postgres://tracker_admin:super_secure_password@localhost:5432/whale_tracker?sslmode=disable" up
-```
-
-### Generate grpc
-```
+```bash
+# Install Buf
 # macOS
 brew install bufbuild/buf/buf
 
 # Linux / WSL
-go install github.com/bufbuild/buf/cmd/buf@latest
+# or
+# go install github.com/bufbuild/buf/cmd/buf@latest
 
 buf dep update
 buf generate
 ```
+
+The generation config is defined in [buf.gen.yaml](buf.gen.yaml) and the source configuration is in [buf.yaml](buf.yaml).
+
+## Database migration notes
+
+```bash
+go install -tags 'postgres' github.com/golang-migrate/migrate/v4/cmd/migrate@latest
+
+migrate -path $PWD/backend/internal/db/migrations \
+  -database "postgres://tracker_admin:super_secure_password@localhost:5432/whale_tracker?sslmode=disable" up
+```
+
+## Notes
+
+- This project has grown beyond the initial single-service wallet tracker and now includes a full protocol-driven API surface.
+- The actual runtime is a combined gRPC + gateway service, not a plain HTTP API layer.
+- The gRPC gateway is the main REST-compatible entrypoint for frontend and external clients.
+
+## Roadmap
+
+- expand wallet analytics and tracking jobs
+- improve alerting pipelines and notifications
+- strengthen multi-chain coverage and token metadata accuracy
+- continue hardening the API and operational workflows around Redis, RabbitMQ, and Postgres
