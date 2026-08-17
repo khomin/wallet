@@ -4,7 +4,7 @@
 import { useState } from 'react';
 import { useWallets, useCreateWallet, useDeleteWallet, useCoins } from '../hooks/useApi';
 import { StatCard, Modal, Field, Spinner, ErrorBlock, EmptyBlock } from '../components/ui';
-import { SUPPORTED_CHAINS, type CreateWalletRequest } from '../types/api';
+import { SUPPORTED_CHAINS, type CreateWalletFormState } from '../types/api';
 
 // ─── Formatting helpers ──────────────────────────────────────────────────
 
@@ -36,8 +36,8 @@ export default function WalletsPage() {
 
   // Build a lookup map: symbol → image_url
   const coinImageMap: Record<string, string> = {};
-  for (const c of coinsData?.coins ?? []) {
-    coinImageMap[c.symbol.toLowerCase()] = c.image_url;
+  for (const c of coinsData?.token ?? []) {
+    coinImageMap[c.symbol.toLowerCase()] = c.imageUrl;
   }
 
   // ── Modal state ───────────────────────────────────────────────────────
@@ -45,33 +45,36 @@ export default function WalletsPage() {
   const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
 
   // ── Form state ────────────────────────────────────────────────────────
-  const [form, setForm] = useState<CreateWalletRequest>({
+  const [form, setForm] = useState<CreateWalletFormState>({
     chain: 'ETH',
     address: '',
-    token_symbol: '',
+    tokenSymbol: '',
     label: '',
   });
 
   const wallets = walletsData?.wallet ?? [];
-  const totalBalance = walletsData?.total_balance_usd ?? 0;
+  const totalBalance = wallets.reduce((acc, w) => acc + w.balanceUsd, 0);
   const walletCount = walletsData?.total ?? 0;
 
   // Weighted 24h change
   const weightedChange24h =
     wallets.length > 0 && totalBalance > 0
       ? wallets.reduce(
-        (acc, w) => acc + (w.change_24h_percent * (w.balance_usd / totalBalance)),
+        (acc, w) =>
+          acc +
+          (w.price?.priceChangePercentage24h ?? 0) *
+          (w.balanceUsd / totalBalance),
         0,
       )
       : 0;
 
   // ── Handlers ──────────────────────────────────────────────────────────
   const handleAddWallet = async () => {
-    if (!form.address.trim() || !form.token_symbol.trim()) return;
+    if (!form.address.trim() || !form.tokenSymbol.trim()) return;
     try {
       await createWallet.mutateAsync(form);
       setShowAddModal(false);
-      setForm({ chain: 'ETH', address: '', token_symbol: '', label: '' });
+      setForm({ chain: 'ETH', address: '', tokenSymbol: '', label: '' });
     } catch {
       // error shown inline via mutation state
     }
@@ -79,7 +82,7 @@ export default function WalletsPage() {
 
   const handleDeleteWallet = async (id: string) => {
     try {
-      await deleteWallet.mutateAsync({ id });
+      await deleteWallet.mutateAsync(id);
       setDeleteConfirmId(null);
     } catch {
       // error shown inline
@@ -144,40 +147,40 @@ export default function WalletsPage() {
                     <td className="py-3 pr-4">
                       <div className="flex items-center gap-1.5">
                         <img
-                          src={coinImageMap[wallet.token_symbol.toLowerCase()]}
-                          alt={wallet.token_symbol}
+                          src={coinImageMap[wallet.tokenSymbol.toLowerCase()]}
+                          alt={wallet.tokenSymbol}
                           className="w-5 h-5 rounded-full"
                           onError={(e) => {
                             (e.currentTarget as HTMLImageElement).style.display = 'none';
                           }}
                         />
-                        <span className="text-gray-200 font-medium">{wallet.token_symbol}</span>
+                        <span className="text-gray-200 font-medium">{wallet.tokenSymbol}</span>
                       </div>
                     </td>
 
                     <td className="py-3 pr-4 font-mono text-xs">
-                      {wallet.has_error ? (
-                        <span className="text-amber-500/80 text-3xl" title={wallet.error_msg}>
+                      {wallet.hasError ? (
+                        <span className="text-amber-500/80 text-3xl" title={wallet.errorMsg}>
                           ⚠
                         </span>
                       ) : (
-                        <span className="text-gray-200">{fmtUSD(wallet.balance_usd)}</span>
+                        <span className="text-gray-200">{fmtUSD(wallet.balanceUsd)}</span>
                       )}
                     </td>
 
                     <td className="py-3 pr-4 font-mono text-xs">
-                      {wallet.has_error ? (
-                        <span className="text-amber-500/80 text-3xl" title={wallet.error_msg}>
+                      {wallet.hasError ? (
+                        <span className="text-amber-500/80 text-3xl" title={wallet.errorMsg}>
                           ⚠
                         </span>
                       ) : (
-                        <span className="text-gray-200">{fmtCrypto(wallet.balance_crypto)}</span>
+                        <span className="text-gray-200">{fmtCrypto(wallet.balanceCrypto)}</span>
                       )}
                     </td>
 
                     <td className="py-3 pr-4">
-                      <span className={wallet.change_24h_percent >= 0 ? 'text-green-400' : 'text-red-400'}>
-                        {fmtPct(wallet.change_24h_percent)}
+                      <span className={(wallet.price?.priceChangePercentage24h ?? 0) >= 0 ? 'text-green-400' : 'text-red-400'}>
+                        {fmtPct(wallet.price?.priceChangePercentage24h ?? 0)}
                       </span>
                     </td>
 
@@ -268,8 +271,8 @@ export default function WalletsPage() {
               <input
                 type="text"
                 placeholder="e.g. ETH, USDC, XAUT"
-                value={form.token_symbol}
-                onChange={(e) => setForm({ ...form, token_symbol: e.target.value.toUpperCase() })}
+                value={form.tokenSymbol}
+                onChange={(e) => setForm({ ...form, tokenSymbol: e.target.value.toUpperCase() })}
                 className="w-full rounded-lg border border-white/10 bg-gray-900 px-3 py-2 text-sm text-white
                            placeholder:text-gray-600 focus:outline-none focus:ring-2 focus:ring-purple-500/50"
               />
@@ -302,7 +305,7 @@ export default function WalletsPage() {
               </button>
               <button
                 type="submit"
-                disabled={createWallet.isPending || !form.address.trim() || !form.token_symbol.trim()}
+                disabled={createWallet.isPending || !form.address.trim() || !form.tokenSymbol.trim()}
                 className="rounded-lg bg-purple-600 px-4 py-2 text-sm font-medium text-white
                            hover:bg-purple-500 disabled:opacity-40 disabled:cursor-not-allowed transition-colors cursor-pointer"
               >

@@ -41,12 +41,12 @@ export default function MarketPage() {
     refetch: refetchCoins,
   } = useCoins();
 
-  const allCoins = coinsData?.coins ?? [];
+  const allCoins = coinsData?.token ?? [];
 
   // Build a lookup map: symbol → image_url
   const coinImageMap: Record<string, string> = {};
   for (const c of allCoins) {
-    coinImageMap[c.symbol.toLowerCase()] = c.image_url;
+    coinImageMap[c.symbol.toLowerCase()] = c.imageUrl;
   }
 
   // Filter coins by search input, or show defaults
@@ -144,30 +144,30 @@ export default function MarketPage() {
                       </div>
                     </td>
                     <td className="py-3 pr-4 text-gray-200 font-mono text-xs">
-                      {fmtUSD(coin.price_usd)}
+                      {fmtUSD(coin.priceUsd)}
                     </td>
                     <td className="py-3 pr-4">
                       <span
                         className={
-                          coin.price_change_percentage_24h >= 0
+                          coin.priceChangePercentage24h >= 0
                             ? 'text-green-400'
                             : 'text-red-400'
                         }
                       >
-                        {fmtPct(coin.price_change_percentage_24h)}
+                        {fmtPct(coin.priceChangePercentage24h)}
                       </span>
                     </td>
                     <td className="py-3 pr-4 text-gray-400 font-mono text-xs hidden sm:table-cell">
-                      {fmtUSD(coin.high_24h)}
+                      {fmtUSD(coin.high24h)}
                     </td>
                     <td className="py-3 pr-4 text-gray-400 font-mono text-xs hidden sm:table-cell">
-                      {fmtUSD(coin.low_24h)}
+                      {fmtUSD(coin.low24h)}
                     </td>
                     <td className="py-3 pr-4 text-gray-400 font-mono text-xs hidden md:table-cell">
-                      {fmtLarge(coin.market_cap)}
+                      {fmtLarge(coin.marketCap)}
                     </td>
                     <td className="py-3 text-gray-400 font-mono text-xs hidden md:table-cell">
-                      {fmtLarge(coin.total_volume)}
+                      {fmtLarge(coin.totalVolume)}
                     </td>
                   </tr>
                 ))}

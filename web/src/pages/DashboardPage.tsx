@@ -45,12 +45,12 @@ export default function DashboardPage() {
 
   // Build a lookup map: symbol → image_url
   const coinImageMap: Record<string, string> = {};
-  for (const c of coinsData?.coins ?? []) {
-    coinImageMap[c.symbol.toLowerCase()] = c.image_url;
+  for (const c of coinsData?.token ?? []) {
+    coinImageMap[c.symbol.toLowerCase()] = c.imageUrl;
   }
 
   const wallets = walletsData?.wallet ?? [];
-  const totalBalance = walletsData?.total_balance_usd ?? 0;
+  const totalBalance = wallets.reduce((acc, w) => acc + w.balanceUsd, 0);
   const walletCount = walletsData?.total ?? 0;
   const prices = pricesData?.price ?? [];
 
@@ -58,13 +58,15 @@ export default function DashboardPage() {
     wallets.length > 0 && totalBalance > 0
       ? wallets.reduce(
         (acc, w) =>
-          acc + w.change_24h_percent * (w.balance_usd / totalBalance),
+          acc +
+          (w.price?.priceChangePercentage24h ?? 0) *
+          (w.balanceUsd / totalBalance),
         0,
       )
       : 0;
 
   const topWallets = [...wallets]
-    .sort((a, b) => b.balance_usd - a.balance_usd)
+    .sort((a, b) => b.balanceUsd - a.balanceUsd)
     .slice(0, 5);
 
   return (
@@ -144,24 +146,24 @@ export default function DashboardPage() {
                       </div>
                     </td>
                     <td className="py-3 pr-4 text-gray-200 font-mono text-xs">
-                      {fmtUSD(coin.price_usd)}
+                      {fmtUSD(coin.priceUsd)}
                     </td>
                     <td className="py-3 pr-4">
                       <span
                         className={
-                          coin.price_change_percentage_24h >= 0
+                          coin.priceChangePercentage24h >= 0
                             ? 'text-green-400'
                             : 'text-red-400'
                         }
                       >
-                        {fmtPct(coin.price_change_percentage_24h)}
+                        {fmtPct(coin.priceChangePercentage24h)}
                       </span>
                     </td>
                     <td className="py-3 pr-4 text-gray-400 font-mono text-xs hidden sm:table-cell">
-                      {fmtLarge(coin.market_cap)}
+                      {fmtLarge(coin.marketCap)}
                     </td>
                     <td className="py-3 text-gray-400 font-mono text-xs hidden sm:table-cell">
-                      {fmtLarge(coin.total_volume)}
+                      {fmtLarge(coin.totalVolume)}
                     </td>
                   </tr>
                 ))}
@@ -239,49 +241,49 @@ export default function DashboardPage() {
                     <td className="py-3 pr-4">
                       <div className="flex items-center gap-1.5">
                         <img
-                          src={coinImageMap[wallet.token_symbol.toLowerCase()]}
-                          alt={wallet.token_symbol}
+                          src={coinImageMap[wallet.tokenSymbol.toLowerCase()]}
+                          alt={wallet.tokenSymbol}
                           className="w-5 h-5 rounded-full"
                           onError={(e) => {
                             (e.currentTarget as HTMLImageElement).style.display = 'none';
                           }}
                         />
                         <span className="text-gray-200 font-medium">
-                          {wallet.token_symbol}
+                          {wallet.tokenSymbol}
                         </span>
                         <span className="text-xs text-gray-500">({wallet.chain})</span>
                       </div>
                     </td>
 
                     <td className="py-3 pr-4 font-mono text-xs">
-                      {wallet.has_error ? (
-                        <span className="text-amber-500/80 text-3xl" title={wallet.error_msg}>
+                      {wallet.hasError ? (
+                        <span className="text-amber-500/80 text-3xl" title={wallet.errorMsg}>
                           ⚠
                         </span>
                       ) : (
-                        <span className="text-gray-200">{fmtUSD(wallet.balance_usd)}</span>
+                        <span className="text-gray-200">{fmtUSD(wallet.balanceUsd)}</span>
                       )}
                     </td>
 
                     <td className="py-3 pr-4 font-mono text-xs">
-                      {wallet.has_error ? (
-                        <span className="text-amber-500/80 text-3xl" title={wallet.error_msg}>
+                      {wallet.hasError ? (
+                        <span className="text-amber-500/80 text-3xl" title={wallet.errorMsg}>
                           ⚠
                         </span>
                       ) : (
-                        <span className="text-gray-200">{fmtCryptoCompact(wallet.balance_crypto)}</span>
+                        <span className="text-gray-200">{fmtCryptoCompact(wallet.balanceCrypto)}</span>
                       )}
                     </td>
 
                     <td className="py-3">
                       <span
                         className={
-                          wallet.change_24h_percent >= 0
+                          (wallet.price?.priceChangePercentage24h ?? 0) >= 0
                             ? 'text-green-400'
                             : 'text-red-400'
                         }
                       >
-                        {fmtPct(wallet.change_24h_percent)}
+                        {fmtPct(wallet.price?.priceChangePercentage24h ?? 0)}
                       </span>
                     </td>
                     <td className="py-3 pr-4">
