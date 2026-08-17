@@ -480,6 +480,110 @@ func (x *SearchCoinsResponse) GetToken() []*Token {
 	return nil
 }
 
+type StreamPricesRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Symbols       []string               `protobuf:"bytes,1,rep,name=symbols,proto3" json:"symbols,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *StreamPricesRequest) Reset() {
+	*x = StreamPricesRequest{}
+	mi := &file_price_v1_price_proto_msgTypes[10]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *StreamPricesRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*StreamPricesRequest) ProtoMessage() {}
+
+func (x *StreamPricesRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_price_v1_price_proto_msgTypes[10]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use StreamPricesRequest.ProtoReflect.Descriptor instead.
+func (*StreamPricesRequest) Descriptor() ([]byte, []int) {
+	return file_price_v1_price_proto_rawDescGZIP(), []int{10}
+}
+
+func (x *StreamPricesRequest) GetSymbols() []string {
+	if x != nil {
+		return x.Symbols
+	}
+	return nil
+}
+
+type PriceUpdate struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Symbol        string                 `protobuf:"bytes,1,opt,name=symbol,proto3" json:"symbol,omitempty"`
+	PriceUsd      string                 `protobuf:"bytes,2,opt,name=price_usd,json=priceUsd,proto3" json:"price_usd,omitempty"`
+	Timestamp     int64                  `protobuf:"varint,3,opt,name=timestamp,proto3" json:"timestamp,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *PriceUpdate) Reset() {
+	*x = PriceUpdate{}
+	mi := &file_price_v1_price_proto_msgTypes[11]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *PriceUpdate) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*PriceUpdate) ProtoMessage() {}
+
+func (x *PriceUpdate) ProtoReflect() protoreflect.Message {
+	mi := &file_price_v1_price_proto_msgTypes[11]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use PriceUpdate.ProtoReflect.Descriptor instead.
+func (*PriceUpdate) Descriptor() ([]byte, []int) {
+	return file_price_v1_price_proto_rawDescGZIP(), []int{11}
+}
+
+func (x *PriceUpdate) GetSymbol() string {
+	if x != nil {
+		return x.Symbol
+	}
+	return ""
+}
+
+func (x *PriceUpdate) GetPriceUsd() string {
+	if x != nil {
+		return x.PriceUsd
+	}
+	return ""
+}
+
+func (x *PriceUpdate) GetTimestamp() int64 {
+	if x != nil {
+		return x.Timestamp
+	}
+	return 0
+}
+
 type Price struct {
 	state                         protoimpl.MessageState `protogen:"open.v1"`
 	Symbol                        string                 `protobuf:"bytes,1,opt,name=symbol,proto3" json:"symbol,omitempty"`
@@ -500,7 +604,7 @@ type Price struct {
 
 func (x *Price) Reset() {
 	*x = Price{}
-	mi := &file_price_v1_price_proto_msgTypes[10]
+	mi := &file_price_v1_price_proto_msgTypes[12]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -512,7 +616,7 @@ func (x *Price) String() string {
 func (*Price) ProtoMessage() {}
 
 func (x *Price) ProtoReflect() protoreflect.Message {
-	mi := &file_price_v1_price_proto_msgTypes[10]
+	mi := &file_price_v1_price_proto_msgTypes[12]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -525,7 +629,7 @@ func (x *Price) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Price.ProtoReflect.Descriptor instead.
 func (*Price) Descriptor() ([]byte, []int) {
-	return file_price_v1_price_proto_rawDescGZIP(), []int{10}
+	return file_price_v1_price_proto_rawDescGZIP(), []int{12}
 }
 
 func (x *Price) GetSymbol() string {
@@ -626,7 +730,7 @@ type Token struct {
 
 func (x *Token) Reset() {
 	*x = Token{}
-	mi := &file_price_v1_price_proto_msgTypes[11]
+	mi := &file_price_v1_price_proto_msgTypes[13]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -638,7 +742,7 @@ func (x *Token) String() string {
 func (*Token) ProtoMessage() {}
 
 func (x *Token) ProtoReflect() protoreflect.Message {
-	mi := &file_price_v1_price_proto_msgTypes[11]
+	mi := &file_price_v1_price_proto_msgTypes[13]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -651,7 +755,7 @@ func (x *Token) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Token.ProtoReflect.Descriptor instead.
 func (*Token) Descriptor() ([]byte, []int) {
-	return file_price_v1_price_proto_rawDescGZIP(), []int{11}
+	return file_price_v1_price_proto_rawDescGZIP(), []int{13}
 }
 
 func (x *Token) GetSymbol() string {
@@ -722,7 +826,13 @@ const file_price_v1_price_proto_rawDesc = "" +
 	"\x04text\x18\x01 \x01(\tR\x04text\"R\n" +
 	"\x13SearchCoinsResponse\x12\x14\n" +
 	"\x05total\x18\x01 \x01(\x05R\x05total\x12%\n" +
-	"\x05token\x18\x02 \x03(\v2\x0f.price.v1.TokenR\x05token\"\xe5\x03\n" +
+	"\x05token\x18\x02 \x03(\v2\x0f.price.v1.TokenR\x05token\"/\n" +
+	"\x13StreamPricesRequest\x12\x18\n" +
+	"\asymbols\x18\x01 \x03(\tR\asymbols\"`\n" +
+	"\vPriceUpdate\x12\x16\n" +
+	"\x06symbol\x18\x01 \x01(\tR\x06symbol\x12\x1b\n" +
+	"\tprice_usd\x18\x02 \x01(\tR\bpriceUsd\x12\x1c\n" +
+	"\ttimestamp\x18\x03 \x01(\x03R\ttimestamp\"\xe5\x03\n" +
 	"\x05Price\x12\x16\n" +
 	"\x06symbol\x18\x01 \x01(\tR\x06symbol\x12\x12\n" +
 	"\x04name\x18\x02 \x01(\tR\x04name\x12\x1b\n" +
@@ -745,7 +855,7 @@ const file_price_v1_price_proto_rawDesc = "" +
 	"\x06chains\x18\x04 \x03(\tR\x06chains\x12\x14\n" +
 	"\x05addrs\x18\x05 \x03(\tR\x05addrs\x12\x1b\n" +
 	"\tis_native\x18\x06 \x01(\bR\bisNative\x12\x1b\n" +
-	"\timage_url\x18\a \x01(\tR\bimageUrl2\xe1\x03\n" +
+	"\timage_url\x18\a \x01(\tR\bimageUrl2\xc4\x04\n" +
 	"\fPriceService\x12W\n" +
 	"\tListCoins\x12\x1a.price.v1.ListCoinsRequest\x1a\x1b.price.v1.ListCoinsResponse\"\x11\x82\xd3\xe4\x93\x02\v\x12\t/v1/coins\x12V\n" +
 	"\aGetCoin\x12\x18.price.v1.GetCoinRequest\x1a\x19.price.v1.GetCoinResponse\"\x16\x82\xd3\xe4\x93\x02\x10\x12\x0e/v1/coins/{id}\x12f\n" +
@@ -753,7 +863,8 @@ const file_price_v1_price_proto_rawDesc = "" +
 	"SearchCoin\x12\x1c.price.v1.SearchCoinsRequest\x1a\x1d.price.v1.SearchCoinsResponse\"\x1b\x82\xd3\xe4\x93\x02\x15:\x01*\"\x10/v1/coins/search\x12X\n" +
 	"\tGetPrices\x12\x1a.price.v1.GetPricesRequest\x1a\x1b.price.v1.GetPricesResponse\"\x12\x82\xd3\xe4\x93\x02\f\x12\n" +
 	"/v1/prices\x12^\n" +
-	"\bGetPrice\x12\x19.price.v1.GetPriceRequest\x1a\x1a.price.v1.GetPriceResponse\"\x1b\x82\xd3\xe4\x93\x02\x15\x12\x13/v1/prices/{symbol}B\x1eZ\x1ctracker/gen/price/v1;pricev1b\x06proto3"
+	"\bGetPrice\x12\x19.price.v1.GetPriceRequest\x1a\x1a.price.v1.GetPriceResponse\"\x1b\x82\xd3\xe4\x93\x02\x15\x12\x13/v1/prices/{symbol}\x12a\n" +
+	"\fStreamPrices\x12\x1d.price.v1.StreamPricesRequest\x1a\x15.price.v1.PriceUpdate\"\x19\x82\xd3\xe4\x93\x02\x13\x12\x11/v1/prices/stream0\x01B\x1eZ\x1ctracker/gen/price/v1;pricev1b\x06proto3"
 
 var (
 	file_price_v1_price_proto_rawDescOnce sync.Once
@@ -767,7 +878,7 @@ func file_price_v1_price_proto_rawDescGZIP() []byte {
 	return file_price_v1_price_proto_rawDescData
 }
 
-var file_price_v1_price_proto_msgTypes = make([]protoimpl.MessageInfo, 12)
+var file_price_v1_price_proto_msgTypes = make([]protoimpl.MessageInfo, 14)
 var file_price_v1_price_proto_goTypes = []any{
 	(*ListCoinsRequest)(nil),      // 0: price.v1.ListCoinsRequest
 	(*ListCoinsResponse)(nil),     // 1: price.v1.ListCoinsResponse
@@ -779,29 +890,33 @@ var file_price_v1_price_proto_goTypes = []any{
 	(*GetPriceResponse)(nil),      // 7: price.v1.GetPriceResponse
 	(*SearchCoinsRequest)(nil),    // 8: price.v1.SearchCoinsRequest
 	(*SearchCoinsResponse)(nil),   // 9: price.v1.SearchCoinsResponse
-	(*Price)(nil),                 // 10: price.v1.Price
-	(*Token)(nil),                 // 11: price.v1.Token
-	(*timestamppb.Timestamp)(nil), // 12: google.protobuf.Timestamp
+	(*StreamPricesRequest)(nil),   // 10: price.v1.StreamPricesRequest
+	(*PriceUpdate)(nil),           // 11: price.v1.PriceUpdate
+	(*Price)(nil),                 // 12: price.v1.Price
+	(*Token)(nil),                 // 13: price.v1.Token
+	(*timestamppb.Timestamp)(nil), // 14: google.protobuf.Timestamp
 }
 var file_price_v1_price_proto_depIdxs = []int32{
-	11, // 0: price.v1.ListCoinsResponse.token:type_name -> price.v1.Token
-	11, // 1: price.v1.GetCoinResponse.token:type_name -> price.v1.Token
-	10, // 2: price.v1.GetPricesResponse.price:type_name -> price.v1.Price
-	10, // 3: price.v1.GetPriceResponse.price:type_name -> price.v1.Price
-	11, // 4: price.v1.SearchCoinsResponse.token:type_name -> price.v1.Token
-	12, // 5: price.v1.Price.updated_at:type_name -> google.protobuf.Timestamp
+	13, // 0: price.v1.ListCoinsResponse.token:type_name -> price.v1.Token
+	13, // 1: price.v1.GetCoinResponse.token:type_name -> price.v1.Token
+	12, // 2: price.v1.GetPricesResponse.price:type_name -> price.v1.Price
+	12, // 3: price.v1.GetPriceResponse.price:type_name -> price.v1.Price
+	13, // 4: price.v1.SearchCoinsResponse.token:type_name -> price.v1.Token
+	14, // 5: price.v1.Price.updated_at:type_name -> google.protobuf.Timestamp
 	0,  // 6: price.v1.PriceService.ListCoins:input_type -> price.v1.ListCoinsRequest
 	2,  // 7: price.v1.PriceService.GetCoin:input_type -> price.v1.GetCoinRequest
 	8,  // 8: price.v1.PriceService.SearchCoin:input_type -> price.v1.SearchCoinsRequest
 	4,  // 9: price.v1.PriceService.GetPrices:input_type -> price.v1.GetPricesRequest
 	6,  // 10: price.v1.PriceService.GetPrice:input_type -> price.v1.GetPriceRequest
-	1,  // 11: price.v1.PriceService.ListCoins:output_type -> price.v1.ListCoinsResponse
-	3,  // 12: price.v1.PriceService.GetCoin:output_type -> price.v1.GetCoinResponse
-	9,  // 13: price.v1.PriceService.SearchCoin:output_type -> price.v1.SearchCoinsResponse
-	5,  // 14: price.v1.PriceService.GetPrices:output_type -> price.v1.GetPricesResponse
-	7,  // 15: price.v1.PriceService.GetPrice:output_type -> price.v1.GetPriceResponse
-	11, // [11:16] is the sub-list for method output_type
-	6,  // [6:11] is the sub-list for method input_type
+	10, // 11: price.v1.PriceService.StreamPrices:input_type -> price.v1.StreamPricesRequest
+	1,  // 12: price.v1.PriceService.ListCoins:output_type -> price.v1.ListCoinsResponse
+	3,  // 13: price.v1.PriceService.GetCoin:output_type -> price.v1.GetCoinResponse
+	9,  // 14: price.v1.PriceService.SearchCoin:output_type -> price.v1.SearchCoinsResponse
+	5,  // 15: price.v1.PriceService.GetPrices:output_type -> price.v1.GetPricesResponse
+	7,  // 16: price.v1.PriceService.GetPrice:output_type -> price.v1.GetPriceResponse
+	11, // 17: price.v1.PriceService.StreamPrices:output_type -> price.v1.PriceUpdate
+	12, // [12:18] is the sub-list for method output_type
+	6,  // [6:12] is the sub-list for method input_type
 	6,  // [6:6] is the sub-list for extension type_name
 	6,  // [6:6] is the sub-list for extension extendee
 	0,  // [0:6] is the sub-list for field type_name
@@ -818,7 +933,7 @@ func file_price_v1_price_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_price_v1_price_proto_rawDesc), len(file_price_v1_price_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   12,
+			NumMessages:   14,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

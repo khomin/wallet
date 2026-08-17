@@ -2,23 +2,29 @@ package handlers
 
 import (
 	"context"
+	"tracker/internal/api/middleware"
 	"tracker/internal/core"
 
 	pricev1 "tracker/gen/price/v1"
 
 	"github.com/sirupsen/logrus"
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
 type PriceGrpcHandler struct {
 	pricev1.UnimplementedPriceServiceServer
 	priceService *core.PriceService
+	priceHub     *core.PriceHub
 	log          *logrus.Entry
 }
 
-func NewPriceGrpcHandler(service *core.PriceService) pricev1.PriceServiceServer {
+func NewPriceGrpcHandler(service *core.PriceService, priceHub *core.PriceHub) pricev1.PriceServiceServer {
 	return &PriceGrpcHandler{
 		priceService: service,
+		priceHub:     priceHub,
 		log:          logrus.WithField("component", "PriceGrpcHandler"),
 	}
 }
@@ -133,4 +139,38 @@ func (s *PriceGrpcHandler) SearchCoin(ctx context.Context, req *pricev1.SearchCo
 		Total: int32(len(tokens)),
 		Token: out,
 	}, nil
+}
+
+func (s *PriceGrpcHandler) StreamPrices(
+	req *pricev1.StreamPricesRequest,
+	stream grpc.ServerStreamingServer[pricev1.PriceUpdate],
+) error {
+	ctx := stream.Context()
+
+	// 1. Auth check
+	_, ok := middleware.GetOAUTH(ctx)
+	if !ok {
+		return status.Error(codes.Unauthenticated, "unauthorized")
+	}
+
+	// 2. Subscribe to Hub
+	subID, priceChan := s.priceHub.Subscribe()
+	defer s.priceHub.Unsubscribe(subID) // Clean explicit call on disconnect!
+
+	// 3. Stream loop
+	for {
+		select {
+		case <-ctx.Done(): // Connection closed by browser or network error
+			return ctx.Err()
+
+		case update, open := <-priceChan:
+			if !open {
+				return nil
+			}
+
+			if err := stream.Send(update); err != nil {
+				return err
+			}
+		}
+	}
 }

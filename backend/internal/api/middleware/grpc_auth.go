@@ -43,7 +43,6 @@ func UnaryAuthInterceptor(verifier TokenVerifier) grpc.UnaryServerInterceptor {
 		}
 
 		newCtx := SetOAUTH(ctx, claims)
-		// newCtx := context.WithValue(ctx, "user_id", claims.Subject)
 
 		return handler(newCtx, req)
 	}

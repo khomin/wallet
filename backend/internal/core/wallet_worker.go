@@ -24,13 +24,13 @@ type walletWorker struct {
 type NewWalletDeps struct {
 	WalletService *WalletService
 	WalletRepo    WalletRepository
-	MqConsumer    *messaging.Consumer
+	EventConsumer *messaging.Consumer
 }
 
 func NewWalletWorker(deps *NewWalletDeps) *walletWorker {
 	return &walletWorker{
 		walletRepo:    deps.WalletRepo,
-		eventConsumer: deps.MqConsumer,
+		eventConsumer: deps.EventConsumer,
 		walletService: deps.WalletService,
 	}
 }

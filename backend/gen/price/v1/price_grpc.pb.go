@@ -19,11 +19,12 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
-	PriceService_ListCoins_FullMethodName  = "/price.v1.PriceService/ListCoins"
-	PriceService_GetCoin_FullMethodName    = "/price.v1.PriceService/GetCoin"
-	PriceService_SearchCoin_FullMethodName = "/price.v1.PriceService/SearchCoin"
-	PriceService_GetPrices_FullMethodName  = "/price.v1.PriceService/GetPrices"
-	PriceService_GetPrice_FullMethodName   = "/price.v1.PriceService/GetPrice"
+	PriceService_ListCoins_FullMethodName    = "/price.v1.PriceService/ListCoins"
+	PriceService_GetCoin_FullMethodName      = "/price.v1.PriceService/GetCoin"
+	PriceService_SearchCoin_FullMethodName   = "/price.v1.PriceService/SearchCoin"
+	PriceService_GetPrices_FullMethodName    = "/price.v1.PriceService/GetPrices"
+	PriceService_GetPrice_FullMethodName     = "/price.v1.PriceService/GetPrice"
+	PriceService_StreamPrices_FullMethodName = "/price.v1.PriceService/StreamPrices"
 )
 
 // PriceServiceClient is the client API for PriceService service.
@@ -35,6 +36,7 @@ type PriceServiceClient interface {
 	SearchCoin(ctx context.Context, in *SearchCoinsRequest, opts ...grpc.CallOption) (*SearchCoinsResponse, error)
 	GetPrices(ctx context.Context, in *GetPricesRequest, opts ...grpc.CallOption) (*GetPricesResponse, error)
 	GetPrice(ctx context.Context, in *GetPriceRequest, opts ...grpc.CallOption) (*GetPriceResponse, error)
+	StreamPrices(ctx context.Context, in *StreamPricesRequest, opts ...grpc.CallOption) (grpc.ServerStreamingClient[PriceUpdate], error)
 }
 
 type priceServiceClient struct {
@@ -95,6 +97,25 @@ func (c *priceServiceClient) GetPrice(ctx context.Context, in *GetPriceRequest, 
 	return out, nil
 }
 
+func (c *priceServiceClient) StreamPrices(ctx context.Context, in *StreamPricesRequest, opts ...grpc.CallOption) (grpc.ServerStreamingClient[PriceUpdate], error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	stream, err := c.cc.NewStream(ctx, &PriceService_ServiceDesc.Streams[0], PriceService_StreamPrices_FullMethodName, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	x := &grpc.GenericClientStream[StreamPricesRequest, PriceUpdate]{ClientStream: stream}
+	if err := x.ClientStream.SendMsg(in); err != nil {
+		return nil, err
+	}
+	if err := x.ClientStream.CloseSend(); err != nil {
+		return nil, err
+	}
+	return x, nil
+}
+
+// This type alias is provided for backwards compatibility with existing code that references the prior non-generic stream type by name.
+type PriceService_StreamPricesClient = grpc.ServerStreamingClient[PriceUpdate]
+
 // PriceServiceServer is the server API for PriceService service.
 // All implementations must embed UnimplementedPriceServiceServer
 // for forward compatibility.
@@ -104,6 +125,7 @@ type PriceServiceServer interface {
 	SearchCoin(context.Context, *SearchCoinsRequest) (*SearchCoinsResponse, error)
 	GetPrices(context.Context, *GetPricesRequest) (*GetPricesResponse, error)
 	GetPrice(context.Context, *GetPriceRequest) (*GetPriceResponse, error)
+	StreamPrices(*StreamPricesRequest, grpc.ServerStreamingServer[PriceUpdate]) error
 	mustEmbedUnimplementedPriceServiceServer()
 }
 
@@ -128,6 +150,9 @@ func (UnimplementedPriceServiceServer) GetPrices(context.Context, *GetPricesRequ
 }
 func (UnimplementedPriceServiceServer) GetPrice(context.Context, *GetPriceRequest) (*GetPriceResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method GetPrice not implemented")
+}
+func (UnimplementedPriceServiceServer) StreamPrices(*StreamPricesRequest, grpc.ServerStreamingServer[PriceUpdate]) error {
+	return status.Error(codes.Unimplemented, "method StreamPrices not implemented")
 }
 func (UnimplementedPriceServiceServer) mustEmbedUnimplementedPriceServiceServer() {}
 func (UnimplementedPriceServiceServer) testEmbeddedByValue()                      {}
@@ -240,6 +265,17 @@ func _PriceService_GetPrice_Handler(srv interface{}, ctx context.Context, dec fu
 	return interceptor(ctx, in, info, handler)
 }
 
+func _PriceService_StreamPrices_Handler(srv interface{}, stream grpc.ServerStream) error {
+	m := new(StreamPricesRequest)
+	if err := stream.RecvMsg(m); err != nil {
+		return err
+	}
+	return srv.(PriceServiceServer).StreamPrices(m, &grpc.GenericServerStream[StreamPricesRequest, PriceUpdate]{ServerStream: stream})
+}
+
+// This type alias is provided for backwards compatibility with existing code that references the prior non-generic stream type by name.
+type PriceService_StreamPricesServer = grpc.ServerStreamingServer[PriceUpdate]
+
 // PriceService_ServiceDesc is the grpc.ServiceDesc for PriceService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -268,6 +304,12 @@ var PriceService_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _PriceService_GetPrice_Handler,
 		},
 	},
-	Streams:  []grpc.StreamDesc{},
+	Streams: []grpc.StreamDesc{
+		{
+			StreamName:    "StreamPrices",
+			Handler:       _PriceService_StreamPrices_Handler,
+			ServerStreams: true,
+		},
+	},
 	Metadata: "price/v1/price.proto",
 }

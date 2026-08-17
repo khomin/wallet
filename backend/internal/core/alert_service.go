@@ -8,6 +8,10 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
+type EmailSender interface {
+	Send(ctx context.Context, recipient, subject, body string) error
+}
+
 type AlertService struct {
 	alertRepo   AlertRepository
 	userRepo    UserRepo

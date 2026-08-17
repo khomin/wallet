@@ -3,7 +3,7 @@
 /* eslint-disable */
 // @ts-nocheck
 
-import { GetCoinRequest, GetCoinResponse, GetPriceRequest, GetPriceResponse, GetPricesRequest, GetPricesResponse, ListCoinsRequest, ListCoinsResponse, SearchCoinsRequest, SearchCoinsResponse } from "./price_pb.js";
+import { GetCoinRequest, GetCoinResponse, GetPriceRequest, GetPriceResponse, GetPricesRequest, GetPricesResponse, ListCoinsRequest, ListCoinsResponse, PriceUpdate, SearchCoinsRequest, SearchCoinsResponse, StreamPricesRequest } from "./price_pb.js";
 import { MethodKind } from "@bufbuild/protobuf";
 
 /**
@@ -56,6 +56,15 @@ export const PriceService = {
       I: GetPriceRequest,
       O: GetPriceResponse,
       kind: MethodKind.Unary,
+    },
+    /**
+     * @generated from rpc price.v1.PriceService.StreamPrices
+     */
+    streamPrices: {
+      name: "StreamPrices",
+      I: StreamPricesRequest,
+      O: PriceUpdate,
+      kind: MethodKind.ServerStreaming,
     },
   }
 } as const;

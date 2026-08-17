@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"log"
 	"net"
@@ -24,6 +25,7 @@ import (
 	"tracker/internal/client/solana"
 	"tracker/internal/client/tron"
 	"tracker/internal/core"
+	"tracker/internal/core/domain"
 	"tracker/internal/db"
 	"tracker/internal/db/repositories"
 	"tracker/internal/docs"
@@ -97,6 +99,19 @@ func main() {
 
 	priceCache := core.NewPriceCache(redisClient)
 
+	alertService := core.NewAlertService(alertRepo, userRepo, priceCache, emailSender)
+
+	priceEventPublisher, err := messaging.NewPublisher(mq, messaging.QueuePriceChanged)
+	if err != nil {
+		logrus.Fatal(err)
+	}
+	priceEventConsumer, err := messaging.NewConsumer(mq, messaging.QueuePriceChanged)
+	if err != nil {
+		logrus.Fatal(err)
+	}
+	priceHub := core.NewPriceHub(priceEventConsumer)
+	priceHub.Start()
+
 	priceFetcher := core.NewPriceFetcher(core.PriceFetcherDeps{
 		CoinGeckoClient:    coingeckoClient,
 		AlchemyClient:      alchemyClient,
@@ -104,9 +119,14 @@ func main() {
 		PriceRepo:          priceRepo,
 		AlertRepo:          alertRepo,
 		UserRepo:           userRepo,
-		EmailSender:        emailSender,
-		AlertService:       core.NewAlertService(alertRepo, userRepo, priceCache, emailSender),
+		AlertService:       alertService,
 		FetchCoinsInterval: app.Cfg.CoinGecko.PriceFetcher,
+		OnPriceChanged: func(ctx context.Context, prices []domain.TokenPrice) {
+			go alertService.EvaluateAlerts(ctx)
+			if bytes, err := json.Marshal(prices); err == nil {
+				priceEventPublisher.Publish(bytes)
+			}
+		},
 	})
 
 	tokenRegistry := core.DefaultTokenRegistry(app.Cfg.TokenRegistry)
@@ -149,7 +169,7 @@ func main() {
 	walletWorker := core.NewWalletWorker(&core.NewWalletDeps{
 		WalletService: walletService,
 		WalletRepo:    walletRepo,
-		MqConsumer:    walletEventConsumer,
+		EventConsumer: walletEventConsumer,
 	})
 
 	priceFetcher.LoadCache(ctx)
@@ -177,11 +197,14 @@ func main() {
 	httpAddr := fmt.Sprintf(":%d", app.Cfg.Server.PortHTTP)
 	grpcAddr := fmt.Sprintf(":%d", app.Cfg.Server.PortGRPC)
 
-	grpcServer := grpc.NewServer(grpc.UnaryInterceptor(middleware.UnaryAuthInterceptor(verifier)))
+	grpcServer := grpc.NewServer(
+		grpc.UnaryInterceptor(middleware.UnaryAuthInterceptor(verifier)),
+		grpc.StreamInterceptor(middleware.StreamAuthInterceptor(verifier)),
+	)
 	opts := []grpc.DialOption{grpc.WithTransportCredentials(insecure.NewCredentials())}
 	reflection.Register(grpcServer)
 
-	priceGrpcServer := handlers.NewPriceGrpcHandler(priceService)
+	priceGrpcServer := handlers.NewPriceGrpcHandler(priceService, priceHub)
 	walletGrpcServer := handlers.NewWalletGrpcHandler(walletService)
 	userServer := handlers.NewUserHandler(userRepo)
 	alertServer := handlers.NewAlertHandler(alertRepo, userRepo)

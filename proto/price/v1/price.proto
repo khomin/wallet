@@ -37,6 +37,12 @@ service PriceService {
       get: "/v1/prices/{symbol}"
     };
   }
+
+  rpc StreamPrices(StreamPricesRequest) returns (stream PriceUpdate) {
+    option (google.api.http) = {
+      get: "/v1/prices/stream"
+    };
+  }
 }
 
 message ListCoinsRequest {}
@@ -76,6 +82,16 @@ message SearchCoinsRequest {
 message SearchCoinsResponse {
   int32          total = 1;
   repeated Token token = 2;
+}
+
+message StreamPricesRequest {
+  repeated string symbols = 1;
+}
+
+message PriceUpdate {
+  string symbol = 1;
+  string price_usd = 2;
+  int64 timestamp = 3;
 }
 
 message Price {

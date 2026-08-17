@@ -10,10 +10,6 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-type EmailSender interface {
-	Send(ctx context.Context, recipient, subject, body string) error
-}
-
 type PriceFetcherDeps struct {
 	CoinGeckoClient    *coingecko.CoinGeckoClient
 	AlchemyClient      *alchemy.AlchemyClient
@@ -23,7 +19,7 @@ type PriceFetcherDeps struct {
 	AlertRepo          AlertRepository
 	UserRepo           UserRepo
 	AlertService       *AlertService
-	EmailSender        EmailSender
+	OnPriceChanged     func(context.Context, []domain.TokenPrice)
 }
 
 type PriceFetcher struct {
@@ -33,9 +29,9 @@ type PriceFetcher struct {
 	priceRepo          PriceRepository
 	alertRepo          AlertRepository
 	userRepo           UserRepo
-	emailSender        EmailSender
 	fetchCoinsInterval time.Duration
 	alertService       *AlertService
+	onPriceChanged     func(context.Context, []domain.TokenPrice)
 	log                *logrus.Entry
 }
 
@@ -47,7 +43,7 @@ func NewPriceFetcher(deps PriceFetcherDeps) *PriceFetcher {
 		priceRepo:          deps.PriceRepo,
 		alertRepo:          deps.AlertRepo,
 		userRepo:           deps.UserRepo,
-		emailSender:        deps.EmailSender,
+		onPriceChanged:     deps.OnPriceChanged,
 		fetchCoinsInterval: deps.FetchCoinsInterval,
 		alertService:       deps.AlertService,
 		log:                logrus.WithField("component", "PriceFetcher"),
@@ -108,7 +104,9 @@ func (f *PriceFetcher) fetch(ctx context.Context) {
 	_ = f.priceRepo.SetCoins(ctx, coins)
 	_ = f.priceRepo.SetPrices(ctx, prices)
 
-	go f.alertService.EvaluateAlerts(ctx)
+	if f.onPriceChanged != nil {
+		f.onPriceChanged(ctx, prices)
+	}
 }
 
 func (f *PriceFetcher) fromGeckoToCoin(prices []coingecko.CoinGeckoCoin) []domain.TokenID {

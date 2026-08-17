@@ -13,7 +13,7 @@ import type { Message } from "@bufbuild/protobuf";
  * Describes the file price/v1/price.proto.
  */
 export const file_price_v1_price: GenFile = /*@__PURE__*/
-  fileDesc("ChRwcmljZS92MS9wcmljZS5wcm90bxIIcHJpY2UudjEiEgoQTGlzdENvaW5zUmVxdWVzdCJCChFMaXN0Q29pbnNSZXNwb25zZRINCgV0b3RhbBgBIAEoBRIeCgV0b2tlbhgCIAMoCzIPLnByaWNlLnYxLlRva2VuIhwKDkdldENvaW5SZXF1ZXN0EgoKAmlkGAEgASgJIjEKD0dldENvaW5SZXNwb25zZRIeCgV0b2tlbhgBIAEoCzIPLnByaWNlLnYxLlRva2VuIiMKEEdldFByaWNlc1JlcXVlc3QSDwoHc3ltYm9scxgBIAMoCSJCChFHZXRQcmljZXNSZXNwb25zZRINCgV0b3RhbBgBIAEoBRIeCgVwcmljZRgCIAMoCzIPLnByaWNlLnYxLlByaWNlIiEKD0dldFByaWNlUmVxdWVzdBIOCgZzeW1ib2wYASABKAkiMgoQR2V0UHJpY2VSZXNwb25zZRIeCgVwcmljZRgBIAEoCzIPLnByaWNlLnYxLlByaWNlIiIKElNlYXJjaENvaW5zUmVxdWVzdBIMCgR0ZXh0GAEgASgJIkQKE1NlYXJjaENvaW5zUmVzcG9uc2USDQoFdG90YWwYASABKAUSHgoFdG9rZW4YAiADKAsyDy5wcmljZS52MS5Ub2tlbiK9AgoFUHJpY2USDgoGc3ltYm9sGAEgASgJEgwKBG5hbWUYAiABKAkSEQoJcHJpY2VfdXNkGAMgASgCEhIKCm1hcmtldF9jYXAYBCABKAISFAoMdG90YWxfdm9sdW1lGAUgASgCEhAKCGhpZ2hfMjRoGAYgASgCEg8KB2xvd18yNGgYByABKAISGAoQcHJpY2VfY2hhbmdlXzI0aBgIIAEoAhIjChtwcmljZV9jaGFuZ2VfcGVyY2VudGFnZV8yNGgYCSABKAISHQoVbWFya2V0X2NhcF9jaGFuZ2VfMjRoGAogASgCEigKIG1hcmtldF9jYXBfY2hhbmdlX3BlcmNlbnRhZ2VfMjRoGAsgASgCEi4KCnVwZGF0ZWRfYXQYDCABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wImoKBVRva2VuEg4KBnN5bWJvbBgCIAEoCRIMCgRuYW1lGAMgASgJEg4KBmNoYWlucxgEIAMoCRINCgVhZGRycxgFIAMoCRIRCglpc19uYXRpdmUYBiABKAgSEQoJaW1hZ2VfdXJsGAcgASgJMuEDCgxQcmljZVNlcnZpY2USVwoJTGlzdENvaW5zEhoucHJpY2UudjEuTGlzdENvaW5zUmVxdWVzdBobLnByaWNlLnYxLkxpc3RDb2luc1Jlc3BvbnNlIhGC0+STAgsSCS92MS9jb2lucxJWCgdHZXRDb2luEhgucHJpY2UudjEuR2V0Q29pblJlcXVlc3QaGS5wcmljZS52MS5HZXRDb2luUmVzcG9uc2UiFoLT5JMCEBIOL3YxL2NvaW5zL3tpZH0SZgoKU2VhcmNoQ29pbhIcLnByaWNlLnYxLlNlYXJjaENvaW5zUmVxdWVzdBodLnByaWNlLnYxLlNlYXJjaENvaW5zUmVzcG9uc2UiG4LT5JMCFToBKiIQL3YxL2NvaW5zL3NlYXJjaBJYCglHZXRQcmljZXMSGi5wcmljZS52MS5HZXRQcmljZXNSZXF1ZXN0GhsucHJpY2UudjEuR2V0UHJpY2VzUmVzcG9uc2UiEoLT5JMCDBIKL3YxL3ByaWNlcxJeCghHZXRQcmljZRIZLnByaWNlLnYxLkdldFByaWNlUmVxdWVzdBoaLnByaWNlLnYxLkdldFByaWNlUmVzcG9uc2UiG4LT5JMCFRITL3YxL3ByaWNlcy97c3ltYm9sfUIeWhx0cmFja2VyL2dlbi9wcmljZS92MTtwcmljZXYxYgZwcm90bzM", [file_google_protobuf_empty, file_google_protobuf_timestamp, file_google_api_annotations]);
+  fileDesc("ChRwcmljZS92MS9wcmljZS5wcm90bxIIcHJpY2UudjEiEgoQTGlzdENvaW5zUmVxdWVzdCJCChFMaXN0Q29pbnNSZXNwb25zZRINCgV0b3RhbBgBIAEoBRIeCgV0b2tlbhgCIAMoCzIPLnByaWNlLnYxLlRva2VuIhwKDkdldENvaW5SZXF1ZXN0EgoKAmlkGAEgASgJIjEKD0dldENvaW5SZXNwb25zZRIeCgV0b2tlbhgBIAEoCzIPLnByaWNlLnYxLlRva2VuIiMKEEdldFByaWNlc1JlcXVlc3QSDwoHc3ltYm9scxgBIAMoCSJCChFHZXRQcmljZXNSZXNwb25zZRINCgV0b3RhbBgBIAEoBRIeCgVwcmljZRgCIAMoCzIPLnByaWNlLnYxLlByaWNlIiEKD0dldFByaWNlUmVxdWVzdBIOCgZzeW1ib2wYASABKAkiMgoQR2V0UHJpY2VSZXNwb25zZRIeCgVwcmljZRgBIAEoCzIPLnByaWNlLnYxLlByaWNlIiIKElNlYXJjaENvaW5zUmVxdWVzdBIMCgR0ZXh0GAEgASgJIkQKE1NlYXJjaENvaW5zUmVzcG9uc2USDQoFdG90YWwYASABKAUSHgoFdG9rZW4YAiADKAsyDy5wcmljZS52MS5Ub2tlbiImChNTdHJlYW1QcmljZXNSZXF1ZXN0Eg8KB3N5bWJvbHMYASADKAkiQwoLUHJpY2VVcGRhdGUSDgoGc3ltYm9sGAEgASgJEhEKCXByaWNlX3VzZBgCIAEoCRIRCgl0aW1lc3RhbXAYAyABKAMivQIKBVByaWNlEg4KBnN5bWJvbBgBIAEoCRIMCgRuYW1lGAIgASgJEhEKCXByaWNlX3VzZBgDIAEoAhISCgptYXJrZXRfY2FwGAQgASgCEhQKDHRvdGFsX3ZvbHVtZRgFIAEoAhIQCghoaWdoXzI0aBgGIAEoAhIPCgdsb3dfMjRoGAcgASgCEhgKEHByaWNlX2NoYW5nZV8yNGgYCCABKAISIwobcHJpY2VfY2hhbmdlX3BlcmNlbnRhZ2VfMjRoGAkgASgCEh0KFW1hcmtldF9jYXBfY2hhbmdlXzI0aBgKIAEoAhIoCiBtYXJrZXRfY2FwX2NoYW5nZV9wZXJjZW50YWdlXzI0aBgLIAEoAhIuCgp1cGRhdGVkX2F0GAwgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcCJqCgVUb2tlbhIOCgZzeW1ib2wYAiABKAkSDAoEbmFtZRgDIAEoCRIOCgZjaGFpbnMYBCADKAkSDQoFYWRkcnMYBSADKAkSEQoJaXNfbmF0aXZlGAYgASgIEhEKCWltYWdlX3VybBgHIAEoCTLEBAoMUHJpY2VTZXJ2aWNlElcKCUxpc3RDb2lucxIaLnByaWNlLnYxLkxpc3RDb2luc1JlcXVlc3QaGy5wcmljZS52MS5MaXN0Q29pbnNSZXNwb25zZSIRgtPkkwILEgkvdjEvY29pbnMSVgoHR2V0Q29pbhIYLnByaWNlLnYxLkdldENvaW5SZXF1ZXN0GhkucHJpY2UudjEuR2V0Q29pblJlc3BvbnNlIhaC0+STAhASDi92MS9jb2lucy97aWR9EmYKClNlYXJjaENvaW4SHC5wcmljZS52MS5TZWFyY2hDb2luc1JlcXVlc3QaHS5wcmljZS52MS5TZWFyY2hDb2luc1Jlc3BvbnNlIhuC0+STAhU6ASoiEC92MS9jb2lucy9zZWFyY2gSWAoJR2V0UHJpY2VzEhoucHJpY2UudjEuR2V0UHJpY2VzUmVxdWVzdBobLnByaWNlLnYxLkdldFByaWNlc1Jlc3BvbnNlIhKC0+STAgwSCi92MS9wcmljZXMSXgoIR2V0UHJpY2USGS5wcmljZS52MS5HZXRQcmljZVJlcXVlc3QaGi5wcmljZS52MS5HZXRQcmljZVJlc3BvbnNlIhuC0+STAhUSEy92MS9wcmljZXMve3N5bWJvbH0SYQoMU3RyZWFtUHJpY2VzEh0ucHJpY2UudjEuU3RyZWFtUHJpY2VzUmVxdWVzdBoVLnByaWNlLnYxLlByaWNlVXBkYXRlIhmC0+STAhMSES92MS9wcmljZXMvc3RyZWFtMAFCHlocdHJhY2tlci9nZW4vcHJpY2UvdjE7cHJpY2V2MWIGcHJvdG8z", [file_google_protobuf_empty, file_google_protobuf_timestamp, file_google_api_annotations]);
 
 /**
  * @generated from message price.v1.ListCoinsRequest
@@ -197,6 +197,50 @@ export const SearchCoinsResponseSchema: GenMessage<SearchCoinsResponse> = /*@__P
   messageDesc(file_price_v1_price, 9);
 
 /**
+ * @generated from message price.v1.StreamPricesRequest
+ */
+export type StreamPricesRequest = Message<"price.v1.StreamPricesRequest"> & {
+  /**
+   * @generated from field: repeated string symbols = 1;
+   */
+  symbols: string[];
+};
+
+/**
+ * Describes the message price.v1.StreamPricesRequest.
+ * Use `create(StreamPricesRequestSchema)` to create a new message.
+ */
+export const StreamPricesRequestSchema: GenMessage<StreamPricesRequest> = /*@__PURE__*/
+  messageDesc(file_price_v1_price, 10);
+
+/**
+ * @generated from message price.v1.PriceUpdate
+ */
+export type PriceUpdate = Message<"price.v1.PriceUpdate"> & {
+  /**
+   * @generated from field: string symbol = 1;
+   */
+  symbol: string;
+
+  /**
+   * @generated from field: string price_usd = 2;
+   */
+  priceUsd: string;
+
+  /**
+   * @generated from field: int64 timestamp = 3;
+   */
+  timestamp: bigint;
+};
+
+/**
+ * Describes the message price.v1.PriceUpdate.
+ * Use `create(PriceUpdateSchema)` to create a new message.
+ */
+export const PriceUpdateSchema: GenMessage<PriceUpdate> = /*@__PURE__*/
+  messageDesc(file_price_v1_price, 11);
+
+/**
  * @generated from message price.v1.Price
  */
 export type Price = Message<"price.v1.Price"> & {
@@ -266,7 +310,7 @@ export type Price = Message<"price.v1.Price"> & {
  * Use `create(PriceSchema)` to create a new message.
  */
 export const PriceSchema: GenMessage<Price> = /*@__PURE__*/
-  messageDesc(file_price_v1_price, 10);
+  messageDesc(file_price_v1_price, 12);
 
 /**
  * @generated from message price.v1.Token
@@ -308,7 +352,7 @@ export type Token = Message<"price.v1.Token"> & {
  * Use `create(TokenSchema)` to create a new message.
  */
 export const TokenSchema: GenMessage<Token> = /*@__PURE__*/
-  messageDesc(file_price_v1_price, 11);
+  messageDesc(file_price_v1_price, 13);
 
 /**
  * @generated from service price.v1.PriceService
@@ -353,6 +397,14 @@ export const PriceService: GenService<{
     methodKind: "unary";
     input: typeof GetPriceRequestSchema;
     output: typeof GetPriceResponseSchema;
+  },
+  /**
+   * @generated from rpc price.v1.PriceService.StreamPrices
+   */
+  streamPrices: {
+    methodKind: "server_streaming";
+    input: typeof StreamPricesRequestSchema;
+    output: typeof PriceUpdateSchema;
   },
 }> = /*@__PURE__*/
   serviceDesc(file_price_v1_price, 0);
