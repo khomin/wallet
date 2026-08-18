@@ -206,6 +206,34 @@ func local_request_WalletService_CreateWallet_0(ctx context.Context, marshaler r
 	return msg, metadata, err
 }
 
+var filter_WalletService_StreamWallet_0 = &utilities.DoubleArray{Encoding: map[string]int{}, Base: []int(nil), Check: []int(nil)}
+
+func request_WalletService_StreamWallet_0(ctx context.Context, marshaler runtime.Marshaler, client WalletServiceClient, req *http.Request, pathParams map[string]string) (WalletService_StreamWalletClient, runtime.ServerMetadata, error) {
+	var (
+		protoReq StreamWalletRequest
+		metadata runtime.ServerMetadata
+	)
+	if req.Body != nil {
+		_, _ = io.Copy(io.Discard, req.Body)
+	}
+	if err := req.ParseForm(); err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
+	}
+	if err := runtime.PopulateQueryParameters(&protoReq, req.Form, filter_WalletService_StreamWallet_0); err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
+	}
+	stream, err := client.StreamWallet(ctx, &protoReq)
+	if err != nil {
+		return nil, metadata, err
+	}
+	header, err := stream.Header()
+	if err != nil {
+		return nil, metadata, err
+	}
+	metadata.HeaderMD = header
+	return stream, metadata, nil
+}
+
 // RegisterWalletServiceHandlerServer registers the http handlers for service WalletService to "mux".
 // UnaryRPC     :call WalletServiceServer directly.
 // StreamingRPC :currently unsupported pending https://github.com/grpc/grpc-go/issues/906.
@@ -311,6 +339,13 @@ func RegisterWalletServiceHandlerServer(ctx context.Context, mux *runtime.ServeM
 			return
 		}
 		forward_WalletService_CreateWallet_0(annotatedContext, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+	})
+
+	mux.Handle(http.MethodGet, pattern_WalletService_StreamWallet_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+		err := status.Error(codes.Unimplemented, "streaming calls are not yet supported in the in-process transport")
+		_, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
+		runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
+		return
 	})
 
 	return nil
@@ -437,6 +472,23 @@ func RegisterWalletServiceHandlerClient(ctx context.Context, mux *runtime.ServeM
 		}
 		forward_WalletService_CreateWallet_0(annotatedContext, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
 	})
+	mux.Handle(http.MethodGet, pattern_WalletService_StreamWallet_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+		ctx, cancel := context.WithCancel(req.Context())
+		defer cancel()
+		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
+		annotatedContext, err := runtime.AnnotateContext(ctx, mux, req, "/wallet.v1.WalletService/StreamWallet", runtime.WithHTTPPathPattern("/v1/prices/stream"))
+		if err != nil {
+			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
+			return
+		}
+		resp, md, err := request_WalletService_StreamWallet_0(annotatedContext, inboundMarshaler, client, req, pathParams)
+		annotatedContext = runtime.NewServerMetadataContext(annotatedContext, md)
+		if err != nil {
+			runtime.HTTPError(annotatedContext, mux, outboundMarshaler, w, req, err)
+			return
+		}
+		forward_WalletService_StreamWallet_0(annotatedContext, mux, outboundMarshaler, w, req, func() (proto.Message, error) { return resp.Recv() }, mux.GetForwardResponseOptions()...)
+	})
 	return nil
 }
 
@@ -446,6 +498,7 @@ var (
 	pattern_WalletService_EditWallet_0   = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 1, 0, 4, 1, 5, 2}, []string{"v1", "wallets", "id"}, ""))
 	pattern_WalletService_DeleteWallet_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 1, 0, 4, 1, 5, 2}, []string{"v1", "wallets", "id"}, ""))
 	pattern_WalletService_CreateWallet_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1}, []string{"v1", "wallets"}, ""))
+	pattern_WalletService_StreamWallet_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2}, []string{"v1", "prices", "stream"}, ""))
 )
 
 var (
@@ -454,4 +507,5 @@ var (
 	forward_WalletService_EditWallet_0   = runtime.ForwardResponseMessage
 	forward_WalletService_DeleteWallet_0 = runtime.ForwardResponseMessage
 	forward_WalletService_CreateWallet_0 = runtime.ForwardResponseMessage
+	forward_WalletService_StreamWallet_0 = runtime.ForwardResponseStream
 )

@@ -14,7 +14,7 @@ import type { Message } from "@bufbuild/protobuf";
  * Describes the file wallet/v1/wallet.proto.
  */
 export const file_wallet_v1_wallet: GenFile = /*@__PURE__*/
-  fileDesc("ChZ3YWxsZXQvdjEvd2FsbGV0LnByb3RvEgl3YWxsZXQudjEiFAoSTGlzdFdhbGxldHNSZXF1ZXN0IkcKE0xpc3RXYWxsZXRzUmVzcG9uc2USDQoFdG90YWwYASABKAUSIQoGd2FsbGV0GAIgAygLMhEud2FsbGV0LnYxLldhbGxldCIeChBHZXRXYWxsZXRSZXF1ZXN0EgoKAmlkGAEgASgJIjYKEUdldFdhbGxldFJlc3BvbnNlEiEKBndhbGxldBgBIAEoCzIRLndhbGxldC52MS5XYWxsZXQiLgoRRWRpdFdhbGxldFJlcXVlc3QSCgoCaWQYASABKAkSDQoFbGFiZWwYAiABKAkiLwoSRWRpdFdhbGxldFJlc3BvbnNlEgoKAmlkGAEgASgJEg0KBWxhYmVsGAIgASgJIiEKE0RlbGV0ZVdhbGxldFJlcXVlc3QSCgoCaWQYASABKAkiKgoURGVsZXRlV2FsbGV0UmVzcG9uc2USEgoKZGVsZXRlZF9pZBgBIAEoCSJaChNDcmVhdGVXYWxsZXRSZXF1ZXN0Eg8KB2FkZHJlc3MYASABKAkSDQoFY2hhaW4YAiABKAkSFAoMdG9rZW5fc3ltYm9sGAMgASgJEg0KBWxhYmVsGAQgASgJIhYKFENyZWF0ZVdhbGxldFJlc3BvbnNlIswBCgZXYWxsZXQSCgoCaWQYASABKAkSDwoHYWRkcmVzcxgCIAEoCRINCgVjaGFpbhgDIAEoCRIUCgx0b2tlbl9zeW1ib2wYBCABKAkSDQoFbGFiZWwYBSABKAkSFgoOYmFsYW5jZV9jcnlwdG8YBiABKAISEwoLYmFsYW5jZV91c2QYByABKAISEQoJaGFzX2Vycm9yGAkgASgIEhEKCWVycm9yX21zZxgKIAEoCRIeCgVwcmljZRgLIAEoCzIPLnByaWNlLnYxLlByaWNlMpAECg1XYWxsZXRTZXJ2aWNlEmEKC0xpc3RXYWxsZXRzEh0ud2FsbGV0LnYxLkxpc3RXYWxsZXRzUmVxdWVzdBoeLndhbGxldC52MS5MaXN0V2FsbGV0c1Jlc3BvbnNlIhOC0+STAg0SCy92MS93YWxsZXRzEmAKCUdldFdhbGxldBIbLndhbGxldC52MS5HZXRXYWxsZXRSZXF1ZXN0Ghwud2FsbGV0LnYxLkdldFdhbGxldFJlc3BvbnNlIhiC0+STAhISEC92MS93YWxsZXRzL3tpZH0SZgoKRWRpdFdhbGxldBIcLndhbGxldC52MS5FZGl0V2FsbGV0UmVxdWVzdBodLndhbGxldC52MS5FZGl0V2FsbGV0UmVzcG9uc2UiG4LT5JMCFToBKjIQL3YxL3dhbGxldHMve2lkfRJpCgxEZWxldGVXYWxsZXQSHi53YWxsZXQudjEuRGVsZXRlV2FsbGV0UmVxdWVzdBofLndhbGxldC52MS5EZWxldGVXYWxsZXRSZXNwb25zZSIYgtPkkwISKhAvdjEvd2FsbGV0cy97aWR9EmcKDENyZWF0ZVdhbGxldBIeLndhbGxldC52MS5DcmVhdGVXYWxsZXRSZXF1ZXN0Gh8ud2FsbGV0LnYxLkNyZWF0ZVdhbGxldFJlc3BvbnNlIhaC0+STAhA6ASoiCy92MS93YWxsZXRzQiBaHnRyYWNrZXIvZ2VuL3dhbGxldC92MTt3YWxsZXR2MWIGcHJvdG8z", [file_google_protobuf_empty, file_price_v1_price, file_google_api_annotations]);
+  fileDesc("ChZ3YWxsZXQvdjEvd2FsbGV0LnByb3RvEgl3YWxsZXQudjEiFAoSTGlzdFdhbGxldHNSZXF1ZXN0IkcKE0xpc3RXYWxsZXRzUmVzcG9uc2USDQoFdG90YWwYASABKAUSIQoGd2FsbGV0GAIgAygLMhEud2FsbGV0LnYxLldhbGxldCIeChBHZXRXYWxsZXRSZXF1ZXN0EgoKAmlkGAEgASgJIjYKEUdldFdhbGxldFJlc3BvbnNlEiEKBndhbGxldBgBIAEoCzIRLndhbGxldC52MS5XYWxsZXQiLgoRRWRpdFdhbGxldFJlcXVlc3QSCgoCaWQYASABKAkSDQoFbGFiZWwYAiABKAkiLwoSRWRpdFdhbGxldFJlc3BvbnNlEgoKAmlkGAEgASgJEg0KBWxhYmVsGAIgASgJIiEKE0RlbGV0ZVdhbGxldFJlcXVlc3QSCgoCaWQYASABKAkiKgoURGVsZXRlV2FsbGV0UmVzcG9uc2USEgoKZGVsZXRlZF9pZBgBIAEoCSJaChNDcmVhdGVXYWxsZXRSZXF1ZXN0Eg8KB2FkZHJlc3MYASABKAkSDQoFY2hhaW4YAiABKAkSFAoMdG9rZW5fc3ltYm9sGAMgASgJEg0KBWxhYmVsGAQgASgJIhYKFENyZWF0ZVdhbGxldFJlc3BvbnNlIiYKE1N0cmVhbVdhbGxldFJlcXVlc3QSDwoHc3ltYm9scxgBIAMoCSIOCgxXYWxsZXRVcGRhdGUizAEKBldhbGxldBIKCgJpZBgBIAEoCRIPCgdhZGRyZXNzGAIgASgJEg0KBWNoYWluGAMgASgJEhQKDHRva2VuX3N5bWJvbBgEIAEoCRINCgVsYWJlbBgFIAEoCRIWCg5iYWxhbmNlX2NyeXB0bxgGIAEoAhITCgtiYWxhbmNlX3VzZBgHIAEoAhIRCgloYXNfZXJyb3IYCSABKAgSEQoJZXJyb3JfbXNnGAogASgJEh4KBXByaWNlGAsgASgLMg8ucHJpY2UudjEuUHJpY2Uy9gQKDVdhbGxldFNlcnZpY2USYQoLTGlzdFdhbGxldHMSHS53YWxsZXQudjEuTGlzdFdhbGxldHNSZXF1ZXN0Gh4ud2FsbGV0LnYxLkxpc3RXYWxsZXRzUmVzcG9uc2UiE4LT5JMCDRILL3YxL3dhbGxldHMSYAoJR2V0V2FsbGV0Ehsud2FsbGV0LnYxLkdldFdhbGxldFJlcXVlc3QaHC53YWxsZXQudjEuR2V0V2FsbGV0UmVzcG9uc2UiGILT5JMCEhIQL3YxL3dhbGxldHMve2lkfRJmCgpFZGl0V2FsbGV0Ehwud2FsbGV0LnYxLkVkaXRXYWxsZXRSZXF1ZXN0Gh0ud2FsbGV0LnYxLkVkaXRXYWxsZXRSZXNwb25zZSIbgtPkkwIVOgEqMhAvdjEvd2FsbGV0cy97aWR9EmkKDERlbGV0ZVdhbGxldBIeLndhbGxldC52MS5EZWxldGVXYWxsZXRSZXF1ZXN0Gh8ud2FsbGV0LnYxLkRlbGV0ZVdhbGxldFJlc3BvbnNlIhiC0+STAhIqEC92MS93YWxsZXRzL3tpZH0SZwoMQ3JlYXRlV2FsbGV0Eh4ud2FsbGV0LnYxLkNyZWF0ZVdhbGxldFJlcXVlc3QaHy53YWxsZXQudjEuQ3JlYXRlV2FsbGV0UmVzcG9uc2UiFoLT5JMCEDoBKiILL3YxL3dhbGxldHMSZAoMU3RyZWFtV2FsbGV0Eh4ud2FsbGV0LnYxLlN0cmVhbVdhbGxldFJlcXVlc3QaFy53YWxsZXQudjEuV2FsbGV0VXBkYXRlIhmC0+STAhMSES92MS9wcmljZXMvc3RyZWFtMAFCIFoedHJhY2tlci9nZW4vd2FsbGV0L3YxO3dhbGxldHYxYgZwcm90bzM", [file_google_protobuf_empty, file_price_v1_price, file_google_api_annotations]);
 
 /**
  * @generated from message wallet.v1.ListWalletsRequest
@@ -209,6 +209,36 @@ export const CreateWalletResponseSchema: GenMessage<CreateWalletResponse> = /*@_
   messageDesc(file_wallet_v1_wallet, 9);
 
 /**
+ * @generated from message wallet.v1.StreamWalletRequest
+ */
+export type StreamWalletRequest = Message<"wallet.v1.StreamWalletRequest"> & {
+  /**
+   * @generated from field: repeated string symbols = 1;
+   */
+  symbols: string[];
+};
+
+/**
+ * Describes the message wallet.v1.StreamWalletRequest.
+ * Use `create(StreamWalletRequestSchema)` to create a new message.
+ */
+export const StreamWalletRequestSchema: GenMessage<StreamWalletRequest> = /*@__PURE__*/
+  messageDesc(file_wallet_v1_wallet, 10);
+
+/**
+ * @generated from message wallet.v1.WalletUpdate
+ */
+export type WalletUpdate = Message<"wallet.v1.WalletUpdate"> & {
+};
+
+/**
+ * Describes the message wallet.v1.WalletUpdate.
+ * Use `create(WalletUpdateSchema)` to create a new message.
+ */
+export const WalletUpdateSchema: GenMessage<WalletUpdate> = /*@__PURE__*/
+  messageDesc(file_wallet_v1_wallet, 11);
+
+/**
  * @generated from message wallet.v1.Wallet
  */
 export type Wallet = Message<"wallet.v1.Wallet"> & {
@@ -268,7 +298,7 @@ export type Wallet = Message<"wallet.v1.Wallet"> & {
  * Use `create(WalletSchema)` to create a new message.
  */
 export const WalletSchema: GenMessage<Wallet> = /*@__PURE__*/
-  messageDesc(file_wallet_v1_wallet, 10);
+  messageDesc(file_wallet_v1_wallet, 12);
 
 /**
  * @generated from service wallet.v1.WalletService
@@ -313,6 +343,14 @@ export const WalletService: GenService<{
     methodKind: "unary";
     input: typeof CreateWalletRequestSchema;
     output: typeof CreateWalletResponseSchema;
+  },
+  /**
+   * @generated from rpc wallet.v1.WalletService.StreamWallet
+   */
+  streamWallet: {
+    methodKind: "server_streaming";
+    input: typeof StreamWalletRequestSchema;
+    output: typeof WalletUpdateSchema;
   },
 }> = /*@__PURE__*/
   serviceDesc(file_wallet_v1_wallet, 0);

@@ -37,6 +37,11 @@ service WalletService {
       body: "*"
     };
   }
+  rpc StreamWallet(StreamWalletRequest) returns (stream WalletUpdate) {
+    option (google.api.http) = {
+      get: "/v1/wallets/stream"
+    };
+  }
 }
 
 message ListWalletsRequest {}
@@ -79,8 +84,13 @@ message CreateWalletRequest {
   string label              = 4;
 }
 
-message CreateWalletResponse {
-  
+message CreateWalletResponse {}
+
+message StreamWalletRequest {
+  repeated string symbols = 1;
+}
+
+message WalletUpdate {
 }
 
 message Wallet {

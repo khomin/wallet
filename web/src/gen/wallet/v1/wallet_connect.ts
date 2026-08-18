@@ -3,7 +3,7 @@
 /* eslint-disable */
 // @ts-nocheck
 
-import { CreateWalletRequest, CreateWalletResponse, DeleteWalletRequest, DeleteWalletResponse, EditWalletRequest, EditWalletResponse, GetWalletRequest, GetWalletResponse, ListWalletsRequest, ListWalletsResponse } from "./wallet_pb.js";
+import { CreateWalletRequest, CreateWalletResponse, DeleteWalletRequest, DeleteWalletResponse, EditWalletRequest, EditWalletResponse, GetWalletRequest, GetWalletResponse, ListWalletsRequest, ListWalletsResponse, StreamWalletRequest, WalletUpdate } from "./wallet_pb.js";
 import { MethodKind } from "@bufbuild/protobuf";
 
 /**
@@ -56,6 +56,15 @@ export const WalletService = {
       I: CreateWalletRequest,
       O: CreateWalletResponse,
       kind: MethodKind.Unary,
+    },
+    /**
+     * @generated from rpc wallet.v1.WalletService.StreamWallet
+     */
+    streamWallet: {
+      name: "StreamWallet",
+      I: StreamWalletRequest,
+      O: WalletUpdate,
+      kind: MethodKind.ServerStreaming,
     },
   }
 } as const;

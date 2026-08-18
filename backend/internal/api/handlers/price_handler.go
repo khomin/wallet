@@ -146,21 +146,17 @@ func (s *PriceGrpcHandler) StreamPrices(
 	stream grpc.ServerStreamingServer[pricev1.PriceUpdate],
 ) error {
 	ctx := stream.Context()
-
-	// 1. Auth check
 	_, ok := middleware.GetOAUTH(ctx)
 	if !ok {
 		return status.Error(codes.Unauthenticated, "unauthorized")
 	}
 
-	// 2. Subscribe to Hub
 	subID, priceChan := s.priceHub.Subscribe()
-	defer s.priceHub.Unsubscribe(subID) // Clean explicit call on disconnect!
+	defer s.priceHub.Unsubscribe(subID)
 
-	// 3. Stream loop
 	for {
 		select {
-		case <-ctx.Done(): // Connection closed by browser or network error
+		case <-ctx.Done():
 			return ctx.Err()
 
 		case update, open := <-priceChan:

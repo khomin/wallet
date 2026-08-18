@@ -16,6 +16,49 @@
     "application/json"
   ],
   "paths": {
+    "/v1/prices/stream": {
+      "get": {
+        "operationId": "WalletService_StreamWallet",
+        "responses": {
+          "200": {
+            "description": "A successful response.(streaming responses)",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "result": {
+                  "$ref": "#/definitions/v1WalletUpdate"
+                },
+                "error": {
+                  "$ref": "#/definitions/rpcStatus"
+                }
+              },
+              "title": "Stream result of v1WalletUpdate"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "symbols",
+            "in": "query",
+            "required": false,
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "collectionFormat": "multi"
+          }
+        ],
+        "tags": [
+          "WalletService"
+        ]
+      }
+    },
     "/v1/wallets": {
       "get": {
         "operationId": "WalletService_ListWallets",
@@ -350,6 +393,9 @@
           "$ref": "#/definitions/v1Price"
         }
       }
+    },
+    "v1WalletUpdate": {
+      "type": "object"
     }
   }
 }

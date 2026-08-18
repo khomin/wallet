@@ -11,6 +11,7 @@ import (
 
 	"github.com/google/uuid"
 
+	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/timestamppb"
@@ -173,4 +174,32 @@ func (s *WalletGrpcHandler) DeleteWallet(ctx context.Context, req *walletv1.Dele
 	return &walletv1.DeleteWalletResponse{
 		DeletedId: uuid.String(),
 	}, nil
+}
+
+func (s *WalletGrpcHandler) StreamWallet(
+	req *walletv1.StreamWalletRequest,
+	stream grpc.ServerStreamingServer[walletv1.WalletUpdate],
+) error {
+	ctx := stream.Context()
+	_, ok := middleware.GetOAUTH(ctx)
+	if !ok {
+		return status.Error(codes.Unauthenticated, "unauthorized")
+	}
+	// FIXME: wallet balance update events
+	// subID, priceChan := s.priceHub.Subscribe()
+	// defer s.priceHub.Unsubscribe(subID)
+	// for {
+	// 	select {
+	// 	case <-ctx.Done():
+	// 		return ctx.Err()
+	// 	case update, open := <-priceChan:
+	// 		if !open {
+	// 			return nil
+	// 		}
+	// 		if err := stream.Send(update); err != nil {
+	// 			return err
+	// 		}
+	// 	}
+	// }
+	return nil
 }

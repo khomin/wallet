@@ -24,6 +24,7 @@ const (
 	WalletService_EditWallet_FullMethodName   = "/wallet.v1.WalletService/EditWallet"
 	WalletService_DeleteWallet_FullMethodName = "/wallet.v1.WalletService/DeleteWallet"
 	WalletService_CreateWallet_FullMethodName = "/wallet.v1.WalletService/CreateWallet"
+	WalletService_StreamWallet_FullMethodName = "/wallet.v1.WalletService/StreamWallet"
 )
 
 // WalletServiceClient is the client API for WalletService service.
@@ -35,6 +36,7 @@ type WalletServiceClient interface {
 	EditWallet(ctx context.Context, in *EditWalletRequest, opts ...grpc.CallOption) (*EditWalletResponse, error)
 	DeleteWallet(ctx context.Context, in *DeleteWalletRequest, opts ...grpc.CallOption) (*DeleteWalletResponse, error)
 	CreateWallet(ctx context.Context, in *CreateWalletRequest, opts ...grpc.CallOption) (*CreateWalletResponse, error)
+	StreamWallet(ctx context.Context, in *StreamWalletRequest, opts ...grpc.CallOption) (grpc.ServerStreamingClient[WalletUpdate], error)
 }
 
 type walletServiceClient struct {
@@ -95,6 +97,25 @@ func (c *walletServiceClient) CreateWallet(ctx context.Context, in *CreateWallet
 	return out, nil
 }
 
+func (c *walletServiceClient) StreamWallet(ctx context.Context, in *StreamWalletRequest, opts ...grpc.CallOption) (grpc.ServerStreamingClient[WalletUpdate], error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	stream, err := c.cc.NewStream(ctx, &WalletService_ServiceDesc.Streams[0], WalletService_StreamWallet_FullMethodName, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	x := &grpc.GenericClientStream[StreamWalletRequest, WalletUpdate]{ClientStream: stream}
+	if err := x.ClientStream.SendMsg(in); err != nil {
+		return nil, err
+	}
+	if err := x.ClientStream.CloseSend(); err != nil {
+		return nil, err
+	}
+	return x, nil
+}
+
+// This type alias is provided for backwards compatibility with existing code that references the prior non-generic stream type by name.
+type WalletService_StreamWalletClient = grpc.ServerStreamingClient[WalletUpdate]
+
 // WalletServiceServer is the server API for WalletService service.
 // All implementations must embed UnimplementedWalletServiceServer
 // for forward compatibility.
@@ -104,6 +125,7 @@ type WalletServiceServer interface {
 	EditWallet(context.Context, *EditWalletRequest) (*EditWalletResponse, error)
 	DeleteWallet(context.Context, *DeleteWalletRequest) (*DeleteWalletResponse, error)
 	CreateWallet(context.Context, *CreateWalletRequest) (*CreateWalletResponse, error)
+	StreamWallet(*StreamWalletRequest, grpc.ServerStreamingServer[WalletUpdate]) error
 	mustEmbedUnimplementedWalletServiceServer()
 }
 
@@ -128,6 +150,9 @@ func (UnimplementedWalletServiceServer) DeleteWallet(context.Context, *DeleteWal
 }
 func (UnimplementedWalletServiceServer) CreateWallet(context.Context, *CreateWalletRequest) (*CreateWalletResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method CreateWallet not implemented")
+}
+func (UnimplementedWalletServiceServer) StreamWallet(*StreamWalletRequest, grpc.ServerStreamingServer[WalletUpdate]) error {
+	return status.Error(codes.Unimplemented, "method StreamWallet not implemented")
 }
 func (UnimplementedWalletServiceServer) mustEmbedUnimplementedWalletServiceServer() {}
 func (UnimplementedWalletServiceServer) testEmbeddedByValue()                       {}
@@ -240,6 +265,17 @@ func _WalletService_CreateWallet_Handler(srv interface{}, ctx context.Context, d
 	return interceptor(ctx, in, info, handler)
 }
 
+func _WalletService_StreamWallet_Handler(srv interface{}, stream grpc.ServerStream) error {
+	m := new(StreamWalletRequest)
+	if err := stream.RecvMsg(m); err != nil {
+		return err
+	}
+	return srv.(WalletServiceServer).StreamWallet(m, &grpc.GenericServerStream[StreamWalletRequest, WalletUpdate]{ServerStream: stream})
+}
+
+// This type alias is provided for backwards compatibility with existing code that references the prior non-generic stream type by name.
+type WalletService_StreamWalletServer = grpc.ServerStreamingServer[WalletUpdate]
+
 // WalletService_ServiceDesc is the grpc.ServiceDesc for WalletService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -268,6 +304,12 @@ var WalletService_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _WalletService_CreateWallet_Handler,
 		},
 	},
-	Streams:  []grpc.StreamDesc{},
+	Streams: []grpc.StreamDesc{
+		{
+			StreamName:    "StreamWallet",
+			Handler:       _WalletService_StreamWallet_Handler,
+			ServerStreams: true,
+		},
+	},
 	Metadata: "wallet/v1/wallet.proto",
 }
