@@ -19,13 +19,10 @@ func StreamAuthInterceptor(verifier TokenVerifier) grpc.StreamServerInterceptor 
 	) error {
 		ctx := ss.Context()
 
-		// 1. Extract metadata from incoming stream
 		md, ok := metadata.FromIncomingContext(ctx)
 		if !ok {
 			return status.Error(codes.Unauthenticated, "missing metadata")
 		}
-
-		// 2. Extract Authorization header
 		authHeaders := md.Get("authorization")
 		if len(authHeaders) == 0 {
 			return status.Error(codes.Unauthenticated, "missing authorization header")
@@ -33,26 +30,21 @@ func StreamAuthInterceptor(verifier TokenVerifier) grpc.StreamServerInterceptor 
 
 		tokenStr := strings.TrimPrefix(authHeaders[0], "Bearer ")
 
-		// 3. Verify token
 		claims, err := verifier.Verify(ctx, tokenStr)
 		if err != nil {
 			return status.Error(codes.Unauthenticated, "invalid or expired token")
 		}
 
-		// 4. Attach user identity to context
 		newCtx := SetOAUTH(ctx, claims)
 
-		// 5. Wrap original ServerStream with the updated context
 		wrappedStream := &wrappedServerStream{
 			ServerStream: ss,
 			ctx:          newCtx,
 		}
-
 		return handler(srv, wrappedStream)
 	}
 }
 
-// Helper struct to override stream Context
 type wrappedServerStream struct {
 	grpc.ServerStream
 	ctx context.Context

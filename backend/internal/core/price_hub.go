@@ -2,7 +2,6 @@ package core
 
 import (
 	"encoding/json"
-	"log"
 	"sync"
 	"time"
 	pricev1 "tracker/gen/price/v1"
@@ -10,6 +9,7 @@ import (
 	"tracker/internal/messaging"
 
 	"github.com/google/uuid"
+	"github.com/sirupsen/logrus"
 )
 
 type PriceHub struct {
@@ -30,25 +30,23 @@ func (h *PriceHub) Start() {
 		for {
 			deliveries, closeChan, err := h.consumer.Consume()
 			if err != nil {
-				log.Printf("[PriceHub] RabbitMQ consume error: %v, retrying...", err)
+				logrus.Debugf("[PriceHub] RabbitMQ consume error: %v, retrying...", err)
 				continue
 			}
-
-			log.Println("[PriceHub] Listening for price updates from RabbitMQ...")
-
+			logrus.Debugf("[PriceHub] Listening for price updates from RabbitMQ...")
+		loop:
 			for {
 				select {
 				case err := <-closeChan:
-					log.Printf("[PriceHub] Channel closed: %v. Reconnecting...", err)
-					// breaks inner loop to trigger re-consume
-					break
+					logrus.Debugf("[PriceHub] Channel closed: %v. Reconnecting...", err)
+					break loop
 				case d, ok := <-deliveries:
 					if !ok {
 						break
 					}
 					var prices []domain.TokenPrice
 					if err := json.Unmarshal(d.Body, &prices); err != nil {
-						log.Printf("[PriceHub] Failed to unmarshal price update: %v", err)
+						logrus.Debugf("[PriceHub] Failed to unmarshal price update: %v", err)
 						_ = d.Nack(false, false)
 						continue
 					}
