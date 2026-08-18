@@ -339,15 +339,12 @@
     "v1PriceUpdate": {
       "type": "object",
       "properties": {
-        "symbol": {
-          "type": "string"
-        },
-        "priceUsd": {
-          "type": "string"
-        },
-        "timestamp": {
-          "type": "string",
-          "format": "int64"
+        "price": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v1Price"
+          }
         }
       }
     },

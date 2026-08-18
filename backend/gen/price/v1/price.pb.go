@@ -526,9 +526,7 @@ func (x *StreamPricesRequest) GetSymbols() []string {
 
 type PriceUpdate struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Symbol        string                 `protobuf:"bytes,1,opt,name=symbol,proto3" json:"symbol,omitempty"`
-	PriceUsd      string                 `protobuf:"bytes,2,opt,name=price_usd,json=priceUsd,proto3" json:"price_usd,omitempty"`
-	Timestamp     int64                  `protobuf:"varint,3,opt,name=timestamp,proto3" json:"timestamp,omitempty"`
+	Price         []*Price               `protobuf:"bytes,1,rep,name=price,proto3" json:"price,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -563,25 +561,11 @@ func (*PriceUpdate) Descriptor() ([]byte, []int) {
 	return file_price_v1_price_proto_rawDescGZIP(), []int{11}
 }
 
-func (x *PriceUpdate) GetSymbol() string {
+func (x *PriceUpdate) GetPrice() []*Price {
 	if x != nil {
-		return x.Symbol
+		return x.Price
 	}
-	return ""
-}
-
-func (x *PriceUpdate) GetPriceUsd() string {
-	if x != nil {
-		return x.PriceUsd
-	}
-	return ""
-}
-
-func (x *PriceUpdate) GetTimestamp() int64 {
-	if x != nil {
-		return x.Timestamp
-	}
-	return 0
+	return nil
 }
 
 type Price struct {
@@ -828,11 +812,9 @@ const file_price_v1_price_proto_rawDesc = "" +
 	"\x05total\x18\x01 \x01(\x05R\x05total\x12%\n" +
 	"\x05token\x18\x02 \x03(\v2\x0f.price.v1.TokenR\x05token\"/\n" +
 	"\x13StreamPricesRequest\x12\x18\n" +
-	"\asymbols\x18\x01 \x03(\tR\asymbols\"`\n" +
-	"\vPriceUpdate\x12\x16\n" +
-	"\x06symbol\x18\x01 \x01(\tR\x06symbol\x12\x1b\n" +
-	"\tprice_usd\x18\x02 \x01(\tR\bpriceUsd\x12\x1c\n" +
-	"\ttimestamp\x18\x03 \x01(\x03R\ttimestamp\"\xe5\x03\n" +
+	"\asymbols\x18\x01 \x03(\tR\asymbols\"4\n" +
+	"\vPriceUpdate\x12%\n" +
+	"\x05price\x18\x01 \x03(\v2\x0f.price.v1.PriceR\x05price\"\xe5\x03\n" +
 	"\x05Price\x12\x16\n" +
 	"\x06symbol\x18\x01 \x01(\tR\x06symbol\x12\x12\n" +
 	"\x04name\x18\x02 \x01(\tR\x04name\x12\x1b\n" +
@@ -902,24 +884,25 @@ var file_price_v1_price_proto_depIdxs = []int32{
 	12, // 2: price.v1.GetPricesResponse.price:type_name -> price.v1.Price
 	12, // 3: price.v1.GetPriceResponse.price:type_name -> price.v1.Price
 	13, // 4: price.v1.SearchCoinsResponse.token:type_name -> price.v1.Token
-	14, // 5: price.v1.Price.updated_at:type_name -> google.protobuf.Timestamp
-	0,  // 6: price.v1.PriceService.ListCoins:input_type -> price.v1.ListCoinsRequest
-	2,  // 7: price.v1.PriceService.GetCoin:input_type -> price.v1.GetCoinRequest
-	8,  // 8: price.v1.PriceService.SearchCoin:input_type -> price.v1.SearchCoinsRequest
-	4,  // 9: price.v1.PriceService.GetPrices:input_type -> price.v1.GetPricesRequest
-	6,  // 10: price.v1.PriceService.GetPrice:input_type -> price.v1.GetPriceRequest
-	10, // 11: price.v1.PriceService.StreamPrices:input_type -> price.v1.StreamPricesRequest
-	1,  // 12: price.v1.PriceService.ListCoins:output_type -> price.v1.ListCoinsResponse
-	3,  // 13: price.v1.PriceService.GetCoin:output_type -> price.v1.GetCoinResponse
-	9,  // 14: price.v1.PriceService.SearchCoin:output_type -> price.v1.SearchCoinsResponse
-	5,  // 15: price.v1.PriceService.GetPrices:output_type -> price.v1.GetPricesResponse
-	7,  // 16: price.v1.PriceService.GetPrice:output_type -> price.v1.GetPriceResponse
-	11, // 17: price.v1.PriceService.StreamPrices:output_type -> price.v1.PriceUpdate
-	12, // [12:18] is the sub-list for method output_type
-	6,  // [6:12] is the sub-list for method input_type
-	6,  // [6:6] is the sub-list for extension type_name
-	6,  // [6:6] is the sub-list for extension extendee
-	0,  // [0:6] is the sub-list for field type_name
+	12, // 5: price.v1.PriceUpdate.price:type_name -> price.v1.Price
+	14, // 6: price.v1.Price.updated_at:type_name -> google.protobuf.Timestamp
+	0,  // 7: price.v1.PriceService.ListCoins:input_type -> price.v1.ListCoinsRequest
+	2,  // 8: price.v1.PriceService.GetCoin:input_type -> price.v1.GetCoinRequest
+	8,  // 9: price.v1.PriceService.SearchCoin:input_type -> price.v1.SearchCoinsRequest
+	4,  // 10: price.v1.PriceService.GetPrices:input_type -> price.v1.GetPricesRequest
+	6,  // 11: price.v1.PriceService.GetPrice:input_type -> price.v1.GetPriceRequest
+	10, // 12: price.v1.PriceService.StreamPrices:input_type -> price.v1.StreamPricesRequest
+	1,  // 13: price.v1.PriceService.ListCoins:output_type -> price.v1.ListCoinsResponse
+	3,  // 14: price.v1.PriceService.GetCoin:output_type -> price.v1.GetCoinResponse
+	9,  // 15: price.v1.PriceService.SearchCoin:output_type -> price.v1.SearchCoinsResponse
+	5,  // 16: price.v1.PriceService.GetPrices:output_type -> price.v1.GetPricesResponse
+	7,  // 17: price.v1.PriceService.GetPrice:output_type -> price.v1.GetPriceResponse
+	11, // 18: price.v1.PriceService.StreamPrices:output_type -> price.v1.PriceUpdate
+	13, // [13:19] is the sub-list for method output_type
+	7,  // [7:13] is the sub-list for method input_type
+	7,  // [7:7] is the sub-list for extension type_name
+	7,  // [7:7] is the sub-list for extension extendee
+	0,  // [0:7] is the sub-list for field type_name
 }
 
 func init() { file_price_v1_price_proto_init() }

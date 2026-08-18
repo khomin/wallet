@@ -3,13 +3,13 @@ package core
 import (
 	"encoding/json"
 	"sync"
-	"time"
 	pricev1 "tracker/gen/price/v1"
 	"tracker/internal/core/domain"
 	"tracker/internal/messaging"
 
 	"github.com/google/uuid"
 	"github.com/sirupsen/logrus"
+	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
 type PriceHub struct {
@@ -44,17 +44,33 @@ func (h *PriceHub) Start() {
 					if !ok {
 						break
 					}
-					var prices []domain.TokenPrice
-					if err := json.Unmarshal(d.Body, &prices); err != nil {
+					var event []domain.TokenPrice
+					if err := json.Unmarshal(d.Body, &event); err != nil {
 						logrus.Debugf("[PriceHub] Failed to unmarshal price update: %v", err)
 						_ = d.Nack(false, false)
 						continue
 					}
 					_ = d.Ack(false)
+
+					prices := []*pricev1.Price{}
+					for _, i := range event {
+						prices = append(prices, &pricev1.Price{
+							Symbol:                        i.Symbol,
+							Name:                          i.Name,
+							PriceUsd:                      float32(i.CurrentPrice),
+							MarketCap:                     float32(i.MarketCap),
+							TotalVolume:                   float32(i.TotalVolume),
+							High_24H:                      float32(i.High_24h),
+							Low_24H:                       float32(i.Low_24h),
+							PriceChange_24H:               float32(i.PriceChange_24h),
+							PriceChangePercentage_24H:     float32(i.PriceChangePercentage_24h),
+							MarketCapChange_24H:           float32(i.MarketCapChange_24h),
+							MarketCapChangePercentage_24H: float32(i.MarketCapChange_percentage_24h),
+							UpdatedAt:                     timestamppb.New(i.UpdatedAt),
+						})
+					}
 					h.broadcast(&pricev1.PriceUpdate{
-						Symbol:    "TEST",
-						PriceUsd:  "1234",
-						Timestamp: time.Now().UnixMilli(),
+						Price: prices,
 					})
 				}
 			}
@@ -94,7 +110,14 @@ func (h *PriceHub) broadcast(update *pricev1.PriceUpdate) {
 		select {
 		case ch <- update:
 		default:
-			// buffer full - drop update for slow readers so we don't stall the hub
+			select {
+			case <-ch:
+			default:
+			}
+			select {
+			case ch <- update:
+			default:
+			}
 		}
 	}
 }
