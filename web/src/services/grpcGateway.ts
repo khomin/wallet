@@ -27,8 +27,10 @@ import {
 import {
   ListCoinsResponseSchema,
   GetPricesResponseSchema,
+  PriceUpdateSchema,
   type ListCoinsResponse,
   type GetPricesResponse,
+  type PriceUpdate,
 } from '../gen/price/v1/price_pb';
 
 import {
@@ -174,6 +176,54 @@ export const priceService = {
     }
     return requestJson('GET', '/v1/prices', GetPricesResponseSchema, query);
   },
+
+  /**
+   * Read the grpc-gateway server stream. grpc-gateway represents a
+   * server-streaming response as newline-delimited JSON messages.
+   */
+  streamPrices: async function* (symbols: string[], signal?: AbortSignal): AsyncGenerator<PriceUpdate> {
+    const url = new URL('/v1/prices/stream', API_CONFIG.baseUrl);
+    for (const symbol of symbols) {
+      url.searchParams.append('symbols', symbol.toLowerCase());
+    }
+
+    const headers: Record<string, string> = { Accept: 'application/json' };
+    const token = sessionStorage.getItem('kc_access_token');
+    if (token) headers.Authorization = `Bearer ${token}`;
+
+    const response = await fetch(url.toString(), { headers, signal });
+    if (!response.ok) {
+      const text = await response.text();
+      throw parseGatewayError(text, response.status);
+    }
+    if (!response.body) throw new Error('Price stream is not available');
+
+    const reader = response.body.getReader();
+    const decoder = new TextDecoder();
+    let buffered = '';
+
+    const consume = (line: string): PriceUpdate | undefined => {
+      const trimmed = line.trim();
+      if (!trimmed) return undefined;
+      return fromJsonString(PriceUpdateSchema, trimmed, { ignoreUnknownFields: true });
+    };
+
+    while (true) {
+      const { done, value } = await reader.read();
+      buffered += decoder.decode(value, { stream: !done });
+      const lines = buffered.split(/\r?\n/);
+      buffered = lines.pop() ?? '';
+      for (const line of lines) {
+        const update = consume(line);
+        if (update) yield update;
+      }
+      if (done) {
+        const update = consume(buffered);
+        if (update) yield update;
+        break;
+      }
+    }
+  },
 };
 
 // ─── Alert service ─────────────────────────────────────────────────────────
@@ -208,6 +258,7 @@ export type {
   DeleteWalletResponse,
   ListCoinsResponse,
   GetPricesResponse,
+  PriceUpdate,
   ListAlertsResponse,
   CreateAlertRequest,
   DeleteAlertResponse,

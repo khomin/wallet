@@ -6,11 +6,13 @@
 // protobuf types generated into /src/gen.
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useEffect } from 'react';
 import { create } from '@bufbuild/protobuf';
 import type { MessageInitShape } from '@bufbuild/protobuf';
 import { walletService, priceService, alertService } from '../services/grpcGateway';
 import { CreateWalletRequestSchema } from '../gen/wallet/v1/wallet_pb';
 import { CreateAlertRequestSchema } from '../gen/alert/v1/alert_pb';
+import { GetPricesResponseSchema } from '../gen/price/v1/price_pb';
 import type {
   ListWalletsResponse,
   CreateWalletResponse,
@@ -87,12 +89,69 @@ export function useCoins() {
 
 /** Fetch prices for specific symbols */
 export function usePrices(symbols: string[]) {
-  return useQuery<GetPricesResponse>({
+  const queryClient = useQueryClient();
+  const symbolsKey = symbols.join(',');
+  const query = useQuery<GetPricesResponse>({
     queryKey: queryKeys.prices(symbols),
     queryFn: () => priceService.getPrices(symbols),
     enabled: symbols.length > 0,
     refetchInterval: 30_000,
   });
+
+  // Keep the initial REST response above as the source of truth for loading
+  // and errors, then merge each streamed update into the same query cache.
+  useEffect(() => {
+    if (!symbolsKey) return;
+
+    const controller = new AbortController();
+    let mounted = true;
+
+    const run = async () => {
+      while (mounted) {
+        try {
+          for await (const update of priceService.streamPrices(
+            symbolsKey.split(','),
+            controller.signal,
+          )) {
+            if (!mounted) return;
+            queryClient.setQueryData<GetPricesResponse>(
+              queryKeys.prices(symbolsKey.split(',')),
+              (current) => {
+                const streamedBySymbol = new Map(
+                  update.price.map((price) => [price.symbol.toLowerCase(), price]),
+                );
+                const currentPrices = current?.price ?? [];
+                const merged = currentPrices.map(
+                  (price) => streamedBySymbol.get(price.symbol.toLowerCase()) ?? price,
+                );
+                const existingSymbols = new Set(
+                  currentPrices.map((price) => price.symbol.toLowerCase()),
+                );
+                for (const price of update.price) {
+                  if (!existingSymbols.has(price.symbol.toLowerCase())) merged.push(price);
+                }
+                return current
+                  ? { ...current, total: merged.length, price: merged }
+                  : create(GetPricesResponseSchema, { total: merged.length, price: merged });
+              },
+            );
+          }
+        } catch {
+          if (controller.signal.aborted || !mounted) return;
+        }
+        // Reconnect if the server closes the stream or a transient error occurs.
+        await new Promise((resolve) => setTimeout(resolve, 1000));
+      }
+    };
+
+    void run();
+    return () => {
+      mounted = false;
+      controller.abort();
+    };
+  }, [queryClient, symbolsKey]);
+
+  return query;
 }
 
 // ─── Alerts ────────────────────────────────────────────────────────────────
