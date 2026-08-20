@@ -1,11 +1,14 @@
 info:
-  name: user-current-id
+  name: stream-wallet
   type: http
-  seq: 13
+  seq: 8
 
 http:
   method: GET
-  url: "{{url}}/v1/user"
+  url: "{{url}}/v1/wallets/stream"
+  headers:
+    - name: Accept
+      value: application/json
   auth: inherit
 
 settings:

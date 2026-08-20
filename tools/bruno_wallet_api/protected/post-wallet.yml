@@ -1,7 +1,7 @@
 info:
   name: post-wallet
   type: http
-  seq: 8
+  seq: 9
 
 http:
   method: POST
@@ -10,10 +10,10 @@ http:
     type: json
     data: |-
       {
-        "chain": "sol",
-        "address": "CFMQzGS8M8wpvczs1udJ2XgzXEmVf31bmYxBwtgPBLRg",
-        "token_symbol": "XAUT",
-        "label": "test some XAUt0"
+        "chain": "XRP",
+        "address": "rJZaP4thmA9FaF2AoXsbYCjUyQa4wkLGzc",
+        "token_symbol": "XRP",
+        "label": "test"
       }
   auth: inherit
 

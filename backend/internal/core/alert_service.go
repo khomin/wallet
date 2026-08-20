@@ -77,7 +77,7 @@ func (s *AlertService) isTriggered(alert domain.Alert, price *domain.TokenPrice)
 	}
 }
 
-func (s *AlertService) triggerAlert(ctx context.Context, user domain.User, alert domain.Alert, price *domain.TokenPrice) {
+func (s *AlertService) triggerAlert(ctx context.Context, user domain.User, alert domain.Alert, _ *domain.TokenPrice) {
 	s.log.WithField("alert_id", alert.ID).Infof("Alert triggered for %s", alert.CoinSymbol)
 
 	if s.emailSender != nil {

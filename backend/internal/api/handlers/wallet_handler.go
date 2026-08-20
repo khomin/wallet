@@ -10,6 +10,7 @@ import (
 	"tracker/internal/core/domain"
 
 	"github.com/google/uuid"
+	"github.com/sirupsen/logrus"
 
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
@@ -18,13 +19,15 @@ import (
 )
 
 type WalletGrpcHandler struct {
-	walletv1.UnimplementedWalletServiceServer
 	walletService *core.WalletService
+	walletWorker  *core.WalletWorker
+	walletv1.UnimplementedWalletServiceServer
 }
 
-func NewWalletGrpcHandler(walletService *core.WalletService) walletv1.WalletServiceServer {
+func NewWalletGrpcHandler(walletService *core.WalletService, walletWorker *core.WalletWorker) walletv1.WalletServiceServer {
 	return &WalletGrpcHandler{
 		walletService: walletService,
+		walletWorker:  walletWorker,
 	}
 }
 
@@ -88,31 +91,7 @@ func (s *WalletGrpcHandler) GetWallet(ctx context.Context, req *walletv1.GetWall
 		return nil, status.Error(codes.Internal, err.Error())
 	}
 	return &walletv1.GetWalletResponse{
-		Wallet: &walletv1.Wallet{
-			Id:            wallet.Wallet.ID,
-			Address:       wallet.Wallet.Address,
-			Chain:         wallet.Wallet.Chain,
-			TokenSymbol:   wallet.Wallet.Symbol,
-			Label:         wallet.Wallet.Label,
-			BalanceCrypto: float32(wallet.Balance),
-			BalanceUsd:    float32(wallet.BalanceUSD),
-			HasError:      wallet.HasError,
-			ErrorMsg:      wallet.ErrorMsg,
-			Price: &pricev1.Price{
-				Symbol:                        wallet.Symbol,
-				Name:                          wallet.Price.Name,
-				PriceUsd:                      float32(wallet.Price.CurrentPrice),
-				MarketCap:                     float32(wallet.Price.MarketCap),
-				TotalVolume:                   float32(wallet.Price.TotalVolume),
-				High_24H:                      float32(wallet.Price.High_24h),
-				Low_24H:                       float32(wallet.Price.Low_24h),
-				PriceChange_24H:               float32(wallet.Price.PriceChange_24h),
-				PriceChangePercentage_24H:     float32(wallet.Price.PriceChangePercentage_24h),
-				MarketCapChange_24H:           float32(wallet.Price.MarketCapChange_24h),
-				MarketCapChangePercentage_24H: float32(wallet.Price.MarketCapChange_percentage_24h),
-				UpdatedAt:                     timestamppb.New(wallet.Price.UpdatedAt),
-			},
-		},
+		Wallet: wallet.ToGrpc(),
 	}, nil
 }
 
@@ -181,25 +160,21 @@ func (s *WalletGrpcHandler) StreamWallet(
 	stream grpc.ServerStreamingServer[walletv1.WalletUpdate],
 ) error {
 	ctx := stream.Context()
-	_, ok := middleware.GetOAUTH(ctx)
+	user, ok := middleware.GetOAUTH(ctx)
 	if !ok {
 		return status.Error(codes.Unauthenticated, "unauthorized")
 	}
-	// FIXME: wallet balance update events
-	// subID, priceChan := s.priceHub.Subscribe()
-	// defer s.priceHub.Unsubscribe(subID)
-	// for {
-	// 	select {
-	// 	case <-ctx.Done():
-	// 		return ctx.Err()
-	// 	case update, open := <-priceChan:
-	// 		if !open {
-	// 			return nil
-	// 		}
-	// 		if err := stream.Send(update); err != nil {
-	// 			return err
-	// 		}
-	// 	}
-	// }
-	return nil
+	channel, streamID := s.walletWorker.Subscribe(user.Subject)
+	defer s.walletWorker.UnSubscribe(user.Subject, streamID)
+	for {
+		select {
+		case <-ctx.Done():
+			return ctx.Err()
+		case event := <-channel:
+			logrus.Infof("received event: %v", event)
+			if err := stream.Send(event); err != nil {
+				return err
+			}
+		}
+	}
 }

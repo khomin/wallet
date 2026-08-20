@@ -2,7 +2,6 @@ package core
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 
 	"tracker/internal/core/domain"
@@ -35,7 +34,6 @@ type WalletDeps struct {
 	WalletRepo        WalletRepository
 	PriceService      *PriceService
 	UserRepo          UserRepo
-	EventPublisher    messaging.Publisher
 	BlockchainService *BlockchainService
 	TokenRegistry     *TokenRegistry
 }
@@ -47,7 +45,6 @@ func NewWalletService(deps WalletDeps) *WalletService {
 		userRepo:          deps.UserRepo,
 		blockchainService: deps.BlockchainService,
 		tokenRegistry:     deps.TokenRegistry,
-		eventPublisher:    deps.EventPublisher,
 	}
 }
 
@@ -80,19 +77,9 @@ func (s *WalletService) CreateWallet(ctx context.Context, user domain.User, chai
 	if err := s.blockchainService.ValidateAddress(chain, address, symbol); err != nil {
 		return err
 	}
-	wallet, err := s.walletRepo.Create(ctx, user.ID, chain, address, symbol, label)
+	_, err := s.walletRepo.Create(ctx, user.ID, chain, address, symbol, label)
 	if err != nil {
 		return err
-	}
-	if bytes, err := json.Marshal(domain.WalletCreatedEvent{
-		ID:     wallet.ID,
-		UserID: user.ID,
-	}); err != nil {
-		return nil
-	} else {
-		if err := s.eventPublisher.Publish(bytes); err != nil {
-			return err
-		}
 	}
 	return nil
 }

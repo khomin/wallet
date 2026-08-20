@@ -7,7 +7,6 @@ import (
 	"log"
 	"net"
 	"strings"
-	"time"
 	"tracker/bootstrap"
 	alertv1 "tracker/gen/alert/v1"
 	pricev1 "tracker/gen/price/v1"
@@ -150,32 +149,20 @@ func main() {
 		logrus.WithError(err).Warn("failed to connect all blockchain clients")
 	}
 
-	walletEventPublisher, err := messaging.NewPublisher(mq, messaging.QueueWalletCreated)
-	if err != nil {
-		logrus.Fatal(err)
-	}
-	walletEventConsumer, err := messaging.NewConsumer(mq, messaging.QueueWalletCreated)
-	if err != nil {
-		logrus.Fatal(err)
-	}
-
 	walletService := core.NewWalletService(core.WalletDeps{
 		WalletRepo: walletRepo, PriceService: priceService,
 		UserRepo: userRepo, BlockchainService: blockchainService,
-		TokenRegistry:  tokenRegistry,
-		EventPublisher: walletEventPublisher,
+		TokenRegistry: tokenRegistry,
 	})
 
 	walletWorker := core.NewWalletWorker(&core.NewWalletDeps{
 		WalletService: walletService,
 		WalletRepo:    walletRepo,
-		EventConsumer: walletEventConsumer,
 	})
 
 	priceFetcher.LoadCache(ctx)
 	go priceFetcher.StartFetcher(ctx)
-	go walletWorker.StartSyncLoop(ctx, time.Second*1)
-	go walletWorker.StartConsuming(ctx)
+	go walletWorker.Start(ctx)
 
 	verifier, err := middleware.NewTokenVerifier(ctx, app.Cfg.Authorization.IssuerURL, app.Cfg.Authorization.ClientID)
 	if err != nil {
@@ -205,7 +192,7 @@ func main() {
 	reflection.Register(grpcServer)
 
 	priceGrpcServer := handlers.NewPriceGrpcHandler(priceService, priceHub)
-	walletGrpcServer := handlers.NewWalletGrpcHandler(walletService)
+	walletGrpcServer := handlers.NewWalletGrpcHandler(walletService, walletWorker)
 	userServer := handlers.NewUserHandler(userRepo)
 	alertServer := handlers.NewAlertHandler(alertRepo, userRepo)
 

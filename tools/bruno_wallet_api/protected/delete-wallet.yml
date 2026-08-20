@@ -1,11 +1,11 @@
 info:
   name: delete-wallet
   type: http
-  seq: 10
+  seq: 11
 
 http:
   method: DELETE
-  url: "{{url}}/v1/wallets/3bffdb18-5198-4e65-b7a1-cf4e9c073d47"
+  url: "{{url}}/v1/wallets/b72f09c0-51d4-46fb-be45-dfa82035108e"
   auth: inherit
 
 settings:

@@ -1,11 +1,11 @@
 info:
   name: delete-alert
   type: http
-  seq: 15
+  seq: 16
 
 http:
   method: DELETE
-  url: "{{url}}/v1/alerts/9ea79093-b7b1-4143-a93a-4440ac8c3be0"
+  url: "{{url}}/v1/alerts/d99447fc-bc3b-40af-be2a-1dc0fd70b652"
   auth: inherit
 
 settings:

@@ -476,7 +476,7 @@ func RegisterWalletServiceHandlerClient(ctx context.Context, mux *runtime.ServeM
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		annotatedContext, err := runtime.AnnotateContext(ctx, mux, req, "/wallet.v1.WalletService/StreamWallet", runtime.WithHTTPPathPattern("/v1/prices/stream"))
+		annotatedContext, err := runtime.AnnotateContext(ctx, mux, req, "/wallet.v1.WalletService/StreamWallet", runtime.WithHTTPPathPattern("/v1/wallets/stream"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -498,7 +498,7 @@ var (
 	pattern_WalletService_EditWallet_0   = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 1, 0, 4, 1, 5, 2}, []string{"v1", "wallets", "id"}, ""))
 	pattern_WalletService_DeleteWallet_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 1, 0, 4, 1, 5, 2}, []string{"v1", "wallets", "id"}, ""))
 	pattern_WalletService_CreateWallet_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1}, []string{"v1", "wallets"}, ""))
-	pattern_WalletService_StreamWallet_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2}, []string{"v1", "prices", "stream"}, ""))
+	pattern_WalletService_StreamWallet_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2}, []string{"v1", "wallets", "stream"}, ""))
 )
 
 var (

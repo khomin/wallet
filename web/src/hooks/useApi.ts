@@ -34,14 +34,64 @@ export const queryKeys = {
 
 // ─── Wallets ───────────────────────────────────────────────────────────────
 
-/** Fetch all wallets for the current user */
+/** Fetch all wallets, then keep the same cache current with wallet events. */
 export function useWallets() {
-  return useQuery<ListWalletsResponse>({
+  const queryClient = useQueryClient();
+  const query = useQuery<ListWalletsResponse>({
     queryKey: queryKeys.wallets,
     queryFn: () => walletService.listWallets(),
-    // Refetch every 30s so balances stay reasonably fresh
-    refetchInterval: 30_000,
   });
+
+  useEffect(() => {
+    // Let the initial list establish the source of truth before applying
+    // streamed updates. An empty symbols list means all wallets for the user.
+    if (!query.isSuccess) return;
+
+    const controller = new AbortController();
+    let mounted = true;
+
+    const run = async () => {
+      while (mounted) {
+        try {
+          for await (const update of walletService.streamWallets([], controller.signal)) {
+            if (!mounted) return;
+            const streamedWallet = update.wallet;
+            if (!streamedWallet) continue;
+
+            queryClient.setQueryData<ListWalletsResponse>(
+              queryKeys.wallets,
+              (current) => {
+                if (!current) return current;
+
+                const index = current.wallet.findIndex((item) => item.id === streamedWallet.id);
+                const wallets = [...current.wallet];
+                if (index >= 0) {
+                  wallets[index] = streamedWallet;
+                } else {
+                  wallets.push(streamedWallet);
+                }
+
+                return { ...current, total: wallets.length, wallet: wallets };
+              },
+            );
+          }
+        } catch {
+          if (controller.signal.aborted || !mounted) return;
+        }
+
+        // Reconnect when the server closes the stream or a transient error occurs.
+        await new Promise((resolve) => setTimeout(resolve, 1000));
+      }
+    };
+
+    void run();
+    return () => {
+      mounted = false;
+      controller.abort();
+    };
+  }, [query.isSuccess, queryClient]);
+
+  return query;
 }
 
 /** Create a new wallet */

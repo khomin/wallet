@@ -13,9 +13,8 @@ import (
 )
 
 var (
-	ErrProviderTimeout     = errors.New("provider timeout")
-	ErrProviderRateLimit   = errors.New("provider rate limit")
-	ErrProviderUnavailable = errors.New("provider unavailable")
+	ErrProviderTimeout   = errors.New("provider timeout")
+	ErrProviderRateLimit = errors.New("provider rate limit")
 )
 
 type BlockchainService struct {

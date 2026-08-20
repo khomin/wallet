@@ -2,74 +2,73 @@ package core
 
 import (
 	"context"
-	"encoding/json"
 	"errors"
 	"fmt"
+	"sync"
 	"time"
+	walletv1 "tracker/gen/wallet/v1"
 	"tracker/internal/core/domain"
-	"tracker/internal/messaging"
 
 	"github.com/google/uuid"
-	"github.com/rabbitmq/amqp091-go"
 	"github.com/sirupsen/logrus"
 	"golang.org/x/sync/errgroup"
 )
 
-type walletWorker struct {
-	eventConsumer *messaging.Consumer
-	walletService *WalletService
-	walletRepo    WalletRepository
+type WalletWorker struct {
+	walletService     *WalletService
+	walletRepo        WalletRepository
+	streamSubscribers map[string]map[string]chan *walletv1.WalletUpdate
+	lock              sync.RWMutex
 }
 
 type NewWalletDeps struct {
 	WalletService *WalletService
 	WalletRepo    WalletRepository
-	EventConsumer *messaging.Consumer
 }
 
-func NewWalletWorker(deps *NewWalletDeps) *walletWorker {
-	return &walletWorker{
-		walletRepo:    deps.WalletRepo,
-		eventConsumer: deps.EventConsumer,
-		walletService: deps.WalletService,
+func NewWalletWorker(deps *NewWalletDeps) *WalletWorker {
+	return &WalletWorker{
+		walletRepo:        deps.WalletRepo,
+		walletService:     deps.WalletService,
+		streamSubscribers: make(map[string]map[string]chan *walletv1.WalletUpdate),
+		lock:              sync.RWMutex{},
 	}
 }
 
-func (w *walletWorker) StartConsuming(ctx context.Context) error {
-	log := logrus.WithField("walletWorker", "StartConsuming")
-	// FIXME: handle ctx.Done()
-	for {
-		msgs, chanErr, err := w.eventConsumer.Consume()
-		if err != nil {
-			log.Warningf("failed to set consume: %v", err)
-			time.Sleep(time.Second * 1)
-			continue
-		}
-		log.Info("event consume set successfully")
-		for {
-			var exitErr error
-			select {
-			case err := <-chanErr:
-				log.Infof("channel closed: %v", err)
-				exitErr = err
-			case msg := <-msgs:
-				log.Infof("event received")
-				if err := w.handleWalletCreated(ctx, msg); err != nil {
-					logrus.WithError(err).Error("failed to handle wallet created event")
-					_ = msg.Nack(false, true)
-				} else {
-					_ = msg.Ack(false)
-				}
-			}
-			if exitErr != nil {
-				log.Infof("channel closed due to error: %v", err)
-				break
-			}
-		}
-	}
+func (w *WalletWorker) Start(ctx context.Context) {
+	go w.startSyncLoop(ctx, time.Second*1)
 }
 
-func (w *walletWorker) StartSyncLoop(ctx context.Context, interval time.Duration) {
+func (w *WalletWorker) Subscribe(userID string) (<-chan *walletv1.WalletUpdate, string) {
+	w.lock.Lock()
+	defer w.lock.Unlock()
+
+	streamID := uuid.NewString()
+	channel := make(chan *walletv1.WalletUpdate)
+	if w.streamSubscribers[userID][streamID] == nil {
+		w.streamSubscribers[userID] = make(map[string]chan *walletv1.WalletUpdate)
+	}
+	w.streamSubscribers[userID][streamID] = channel
+	return channel, streamID
+}
+
+func (w *WalletWorker) UnSubscribe(userID string, streamID string) {
+	w.lock.Lock()
+	defer w.lock.Unlock()
+
+	subs, exists := w.streamSubscribers[userID]
+	if !exists {
+		return
+	}
+	channel, exists := subs[streamID]
+	if !exists {
+		return
+	}
+	close(channel)
+	delete(subs, streamID)
+}
+
+func (w *WalletWorker) startSyncLoop(ctx context.Context, interval time.Duration) {
 	tm := time.NewTicker(interval)
 	defer tm.Stop()
 	for {
@@ -82,7 +81,7 @@ func (w *walletWorker) StartSyncLoop(ctx context.Context, interval time.Duration
 	}
 }
 
-func (w *walletWorker) synchronizeWallets(ctx context.Context) error {
+func (w *WalletWorker) synchronizeWallets(ctx context.Context) error {
 	start := time.Now()
 	g, ctx := errgroup.WithContext(ctx)
 	log := logrus.WithContext(ctx)
@@ -102,11 +101,6 @@ func (w *walletWorker) synchronizeWallets(ctx context.Context) error {
 		groupsByChain[wallet.Chain] = append(groupsByChain[wallet.Chain], wallet)
 	}
 
-	log.WithFields(logrus.Fields{
-		"total_wallets": len(wallets),
-		"chain_count":   len(groupsByChain),
-	}).Info("starting wallet synchronization batch")
-
 	for chain, group := range groupsByChain {
 		chain := chain
 		group := group
@@ -115,77 +109,54 @@ func (w *walletWorker) synchronizeWallets(ctx context.Context) error {
 			var failedCount int
 
 			for _, wallet := range group {
-				if err := w.updateBalance(ctx, wallet); err != nil {
+				balance, err := w.updateBalance(ctx, wallet)
+				if err != nil {
 					failedCount++
-					log.WithFields(logrus.Fields{
-						"chain":     wallet.Chain,
-						"wallet_id": wallet.ID,
-					}).WithError(err).Error("failed to sync wallet balance")
+					log.Errorf("failed to sync wallet balance: %s %s", wallet.Chain, wallet.ID)
 					continue
 				}
-				log.WithFields(logrus.Fields{
-					"chain":     wallet.Chain,
-					"wallet_id": wallet.ID,
-				}).Debug("wallet balance updated")
-			}
+				log.Debugf("wallet balance updated: %s %s", wallet.Chain, wallet.ID)
 
+				streams, ok := w.streamSubscribers[wallet.UserID]
+				if ok {
+					for _, v := range streams {
+						v <- &walletv1.WalletUpdate{
+							Wallet: balance.ToGrpc(),
+						}
+					}
+				}
+			}
 			if failedCount > 0 {
-				log.WithFields(logrus.Fields{
-					"chain":  chain,
-					"total":  len(group),
-					"failed": failedCount,
-				}).Warn("chain synchronization finished with errors")
+				log.Warnf("chain synchronization finished with errors: %s %d, %d", chain, len(group), failedCount)
 			}
 			return nil
 		})
 	}
 	_ = g.Wait()
 
-	log.WithFields(logrus.Fields{
-		"total_wallets": len(wallets),
-		"duration":      time.Since(start),
-	}).Info("wallet synchronization batch completed")
+	log.Infof("wallet synchronization batch completed: %d, %v", len(wallets), time.Since(start))
 
 	return nil
 }
 
-func (w *walletWorker) updateBalance(ctx context.Context, wallet domain.Wallet) error {
+func (w *WalletWorker) updateBalance(ctx context.Context, wallet domain.Wallet) (*domain.WalletWithBalance, error) {
 	uuid, err := uuid.Parse(wallet.ID)
 	if err != nil {
-		return err
+		return nil, err
 	}
 	balance, err := w.walletService.FetchBalance(ctx, wallet)
 	if err != nil {
 		if errors.Is(err, ErrProviderTimeout) {
-			return err
+			return nil, err
 		}
 		if errors.Is(err, ErrProviderRateLimit) {
-			return err
+			return nil, err
 		}
-		if errors.Is(err, ErrProviderUnavailable) {
-			return err
-		}
-		return err
+		return nil, err
 	}
 	err = w.walletRepo.UpdateBalance(ctx, wallet.UserID, uuid, balance.Balance, balance.BalanceUSD)
 	if err != nil {
-		return err
+		return nil, err
 	}
-	return nil
-}
-
-func (w *walletWorker) handleWalletCreated(ctx context.Context, msg amqp091.Delivery) error {
-	var event domain.WalletCreatedEvent
-	if err := json.Unmarshal(msg.Body, &event); err != nil {
-		return nil
-	}
-	uuid, err := uuid.Parse(event.ID)
-	if err != nil {
-		return nil
-	}
-	wallet, err := w.walletRepo.Get(ctx, event.UserID, uuid)
-	if err != nil {
-		return err
-	}
-	return w.updateBalance(ctx, wallet.Wallet)
+	return balance, nil
 }

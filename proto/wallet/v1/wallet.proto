@@ -91,6 +91,7 @@ message StreamWalletRequest {
 }
 
 message WalletUpdate {
+  Wallet wallet =  1;
 }
 
 message Wallet {

@@ -19,7 +19,6 @@ import (
 	"tracker/internal/core/domain"
 	"tracker/internal/db"
 	"tracker/internal/db/repositories"
-	"tracker/internal/messaging"
 
 	"github.com/sirupsen/logrus"
 )
@@ -100,7 +99,6 @@ func TestGenerateWallets(t *testing.T) {
 		UserRepo:          repositories.NewUserRepo(db),
 		BlockchainService: blockchainService,
 		TokenRegistry:     tokenRegistry,
-		EventPublisher:    messaging.NewPublisherNoOp(),
 	})
 
 	// import known wallets

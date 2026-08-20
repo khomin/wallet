@@ -542,6 +542,7 @@ func (x *StreamWalletRequest) GetSymbols() []string {
 
 type WalletUpdate struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
+	Wallet        *Wallet                `protobuf:"bytes,1,opt,name=wallet,proto3" json:"wallet,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -574,6 +575,13 @@ func (x *WalletUpdate) ProtoReflect() protoreflect.Message {
 // Deprecated: Use WalletUpdate.ProtoReflect.Descriptor instead.
 func (*WalletUpdate) Descriptor() ([]byte, []int) {
 	return file_wallet_v1_wallet_proto_rawDescGZIP(), []int{11}
+}
+
+func (x *WalletUpdate) GetWallet() *Wallet {
+	if x != nil {
+		return x.Wallet
+	}
+	return nil
 }
 
 type Wallet struct {
@@ -723,8 +731,9 @@ const file_wallet_v1_wallet_proto_rawDesc = "" +
 	"\x05label\x18\x04 \x01(\tR\x05label\"\x16\n" +
 	"\x14CreateWalletResponse\"/\n" +
 	"\x13StreamWalletRequest\x12\x18\n" +
-	"\asymbols\x18\x01 \x03(\tR\asymbols\"\x0e\n" +
-	"\fWalletUpdate\"\xaa\x02\n" +
+	"\asymbols\x18\x01 \x03(\tR\asymbols\"9\n" +
+	"\fWalletUpdate\x12)\n" +
+	"\x06wallet\x18\x01 \x01(\v2\x11.wallet.v1.WalletR\x06wallet\"\xaa\x02\n" +
 	"\x06Wallet\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12\x18\n" +
 	"\aaddress\x18\x02 \x01(\tR\aaddress\x12\x14\n" +
@@ -737,15 +746,15 @@ const file_wallet_v1_wallet_proto_rawDesc = "" +
 	"\thas_error\x18\t \x01(\bR\bhasError\x12\x1b\n" +
 	"\terror_msg\x18\n" +
 	" \x01(\tR\berrorMsg\x12%\n" +
-	"\x05price\x18\v \x01(\v2\x0f.price.v1.PriceR\x05price2\xf6\x04\n" +
+	"\x05price\x18\v \x01(\v2\x0f.price.v1.PriceR\x05price2\xf7\x04\n" +
 	"\rWalletService\x12a\n" +
 	"\vListWallets\x12\x1d.wallet.v1.ListWalletsRequest\x1a\x1e.wallet.v1.ListWalletsResponse\"\x13\x82\xd3\xe4\x93\x02\r\x12\v/v1/wallets\x12`\n" +
 	"\tGetWallet\x12\x1b.wallet.v1.GetWalletRequest\x1a\x1c.wallet.v1.GetWalletResponse\"\x18\x82\xd3\xe4\x93\x02\x12\x12\x10/v1/wallets/{id}\x12f\n" +
 	"\n" +
 	"EditWallet\x12\x1c.wallet.v1.EditWalletRequest\x1a\x1d.wallet.v1.EditWalletResponse\"\x1b\x82\xd3\xe4\x93\x02\x15:\x01*2\x10/v1/wallets/{id}\x12i\n" +
 	"\fDeleteWallet\x12\x1e.wallet.v1.DeleteWalletRequest\x1a\x1f.wallet.v1.DeleteWalletResponse\"\x18\x82\xd3\xe4\x93\x02\x12*\x10/v1/wallets/{id}\x12g\n" +
-	"\fCreateWallet\x12\x1e.wallet.v1.CreateWalletRequest\x1a\x1f.wallet.v1.CreateWalletResponse\"\x16\x82\xd3\xe4\x93\x02\x10:\x01*\"\v/v1/wallets\x12d\n" +
-	"\fStreamWallet\x12\x1e.wallet.v1.StreamWalletRequest\x1a\x17.wallet.v1.WalletUpdate\"\x19\x82\xd3\xe4\x93\x02\x13\x12\x11/v1/prices/stream0\x01B Z\x1etracker/gen/wallet/v1;walletv1b\x06proto3"
+	"\fCreateWallet\x12\x1e.wallet.v1.CreateWalletRequest\x1a\x1f.wallet.v1.CreateWalletResponse\"\x16\x82\xd3\xe4\x93\x02\x10:\x01*\"\v/v1/wallets\x12e\n" +
+	"\fStreamWallet\x12\x1e.wallet.v1.StreamWalletRequest\x1a\x17.wallet.v1.WalletUpdate\"\x1a\x82\xd3\xe4\x93\x02\x14\x12\x12/v1/wallets/stream0\x01B Z\x1etracker/gen/wallet/v1;walletv1b\x06proto3"
 
 var (
 	file_wallet_v1_wallet_proto_rawDescOnce sync.Once
@@ -779,24 +788,25 @@ var file_wallet_v1_wallet_proto_goTypes = []any{
 var file_wallet_v1_wallet_proto_depIdxs = []int32{
 	12, // 0: wallet.v1.ListWalletsResponse.wallet:type_name -> wallet.v1.Wallet
 	12, // 1: wallet.v1.GetWalletResponse.wallet:type_name -> wallet.v1.Wallet
-	13, // 2: wallet.v1.Wallet.price:type_name -> price.v1.Price
-	0,  // 3: wallet.v1.WalletService.ListWallets:input_type -> wallet.v1.ListWalletsRequest
-	2,  // 4: wallet.v1.WalletService.GetWallet:input_type -> wallet.v1.GetWalletRequest
-	4,  // 5: wallet.v1.WalletService.EditWallet:input_type -> wallet.v1.EditWalletRequest
-	6,  // 6: wallet.v1.WalletService.DeleteWallet:input_type -> wallet.v1.DeleteWalletRequest
-	8,  // 7: wallet.v1.WalletService.CreateWallet:input_type -> wallet.v1.CreateWalletRequest
-	10, // 8: wallet.v1.WalletService.StreamWallet:input_type -> wallet.v1.StreamWalletRequest
-	1,  // 9: wallet.v1.WalletService.ListWallets:output_type -> wallet.v1.ListWalletsResponse
-	3,  // 10: wallet.v1.WalletService.GetWallet:output_type -> wallet.v1.GetWalletResponse
-	5,  // 11: wallet.v1.WalletService.EditWallet:output_type -> wallet.v1.EditWalletResponse
-	7,  // 12: wallet.v1.WalletService.DeleteWallet:output_type -> wallet.v1.DeleteWalletResponse
-	9,  // 13: wallet.v1.WalletService.CreateWallet:output_type -> wallet.v1.CreateWalletResponse
-	11, // 14: wallet.v1.WalletService.StreamWallet:output_type -> wallet.v1.WalletUpdate
-	9,  // [9:15] is the sub-list for method output_type
-	3,  // [3:9] is the sub-list for method input_type
-	3,  // [3:3] is the sub-list for extension type_name
-	3,  // [3:3] is the sub-list for extension extendee
-	0,  // [0:3] is the sub-list for field type_name
+	12, // 2: wallet.v1.WalletUpdate.wallet:type_name -> wallet.v1.Wallet
+	13, // 3: wallet.v1.Wallet.price:type_name -> price.v1.Price
+	0,  // 4: wallet.v1.WalletService.ListWallets:input_type -> wallet.v1.ListWalletsRequest
+	2,  // 5: wallet.v1.WalletService.GetWallet:input_type -> wallet.v1.GetWalletRequest
+	4,  // 6: wallet.v1.WalletService.EditWallet:input_type -> wallet.v1.EditWalletRequest
+	6,  // 7: wallet.v1.WalletService.DeleteWallet:input_type -> wallet.v1.DeleteWalletRequest
+	8,  // 8: wallet.v1.WalletService.CreateWallet:input_type -> wallet.v1.CreateWalletRequest
+	10, // 9: wallet.v1.WalletService.StreamWallet:input_type -> wallet.v1.StreamWalletRequest
+	1,  // 10: wallet.v1.WalletService.ListWallets:output_type -> wallet.v1.ListWalletsResponse
+	3,  // 11: wallet.v1.WalletService.GetWallet:output_type -> wallet.v1.GetWalletResponse
+	5,  // 12: wallet.v1.WalletService.EditWallet:output_type -> wallet.v1.EditWalletResponse
+	7,  // 13: wallet.v1.WalletService.DeleteWallet:output_type -> wallet.v1.DeleteWalletResponse
+	9,  // 14: wallet.v1.WalletService.CreateWallet:output_type -> wallet.v1.CreateWalletResponse
+	11, // 15: wallet.v1.WalletService.StreamWallet:output_type -> wallet.v1.WalletUpdate
+	10, // [10:16] is the sub-list for method output_type
+	4,  // [4:10] is the sub-list for method input_type
+	4,  // [4:4] is the sub-list for extension type_name
+	4,  // [4:4] is the sub-list for extension extendee
+	0,  // [0:4] is the sub-list for field type_name
 }
 
 func init() { file_wallet_v1_wallet_proto_init() }
