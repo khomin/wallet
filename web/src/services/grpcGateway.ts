@@ -186,12 +186,14 @@ export const walletService = {
       // Some stream handlers serialize the WalletUpdate payload directly
       // instead of wrapping it as { wallet: ... }. Normalize that shape too.
       try {
-        const raw = JSON.parse(trimmed) as { id?: unknown };
-        if (typeof raw.id !== 'string') return update;
-        const wallet = fromJsonString(WalletSchema, trimmed, {
-          ignoreUnknownFields: true,
-        });
-        return create(WalletUpdateSchema, { wallet });
+        const raw = JSON.parse(trimmed)
+        if (raw.result != undefined) {
+          const payload = raw.result.wallet ?? raw;
+          const wallet = fromJsonString(WalletSchema, JSON.stringify(payload), {
+            ignoreUnknownFields: true,
+          });
+          return create(WalletUpdateSchema, { wallet });
+        }
       } catch {
         return update;
       }
