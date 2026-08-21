@@ -6,7 +6,7 @@
 
 /** Form state used by the Add Wallet modal. */
 export interface CreateWalletFormState {
-  chain: string;
+  chains: string[];
   address: string;
   tokenSymbol: string;
   label: string;

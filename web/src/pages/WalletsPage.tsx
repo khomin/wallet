@@ -50,7 +50,7 @@ export default function WalletsPage() {
 
   // ── Form state ────────────────────────────────────────────────────────
   const [form, setForm] = useState<CreateWalletFormState>({
-    chain: 'ETH',
+    chains: [],
     address: '',
     tokenSymbol: '',
     label: '',
@@ -64,11 +64,10 @@ export default function WalletsPage() {
   );
 
   const chooseAsset = (coin: Token) => {
-    const chain = coin.chains[0] ?? 'ETH';
-    const normalizedChain = chain.toUpperCase().replace(/[^A-Z0-9]/g, '_');
+    const chains = coin.chains.length > 0 ? coin.chains : [coin.symbol];
     setSelectedAssetSymbol(coin.symbol);
     setForm({
-      chain: normalizedChain,
+      chains: chains,
       address: '',
       tokenSymbol: coin.symbol.toUpperCase(),
       label: `My ${coin.name || coin.symbol} Wallet`,
@@ -84,21 +83,23 @@ export default function WalletsPage() {
   const isAddressValid = (address: string, chain: string) => {
     const value = address.trim();
     if (!value) return false;
-    if (/SOL|SOLANA/i.test(chain)) return /^[1-9A-HJ-NP-Za-km-z]{32,44}$/.test(value);
+    // Solana and Tron networks may be returned as SOL/SOLANA/SPL and
+    // TRX/TRON/TRC20 respectively, depending on the asset metadata.
+    if (/SOL|SOLANA|SPL/i.test(chain)) return /^[1-9A-HJ-NP-Za-km-z]{32,44}$/.test(value);
     if (/BTC|BITCOIN/i.test(chain)) return /^(bc1|[13])[a-zA-HJ-NP-Z0-9]{25,90}$/.test(value);
-    if (/TRX|TRON/i.test(chain)) return /^T[1-9A-HJ-NP-Za-km-z]{33}$/.test(value);
+    if (/TRX|TRON|TRC/i.test(chain)) return /^T[1-9A-HJ-NP-Za-km-z]{33}$/.test(value);
     return /^0x[a-fA-F0-9]{40}$/.test(value);
   };
 
   const handleAddWallet = async () => {
-    if (!form.address.trim() || !form.tokenSymbol.trim() || !isAddressValid(form.address, form.chain)) return;
+    if (!form.address.trim() || !form.tokenSymbol.trim() || !isAddressValid(form.address, form.chains[0])) return;
     try {
       await createWallet.mutateAsync(form);
       setShowAddModal(false);
       setAddStep(1);
       setSelectedAssetSymbol('');
       setAssetSearch('');
-      setForm({ chain: 'ETH', address: '', tokenSymbol: '', label: '' });
+      setForm({ chains: [], address: '', tokenSymbol: '', label: '' });
     } catch {
       // error shown inline via mutation state
     }
@@ -109,7 +110,7 @@ export default function WalletsPage() {
     setAddStep(1);
     setSelectedAssetSymbol('');
     setAssetSearch('');
-    setForm({ chain: 'ETH', address: '', tokenSymbol: '', label: '' });
+    setForm({ chains: [], address: '', tokenSymbol: '', label: '' });
   };
 
   const handleDeleteWallet = async (id: string) => {
@@ -121,9 +122,13 @@ export default function WalletsPage() {
     }
   };
 
+  var chain = form.chains[0]
+  var isValidAddress = isAddressValid(form.address, chain);
+  console.log(`BTEST_CHAIN: ${form.chains}`);
+
   // ── Render ────────────────────────────────────────────────────────────
   return (
-    <div className="max-w-6xl mx-auto">
+    < div className="max-w-6xl mx-auto" >
       <h1 className="text-xl font-semibold mb-6">👛 Wallets</h1>
 
       {/* Wallets table card */}
@@ -264,87 +269,89 @@ export default function WalletsPage() {
 
       </div>
       {/* ── Add Wallet Modal ───────────────────────────────────────────── */}
-      {showAddModal && (
-        <Modal onClose={closeAddModal} title="Add a wallet">
-          <div className="mb-6 flex items-center gap-3">
-            <div className="flex flex-1 items-center gap-2">
-              {[1, 2].map((step) => <div key={step} className={`h-1 flex-1 rounded-full transition-colors ${step <= addStep ? 'bg-purple-500' : 'bg-white/10'}`} />)}
+      {
+        showAddModal && (
+          <Modal onClose={closeAddModal} title="Add a wallet">
+            <div className="mb-6 flex items-center gap-3">
+              <div className="flex flex-1 items-center gap-2">
+                {[1, 2].map((step) => <div key={step} className={`h-1 flex-1 rounded-full transition-colors ${step <= addStep ? 'bg-purple-500' : 'bg-white/10'}`} />)}
+              </div>
+              <span className="whitespace-nowrap text-[11px] font-medium uppercase tracking-wider text-gray-500">Step {addStep} of 2</span>
             </div>
-            <span className="whitespace-nowrap text-[11px] font-medium uppercase tracking-wider text-gray-500">Step {addStep} of 2</span>
-          </div>
 
-          <form onSubmit={(e) => { e.preventDefault(); handleAddWallet(); }}>
-            {addStep === 1 ? (
-              <div className="animate-[fadeIn_.2s_ease-out]">
-                <div className="mb-4">
-                  <h4 className="text-base font-semibold text-white">Select crypto asset</h4>
-                  <p className="mt-1 text-xs text-gray-500">Choose the asset and network you want to track.</p>
+            <form onSubmit={(e) => { e.preventDefault(); handleAddWallet(); }}>
+              {addStep === 1 ? (
+                <div className="animate-[fadeIn_.2s_ease-out]">
+                  <div className="mb-4">
+                    <h4 className="text-base font-semibold text-white">Select crypto asset</h4>
+                    <p className="mt-1 text-xs text-gray-500">Choose the asset and network you want to track.</p>
+                  </div>
+                  <div className="relative mb-3">
+                    <svg className="pointer-events-none absolute left-3 top-3 h-4 w-4 text-gray-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="11" cy="11" r="7" /><path d="m20 20-4-4" /></svg>
+                    <input autoFocus value={assetSearch} onChange={(e) => setAssetSearch(e.target.value)} placeholder="Search crypto asset, e.g. Ethereum, Solana, USDC..." className="w-full rounded-xl border border-white/10 bg-black/20 py-2.5 pl-10 pr-3 text-xs text-white outline-none transition focus:border-purple-500/60 focus:ring-2 focus:ring-purple-500/20" />
+                  </div>
+                  <div className="dark-scrollbar max-h-72 space-y-1 overflow-y-auto pr-1">
+                    {(coinsData?.token ?? []).filter((coin) => `${coin.name} ${coin.symbol} ${coin.chains.join(' ')}`.toLowerCase().includes(assetSearch.toLowerCase())).map((coin) => (
+                      <button type="button" key={`${coin.symbol}-${coin.chains.join('-')}`} onClick={() => chooseAsset(coin)} className="group flex w-full items-center gap-3 rounded-xl border border-transparent p-3 text-left transition hover:border-white/10 hover:bg-white/[0.06]">
+                        {coin.imageUrl ? <img src={coin.imageUrl} alt="" className="h-6 w-6 rounded-full bg-white/10" /> : <span className="flex h-6 w-6 items-center justify-center rounded-full bg-purple-500/20 text-[10px] font-bold text-purple-300">{coin.symbol.slice(0, 2)}</span>}
+                        <span className="min-w-0 flex-1"><span className="block truncate text-sm font-medium text-gray-100">{coin.name || coin.symbol}</span><span className="text-xs text-gray-500">{coin.symbol.toUpperCase()}</span></span>
+                      </button>
+                    ))}
+                    {coinsData?.token && coinsData.token.length === 0 && <p className="py-8 text-center text-xs text-gray-500">No supported assets found.</p>}
+                  </div>
                 </div>
-                <div className="relative mb-3">
-                  <svg className="pointer-events-none absolute left-3 top-3 h-4 w-4 text-gray-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="11" cy="11" r="7" /><path d="m20 20-4-4" /></svg>
-                  <input autoFocus value={assetSearch} onChange={(e) => setAssetSearch(e.target.value)} placeholder="Search crypto asset, e.g. Ethereum, Solana, USDC..." className="w-full rounded-xl border border-white/10 bg-black/20 py-2.5 pl-10 pr-3 text-xs text-white outline-none transition focus:border-purple-500/60 focus:ring-2 focus:ring-purple-500/20" />
+              ) : (
+                < div className="animate-[fadeIn_.2s_ease-out]">
+                  <div className="mb-5 flex items-center justify-between rounded-xl border border-white/10 bg-white/[0.04] p-3">
+                    <div className="flex items-center gap-3">{selectedAsset?.imageUrl ? <img src={selectedAsset.imageUrl} alt="" className="h-8 w-8 rounded-full" /> : <span className="flex h-8 w-8 items-center justify-center rounded-full bg-purple-500/20 text-xs text-purple-300">{form.tokenSymbol.slice(0, 2)}</span>}<div><p className="text-sm font-semibold text-white">{selectedAsset?.name || form.tokenSymbol}</p><p className="text-[11px] text-gray-500">{form.tokenSymbol} · {networkLabel(chain)}</p></div></div>
+                    <button type="button" onClick={() => setAddStep(1)} className="text-xs font-medium text-purple-400 hover:text-purple-300">Change</button>
+                  </div>
+                  <Field label="Wallet address">
+                    <div className="relative"><input autoFocus type="text" placeholder="Paste your wallet address" value={form.address} onChange={(e) => setForm({ ...form, address: e.target.value })} className={`w-full rounded-xl border bg-black/20 py-3 pl-3 pr-20 font-mono text-xs text-white outline-none transition placeholder:text-gray-600 focus:ring-2 ${form.address ? (isValidAddress ? 'border-emerald-500/60 focus:ring-emerald-500/20' : 'border-red-500/50 focus:ring-red-500/20') : 'border-white/10 focus:border-purple-500/60 focus:ring-purple-500/20'}`} /><button type="button" onClick={async () => setForm({ ...form, address: await navigator.clipboard.readText() })} className="absolute right-2 top-1.5 rounded-lg px-2 py-1.5 text-xs font-medium text-purple-300 hover:bg-white/10">Paste</button></div>
+                    {form.address && <p className={`mt-2 flex items-center gap-1.5 text-xs ${isValidAddress ? 'text-emerald-400' : 'text-red-400'}`}>{isValidAddress ? '✓ Valid wallet address' : '× Check this address format'}</p>}
+                  </Field>
+                  {isValidAddress && <div className="mt-5 rounded-xl border border-white/5 bg-white/[0.025] p-3"><p className="mb-2 text-[10px] font-semibold uppercase tracking-wider text-gray-500">Auto-detected metadata</p><div className="flex gap-2"><span className="rounded-lg bg-white/[0.07] px-2.5 py-1.5 text-xs text-gray-300">Token <b className="ml-1 text-white">{form.tokenSymbol}</b></span><span className="rounded-lg bg-white/[0.07] px-2.5 py-1.5 text-xs text-gray-300">Decimals <b className="ml-1 text-white">{/SOL/i.test(chain) ? 9 : /BTC/i.test(chain) ? 8 : 18}</b></span></div></div>}
+                  <div className="mt-5"><Field label="Wallet label (optional)"><input type="text" value={form.label} onChange={(e) => setForm({ ...form, label: e.target.value })} className="w-full rounded-xl border border-white/10 bg-black/20 px-3 py-3 text-sm text-white outline-none focus:border-purple-500/60 focus:ring-2 focus:ring-purple-500/20" /></Field></div>
                 </div>
-                <div className="max-h-72 space-y-1 overflow-y-auto pr-1">
-                  {(coinsData?.token ?? []).filter((coin) => `${coin.name} ${coin.symbol} ${coin.chains.join(' ')}`.toLowerCase().includes(assetSearch.toLowerCase())).map((coin) => (
-                    <button type="button" key={`${coin.symbol}-${coin.chains.join('-')}`} onClick={() => chooseAsset(coin)} className="group flex w-full items-center gap-3 rounded-xl border border-transparent p-3 text-left transition hover:border-white/10 hover:bg-white/[0.06]">
-                      {coin.imageUrl ? <img src={coin.imageUrl} alt="" className="h-6 w-6 rounded-full bg-white/10" /> : <span className="flex h-6 w-6 items-center justify-center rounded-full bg-purple-500/20 text-[10px] font-bold text-purple-300">{coin.symbol.slice(0, 2)}</span>}
-                      <span className="min-w-0 flex-1"><span className="block truncate text-sm font-medium text-gray-100">{coin.name || coin.symbol}</span><span className="text-xs text-gray-500">{coin.symbol.toUpperCase()}</span></span>
-                      <span className="rounded-md bg-white/[0.07] px-2 py-1 text-[10px] text-gray-400">{networkLabel((coin.chains[0] || 'Network').toUpperCase())}</span>
-                      <span className="text-gray-600 transition group-hover:translate-x-0.5 group-hover:text-gray-300">›</span>
-                    </button>
-                  ))}
-                  {coinsData?.token && coinsData.token.length === 0 && <p className="py-8 text-center text-xs text-gray-500">No supported assets found.</p>}
-                </div>
-              </div>
-            ) : (
-              <div className="animate-[fadeIn_.2s_ease-out]">
-                <div className="mb-5 flex items-center justify-between rounded-xl border border-white/10 bg-white/[0.04] p-3">
-                  <div className="flex items-center gap-3">{selectedAsset?.imageUrl ? <img src={selectedAsset.imageUrl} alt="" className="h-8 w-8 rounded-full" /> : <span className="flex h-8 w-8 items-center justify-center rounded-full bg-purple-500/20 text-xs text-purple-300">{form.tokenSymbol.slice(0, 2)}</span>}<div><p className="text-sm font-semibold text-white">{selectedAsset?.name || form.tokenSymbol}</p><p className="text-[11px] text-gray-500">{form.tokenSymbol} · {networkLabel(form.chain)}</p></div></div>
-                  <button type="button" onClick={() => setAddStep(1)} className="text-xs font-medium text-purple-400 hover:text-purple-300">Change</button>
-                </div>
-                <Field label="Wallet address">
-                  <div className="relative"><input autoFocus type="text" placeholder="Paste your wallet address" value={form.address} onChange={(e) => setForm({ ...form, address: e.target.value })} className={`w-full rounded-xl border bg-black/20 py-3 pl-3 pr-20 font-mono text-xs text-white outline-none transition placeholder:text-gray-600 focus:ring-2 ${form.address ? (isAddressValid(form.address, form.chain) ? 'border-emerald-500/60 focus:ring-emerald-500/20' : 'border-red-500/50 focus:ring-red-500/20') : 'border-white/10 focus:border-purple-500/60 focus:ring-purple-500/20'}`} /><button type="button" onClick={async () => setForm({ ...form, address: await navigator.clipboard.readText() })} className="absolute right-2 top-1.5 rounded-lg px-2 py-1.5 text-xs font-medium text-purple-300 hover:bg-white/10">Paste</button></div>
-                  {form.address && <p className={`mt-2 flex items-center gap-1.5 text-xs ${isAddressValid(form.address, form.chain) ? 'text-emerald-400' : 'text-red-400'}`}>{isAddressValid(form.address, form.chain) ? '✓ Valid wallet address' : '× Check this address format'}</p>}
-                </Field>
-                {isAddressValid(form.address, form.chain) && <div className="mt-5 rounded-xl border border-white/5 bg-white/[0.025] p-3"><p className="mb-2 text-[10px] font-semibold uppercase tracking-wider text-gray-500">Auto-detected metadata</p><div className="flex gap-2"><span className="rounded-lg bg-white/[0.07] px-2.5 py-1.5 text-xs text-gray-300">Token <b className="ml-1 text-white">{form.tokenSymbol}</b></span><span className="rounded-lg bg-white/[0.07] px-2.5 py-1.5 text-xs text-gray-300">Decimals <b className="ml-1 text-white">{/SOL/i.test(form.chain) ? 9 : /BTC/i.test(form.chain) ? 8 : 18}</b></span></div></div>}
-                <div className="mt-5"><Field label="Wallet label (optional)"><input type="text" value={form.label} onChange={(e) => setForm({ ...form, label: e.target.value })} className="w-full rounded-xl border border-white/10 bg-black/20 px-3 py-3 text-sm text-white outline-none focus:border-purple-500/60 focus:ring-2 focus:ring-purple-500/20" /></Field></div>
-              </div>
-            )}
-            {createWallet.isError && <p className="mt-4 text-xs text-red-400">{(createWallet.error as Error)?.message || 'Failed to create wallet'}</p>}
-            <div className="mt-7 flex items-center justify-between border-t border-white/5 pt-5"><button type="button" onClick={() => addStep === 2 ? setAddStep(1) : closeAddModal()} className="rounded-lg px-3 py-2 text-sm text-gray-500 hover:bg-white/5 hover:text-white">{addStep === 2 ? 'Back' : 'Cancel'}</button>{addStep === 2 && <button type="submit" disabled={createWallet.isPending || !isAddressValid(form.address, form.chain)} className="flex items-center gap-2 rounded-xl bg-purple-600 px-4 py-2.5 text-sm font-semibold text-white shadow-lg shadow-purple-900/20 transition hover:bg-purple-500 disabled:cursor-not-allowed disabled:opacity-40">{createWallet.isPending && <span className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-white/40 border-t-white" />}{createWallet.isPending ? 'Adding...' : 'Add Wallet'}</button>}</div>
-          </form>
-        </Modal>
-      )}
+              )}
+              {createWallet.isError && <p className="mt-4 text-xs text-red-400">{(createWallet.error as Error)?.message || 'Failed to create wallet'}</p>}
+              <div className="mt-7 flex items-center justify-between border-t border-white/5 pt-5"><button type="button" onClick={() => addStep === 2 ? setAddStep(1) : closeAddModal()} className="rounded-lg px-3 py-2 text-sm text-gray-500 hover:bg-white/5 hover:text-white">{addStep === 2 ? 'Back' : 'Cancel'}</button>{addStep === 2 && <button type="submit" disabled={createWallet.isPending || !isValidAddress} className="flex items-center gap-2 rounded-xl bg-purple-600 px-4 py-2.5 text-sm font-semibold text-white shadow-lg shadow-purple-900/20 transition hover:bg-purple-500 disabled:cursor-not-allowed disabled:opacity-40">{createWallet.isPending && <span className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-white/40 border-t-white" />}{createWallet.isPending ? 'Adding...' : 'Add Wallet'}</button>}</div>
+            </form>
+          </Modal>
+        )
+      }
 
       {/* ── Delete Confirmation Modal ──────────────────────────────────── */}
-      {deleteConfirmId && (
-        <Modal onClose={() => setDeleteConfirmId(null)} title="Delete Wallet">
-          <p className="text-sm text-gray-400">
-            Are you sure you want to delete this wallet? This action cannot be undone.
-          </p>
-          {deleteWallet.isError && (
-            <p className="mt-2 text-xs text-red-400">
-              {(deleteWallet.error as Error)?.message || 'Failed to delete wallet'}
+      {
+        deleteConfirmId && (
+          <Modal onClose={() => setDeleteConfirmId(null)} title="Delete Wallet">
+            <p className="text-sm text-gray-400">
+              Are you sure you want to delete this wallet? This action cannot be undone.
             </p>
-          )}
-          <div className="flex items-center justify-end gap-3 mt-6">
-            <button
-              onClick={() => setDeleteConfirmId(null)}
-              className="rounded-lg border border-white/10 px-4 py-2 text-sm text-gray-400 hover:text-white transition-colors cursor-pointer"
-            >
-              Cancel
-            </button>
-            <button
-              onClick={() => handleDeleteWallet(deleteConfirmId)}
-              disabled={deleteWallet.isPending}
-              className="rounded-lg bg-red-600 px-4 py-2 text-sm font-medium text-white
+            {deleteWallet.isError && (
+              <p className="mt-2 text-xs text-red-400">
+                {(deleteWallet.error as Error)?.message || 'Failed to delete wallet'}
+              </p>
+            )}
+            <div className="flex items-center justify-end gap-3 mt-6">
+              <button
+                onClick={() => setDeleteConfirmId(null)}
+                className="rounded-lg border border-white/10 px-4 py-2 text-sm text-gray-400 hover:text-white transition-colors cursor-pointer"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => handleDeleteWallet(deleteConfirmId)}
+                disabled={deleteWallet.isPending}
+                className="rounded-lg bg-red-600 px-4 py-2 text-sm font-medium text-white
                          hover:bg-red-500 disabled:opacity-40 disabled:cursor-not-allowed transition-colors cursor-pointer"
-            >
-              {deleteWallet.isPending ? 'Deleting...' : 'Delete'}
-            </button>
-          </div>
-        </Modal>
-      )}
-    </div>
+              >
+                {deleteWallet.isPending ? 'Deleting...' : 'Delete'}
+              </button>
+            </div>
+          </Modal>
+        )
+      }
+    </div >
   );
 }
