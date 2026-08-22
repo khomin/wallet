@@ -134,7 +134,7 @@ export default function AlertsPage() {
                     <svg className="pointer-events-none absolute left-3 top-3 h-4 w-4 text-gray-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="11" cy="11" r="7" /><path d="m20 20-4-4" /></svg>
                     <input autoFocus value={coinSearch} onChange={(event) => setCoinSearch(event.target.value)} placeholder="Search crypto asset..." className="w-full rounded-xl border border-white/10 bg-black/20 py-2.5 pl-10 pr-3 text-xs text-gray-300 outline-none placeholder:text-gray-600 focus:border-purple-500/60 focus:ring-2 focus:ring-purple-500/20" />
                   </div>
-                  <div className="dark-scrollbar max-h-56 space-y-1 overflow-y-auto pr-1">
+                  <div className="dark-scrollbar h-56 space-y-1 overflow-y-auto pr-1">
                     {filteredCoins.map((coin) => <button type="button" key={coin.symbol} onClick={() => chooseCoin(coin)} className="group flex w-full items-center gap-3 rounded-xl border border-transparent p-3 text-left transition hover:border-white/10 hover:bg-white/[0.06]">
                       {coin.imageUrl ? <img src={coin.imageUrl} alt="" className="h-7 w-7 rounded-full bg-white/10" /> : <span className="flex h-7 w-7 items-center justify-center rounded-full bg-purple-500/20 text-[10px] font-bold text-purple-300">{coin.symbol.slice(0, 2)}</span>}
                       <span className="min-w-0 flex-1"><span className="block truncate text-sm font-medium text-gray-100">{coin.name || coin.symbol}</span><span className="text-xs text-gray-500">{coin.symbol.toUpperCase()}</span></span>
@@ -150,7 +150,7 @@ export default function AlertsPage() {
                   <button type="button" onClick={() => setCondition(Condition.ABOVE)} className={`rounded-lg px-3 py-2 text-xs transition-colors ${condition === Condition.ABOVE ? 'bg-white/[0.08] text-gray-200' : 'text-gray-500 hover:text-gray-300'}`}>Above</button>
                   <button type="button" onClick={() => setCondition(Condition.BELOW)} className={`rounded-lg px-3 py-2 text-xs transition-colors ${condition === Condition.BELOW ? 'bg-white/[0.08] text-gray-200' : 'text-gray-500 hover:text-gray-300'}`}>Below</button>
                 </div>
-                <div className="relative min-w-0 flex-1"><span className="pointer-events-none absolute left-3 top-3 text-sm text-gray-600">$</span><input type="number" min="0" step="any" required value={price} onChange={(event) => setPrice(event.target.value)} placeholder="Target price" className="w-full rounded-xl border border-white/10 bg-gray-950/40 py-3 pl-7 pr-3 font-mono text-sm text-gray-300 outline-none placeholder:text-gray-600 focus:border-purple-500/60 focus:ring-2 focus:ring-purple-500/20" /></div>
+                {/* <div className="relative min-w-0 flex-1"><span className="pointer-events-none absolute left-3 top-3 text-sm text-gray-600">$</span><input type="number" min="0" step="any" required value={price} onChange={(event) => setPrice(event.target.value)} placeholder="Target price" className="w-full rounded-xl border border-white/10 bg-gray-950/40 py-3 pl-7 pr-3 font-mono text-sm text-gray-300 outline-none placeholder:text-gray-600 focus:border-purple-500/60 focus:ring-2 focus:ring-purple-500/20" /></div> */}
               </div>
             </Field>
           </div>

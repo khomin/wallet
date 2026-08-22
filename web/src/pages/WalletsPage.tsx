@@ -303,7 +303,7 @@ export default function WalletsPage() {
                     <svg className="pointer-events-none absolute left-3 top-3 h-4 w-4 text-gray-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="11" cy="11" r="7" /><path d="m20 20-4-4" /></svg>
                     <input autoFocus value={assetSearch} onChange={(e) => setAssetSearch(e.target.value)} placeholder="Search crypto asset, e.g. Ethereum, Solana, USDC..." className="w-full rounded-xl border border-white/10 bg-black/20 py-2.5 pl-10 pr-3 text-xs text-white outline-none transition focus:border-purple-500/60 focus:ring-2 focus:ring-purple-500/20" />
                   </div>
-                  <div className="dark-scrollbar max-h-72 space-y-1 overflow-y-auto pr-1">
+                  <div className="dark-scrollbar h-72 space-y-1 overflow-y-auto pr-1">
                     {(coinsData?.token ?? []).filter((coin) => `${coin.name} ${coin.symbol} ${coin.chains.join(' ')}`.toLowerCase().includes(assetSearch.toLowerCase())).map((coin) => (
                       <button type="button" key={`${coin.symbol}-${coin.chains.join('-')}`} onClick={() => chooseAsset(coin)} className="group flex w-full items-center gap-3 rounded-xl border border-transparent p-3 text-left transition hover:border-white/10 hover:bg-white/[0.06]">
                         {coin.imageUrl ? <img src={coin.imageUrl} alt="" className="h-6 w-6 rounded-full bg-white/10" /> : <span className="flex h-6 w-6 items-center justify-center rounded-full bg-purple-500/20 text-[10px] font-bold text-purple-300">{coin.symbol.slice(0, 2)}</span>}
