@@ -79,20 +79,41 @@ func (r *AlertRepository) ListActive(ctx context.Context) ([]domain.Alert, error
 }
 
 func (r *AlertRepository) Create(ctx context.Context, alert domain.Alert) (*domain.Alert, error) {
-	query := `INSERT INTO alerts (user_id, coin_id, condition, price)
+	query := `
+		INSERT INTO alerts (user_id, coin_id, condition, price)
 		VALUES ($1, (SELECT id FROM coins WHERE symbol = $2), $3, $4)
 		RETURNING 
 			id, user_id,
 				(SELECT symbol FROM coins WHERE id = coin_id), 
-			condition, price, enabled, triggered_at, created_at, updated_at`
-
+			condition, price, enabled, triggered_at, created_at, updated_at
+		`
 	row := r.db.Pool.QueryRow(ctx, query,
 		alert.UserID,
 		strings.ToUpper(alert.CoinSymbol),
 		strings.ToLower(alert.Condition),
 		alert.Price,
 	)
+	out, err := scanAlert(row)
+	if err != nil {
+		return nil, err
+	}
+	created := alertToDomain(out)
+	return &created, nil
+}
 
+func (r *AlertRepository) Update(ctx context.Context, userID, id string, alert domain.AlertUpdate) (*domain.Alert, error) {
+	query := `
+		UPDATE alerts (condition, price)
+		VALUES ($3, $4)
+		WHERE user_id = $1 AND id = $2
+		RETURNING id, user_id, (SELECT symbol FROM coins WHERE id = coin_id), condition, price, enabled, triggered_at, created_at, updated_at
+	`
+	row := r.db.Pool.QueryRow(ctx, query,
+		userID,
+		id,
+		strings.ToLower(alert.Condition),
+		alert.Price,
+	)
 	out, err := scanAlert(row)
 	if err != nil {
 		return nil, err
@@ -104,7 +125,7 @@ func (r *AlertRepository) Create(ctx context.Context, alert domain.Alert) (*doma
 func (r *AlertRepository) Delete(ctx context.Context, userID string, id string) error {
 	alertID, err := uuid.Parse(id)
 	if err != nil {
-		return domain.ErrAlertNotFound
+		return domain.ErrInvalidArgument
 	}
 	res, err := r.db.Pool.Exec(ctx, `DELETE FROM alerts WHERE user_id = $1 AND id = $2`, userID, alertID)
 	if err != nil {
@@ -116,10 +137,10 @@ func (r *AlertRepository) Delete(ctx context.Context, userID string, id string) 
 	return nil
 }
 
-func (r *AlertRepository) Disable(ctx context.Context, userID string, id string) error {
+func (r *AlertRepository) Disable(ctx context.Context, userID string, id string) (*domain.Alert, error) {
 	alertID, err := uuid.Parse(id)
 	if err != nil {
-		return domain.ErrAlertNotFound
+		return nil, domain.ErrInvalidArgument
 	}
 	query := `UPDATE alerts
 		SET
@@ -128,23 +149,22 @@ func (r *AlertRepository) Disable(ctx context.Context, userID string, id string)
 			updated_at = NOW()
 		WHERE user_id = $1 AND id = $2 
 		RETURNING *`
-	res, err := r.db.Pool.Exec(ctx, query,
+	row := r.db.Pool.QueryRow(ctx, query,
 		userID,
 		alertID,
 	)
+	out, err := scanAlert(row)
 	if err != nil {
-		return err
+		return nil, err
 	}
-	if res.RowsAffected() == 0 {
-		return domain.ErrAlertNotFound
-	}
-	return nil
+	created := alertToDomain(out)
+	return &created, nil
 }
 
-func (r *AlertRepository) Enable(ctx context.Context, userID string, id string) error {
+func (r *AlertRepository) Enable(ctx context.Context, userID string, id string) (*domain.Alert, error) {
 	alertID, err := uuid.Parse(id)
 	if err != nil {
-		return domain.ErrAlertNotFound
+		return nil, domain.ErrInvalidArgument
 	}
 	query := `UPDATE alerts
 		SET 
@@ -152,17 +172,16 @@ func (r *AlertRepository) Enable(ctx context.Context, userID string, id string) 
 			updated_at = NOW()
 		WHERE user_id = $1 AND id = $2
 		RETURNING *`
-	res, err := r.db.Pool.Exec(ctx, query,
+	row := r.db.Pool.QueryRow(ctx, query,
 		userID,
 		alertID,
 	)
+	out, err := scanAlert(row)
 	if err != nil {
-		return err
+		return nil, err
 	}
-	if res.RowsAffected() == 0 {
-		return domain.ErrAlertNotFound
-	}
-	return nil
+	created := alertToDomain(out)
+	return &created, nil
 }
 
 func scanAlert(row pgx.Row) (models.Alert, error) {

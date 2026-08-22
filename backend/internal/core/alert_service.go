@@ -90,7 +90,7 @@ func (s *AlertService) triggerAlert(ctx context.Context, user domain.User, alert
 			return
 		}
 	}
-	if err := s.alertRepo.Disable(ctx, user.ID, alert.ID); err != nil {
+	if _, err := s.alertRepo.Disable(ctx, user.ID, alert.ID); err != nil {
 		s.log.WithError(err).Error("failed to disable triggered alert")
 	}
 }

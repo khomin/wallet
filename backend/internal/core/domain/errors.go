@@ -8,4 +8,5 @@ var (
 	ErrWalletInternalError = errors.New("internal error")
 	ErrPriceNotFound       = errors.New("not found")
 	ErrAlertNotFound       = errors.New("not found")
+	ErrInvalidArgument     = errors.New("invalid argument")
 )

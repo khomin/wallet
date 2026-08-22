@@ -4,7 +4,7 @@
 import { useState } from 'react';
 import type { Token } from '../gen/price/v1/price_pb';
 import { Condition } from '../gen/alert/v1/alert_pb';
-import { useAlerts, useCoins, useCreateAlert, useDeleteAlert } from '../hooks/useApi';
+import { useAlerts, useCoins, useCreateAlert, useDeleteAlert, usePrices } from '../hooks/useApi';
 import { EmptyBlock, ErrorBlock, Field, Modal, Spinner } from '../components/ui';
 
 const fmtUSD = (value: number) =>
@@ -26,6 +26,7 @@ export default function AlertsPage() {
   const [coinSearch, setCoinSearch] = useState('');
   const [condition, setCondition] = useState<Condition>(Condition.ABOVE);
   const [price, setPrice] = useState('');
+  const { data: pricesData, isLoading: pricesLoading } = usePrices(coinId ? [coinId] : []);
 
   const alerts = data?.alerts ?? [];
   const resetForm = () => {
@@ -51,6 +52,9 @@ export default function AlertsPage() {
   };
 
   const selectedCoin = coinsData?.token.find((coin) => coin.symbol === coinId);
+  const currentPrice = pricesData?.price.find(
+    (item) => item.symbol.toLowerCase() === coinId.toLowerCase(),
+  )?.priceUsd;
   const filteredCoins = (coinsData?.token ?? []).filter((coin) =>
     `${coin.name} ${coin.symbol}`.toLowerCase().includes(coinSearch.toLowerCase()),
   );
@@ -102,7 +106,7 @@ export default function AlertsPage() {
                 const coin = coinsData?.token.find((item) => item.symbol.toLowerCase() === alert.coinSymbol.toLowerCase());
                 const triggered = Boolean(alert.triggeredAt);
                 return <tr key={alert.id} className="border-b border-white/[0.02] hover:bg-white/[0.02]">
-                  <td className="py-4 pr-4"><div className="flex items-center gap-2">
+                  <td className="py-4 pr-4"><div className="flex items-center gap-2 ml-2">
                     {coin?.imageUrl ? <img src={coin.imageUrl} alt="" className="h-6 w-6 rounded-full" /> : <span className="flex h-6 w-6 items-center justify-center rounded-full bg-purple-500/20 text-[10px] font-bold text-purple-300">{alert.coinSymbol.slice(0, 2)}</span>}
                     <span className="font-medium text-white">{alert.coinSymbol.toUpperCase()}</span>
                   </div></td>
@@ -110,7 +114,7 @@ export default function AlertsPage() {
                   <td className="py-4 pr-4 font-mono text-gray-200">{fmtUSD(alert.price)}</td>
                   <td className="py-4 pr-4"><span className={`rounded-full px-2.5 py-1 text-xs ${triggered ? 'bg-amber-500/10 text-amber-400' : alert.enabled ? 'bg-emerald-500/10 text-emerald-400' : 'bg-white/10 text-gray-500'}`}>{triggered ? 'Triggered' : alert.enabled ? 'Active' : 'Disabled'}</span></td>
                   <td className="py-4 pr-4 text-xs text-gray-500">{fmtDate(alert.createdAt)}</td>
-                  <td className="py-4 text-right"><button onClick={() => setDeleteConfirmId(alert.id)} className="text-xs text-gray-500 transition-colors hover:text-red-400">Delete</button></td>
+                  <td className="py-4 pr-4 text-right"><button onClick={() => setDeleteConfirmId(alert.id)} className="text-xs text-gray-500 transition-colors hover:text-red-400">Delete</button></td>
                 </tr>;
               })}</tbody>
             </table>
@@ -126,6 +130,9 @@ export default function AlertsPage() {
                 <div className="flex items-center gap-3 rounded-xl border border-purple-500/40 bg-purple-500/[0.08] p-3">
                   {selectedCoin.imageUrl ? <img src={selectedCoin.imageUrl} alt="" className="h-7 w-7 rounded-full" /> : <span className="flex h-7 w-7 items-center justify-center rounded-full bg-purple-500/20 text-[10px] font-bold text-purple-300">{selectedCoin.symbol.slice(0, 2)}</span>}
                   <span className="min-w-0 flex-1"><span className="block truncate text-sm font-medium text-gray-100">{selectedCoin.name || selectedCoin.symbol}</span><span className="text-xs text-gray-500">{selectedCoin.symbol.toUpperCase()}</span></span>
+                  <span className="bg-purple-500/20 text-[10px] font-bold text-purple-300">
+                    {pricesLoading ? 'Loading...' : currentPrice !== undefined ? `Current ${fmtUSD(currentPrice)}` : 'Unavailable'}
+                  </span>
                   <button type="button" onClick={() => setCoinId('')} className="text-xs font-medium text-purple-300 hover:text-purple-200">Change</button>
                 </div>
               ) : (
@@ -150,7 +157,7 @@ export default function AlertsPage() {
                   <button type="button" onClick={() => setCondition(Condition.ABOVE)} className={`rounded-lg px-3 py-2 text-xs transition-colors ${condition === Condition.ABOVE ? 'bg-white/[0.08] text-gray-200' : 'text-gray-500 hover:text-gray-300'}`}>Above</button>
                   <button type="button" onClick={() => setCondition(Condition.BELOW)} className={`rounded-lg px-3 py-2 text-xs transition-colors ${condition === Condition.BELOW ? 'bg-white/[0.08] text-gray-200' : 'text-gray-500 hover:text-gray-300'}`}>Below</button>
                 </div>
-                {/* <div className="relative min-w-0 flex-1"><span className="pointer-events-none absolute left-3 top-3 text-sm text-gray-600">$</span><input type="number" min="0" step="any" required value={price} onChange={(event) => setPrice(event.target.value)} placeholder="Target price" className="w-full rounded-xl border border-white/10 bg-gray-950/40 py-3 pl-7 pr-3 font-mono text-sm text-gray-300 outline-none placeholder:text-gray-600 focus:border-purple-500/60 focus:ring-2 focus:ring-purple-500/20" /></div> */}
+                <div className="relative min-w-0 flex-1"><span className="pointer-events-none absolute left-3 top-3 text-sm text-gray-600">$</span><input type="number" min="0" step="any" required value={price} onChange={(event) => setPrice(event.target.value)} placeholder="Target price" className="w-full [appearance:textfield] rounded-xl border border-white/10 bg-gray-950/40 py-3 pl-7 pr-3 font-mono text-sm text-gray-300 outline-none placeholder:text-gray-600 focus:border-purple-500/60 focus:ring-2 focus:ring-purple-500/20 [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none" /></div>
               </div>
             </Field>
           </div>

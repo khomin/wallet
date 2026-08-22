@@ -21,6 +21,9 @@ const _ = grpc.SupportPackageIsVersion9
 const (
 	AlertService_ListAlerts_FullMethodName  = "/alert.v1.AlertService/ListAlerts"
 	AlertService_CreateAlert_FullMethodName = "/alert.v1.AlertService/CreateAlert"
+	AlertService_UpdateAlert_FullMethodName = "/alert.v1.AlertService/UpdateAlert"
+	AlertService_PauseAlert_FullMethodName  = "/alert.v1.AlertService/PauseAlert"
+	AlertService_ResumeAlert_FullMethodName = "/alert.v1.AlertService/ResumeAlert"
 	AlertService_DeleteAlert_FullMethodName = "/alert.v1.AlertService/DeleteAlert"
 )
 
@@ -30,6 +33,9 @@ const (
 type AlertServiceClient interface {
 	ListAlerts(ctx context.Context, in *ListAlertsRequest, opts ...grpc.CallOption) (*ListAlertsResponse, error)
 	CreateAlert(ctx context.Context, in *CreateAlertRequest, opts ...grpc.CallOption) (*Alert, error)
+	UpdateAlert(ctx context.Context, in *UpdateAlertRequest, opts ...grpc.CallOption) (*Alert, error)
+	PauseAlert(ctx context.Context, in *PauseAlertRequest, opts ...grpc.CallOption) (*Alert, error)
+	ResumeAlert(ctx context.Context, in *ResumeAlertRequest, opts ...grpc.CallOption) (*Alert, error)
 	DeleteAlert(ctx context.Context, in *DeleteAlertRequest, opts ...grpc.CallOption) (*DeleteAlertResponse, error)
 }
 
@@ -61,6 +67,36 @@ func (c *alertServiceClient) CreateAlert(ctx context.Context, in *CreateAlertReq
 	return out, nil
 }
 
+func (c *alertServiceClient) UpdateAlert(ctx context.Context, in *UpdateAlertRequest, opts ...grpc.CallOption) (*Alert, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(Alert)
+	err := c.cc.Invoke(ctx, AlertService_UpdateAlert_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *alertServiceClient) PauseAlert(ctx context.Context, in *PauseAlertRequest, opts ...grpc.CallOption) (*Alert, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(Alert)
+	err := c.cc.Invoke(ctx, AlertService_PauseAlert_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *alertServiceClient) ResumeAlert(ctx context.Context, in *ResumeAlertRequest, opts ...grpc.CallOption) (*Alert, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(Alert)
+	err := c.cc.Invoke(ctx, AlertService_ResumeAlert_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *alertServiceClient) DeleteAlert(ctx context.Context, in *DeleteAlertRequest, opts ...grpc.CallOption) (*DeleteAlertResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(DeleteAlertResponse)
@@ -72,16 +108,18 @@ func (c *alertServiceClient) DeleteAlert(ctx context.Context, in *DeleteAlertReq
 }
 
 // AlertServiceServer is the server API for AlertService service.
-// All implementations must embed UnimplementedAlertServiceServer
+// All implementations should embed UnimplementedAlertServiceServer
 // for forward compatibility.
 type AlertServiceServer interface {
 	ListAlerts(context.Context, *ListAlertsRequest) (*ListAlertsResponse, error)
 	CreateAlert(context.Context, *CreateAlertRequest) (*Alert, error)
+	UpdateAlert(context.Context, *UpdateAlertRequest) (*Alert, error)
+	PauseAlert(context.Context, *PauseAlertRequest) (*Alert, error)
+	ResumeAlert(context.Context, *ResumeAlertRequest) (*Alert, error)
 	DeleteAlert(context.Context, *DeleteAlertRequest) (*DeleteAlertResponse, error)
-	mustEmbedUnimplementedAlertServiceServer()
 }
 
-// UnimplementedAlertServiceServer must be embedded to have
+// UnimplementedAlertServiceServer should be embedded to have
 // forward compatible implementations.
 //
 // NOTE: this should be embedded by value instead of pointer to avoid a nil
@@ -94,11 +132,19 @@ func (UnimplementedAlertServiceServer) ListAlerts(context.Context, *ListAlertsRe
 func (UnimplementedAlertServiceServer) CreateAlert(context.Context, *CreateAlertRequest) (*Alert, error) {
 	return nil, status.Error(codes.Unimplemented, "method CreateAlert not implemented")
 }
+func (UnimplementedAlertServiceServer) UpdateAlert(context.Context, *UpdateAlertRequest) (*Alert, error) {
+	return nil, status.Error(codes.Unimplemented, "method UpdateAlert not implemented")
+}
+func (UnimplementedAlertServiceServer) PauseAlert(context.Context, *PauseAlertRequest) (*Alert, error) {
+	return nil, status.Error(codes.Unimplemented, "method PauseAlert not implemented")
+}
+func (UnimplementedAlertServiceServer) ResumeAlert(context.Context, *ResumeAlertRequest) (*Alert, error) {
+	return nil, status.Error(codes.Unimplemented, "method ResumeAlert not implemented")
+}
 func (UnimplementedAlertServiceServer) DeleteAlert(context.Context, *DeleteAlertRequest) (*DeleteAlertResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method DeleteAlert not implemented")
 }
-func (UnimplementedAlertServiceServer) mustEmbedUnimplementedAlertServiceServer() {}
-func (UnimplementedAlertServiceServer) testEmbeddedByValue()                      {}
+func (UnimplementedAlertServiceServer) testEmbeddedByValue() {}
 
 // UnsafeAlertServiceServer may be embedded to opt out of forward compatibility for this service.
 // Use of this interface is not recommended, as added methods to AlertServiceServer will
@@ -154,6 +200,60 @@ func _AlertService_CreateAlert_Handler(srv interface{}, ctx context.Context, dec
 	return interceptor(ctx, in, info, handler)
 }
 
+func _AlertService_UpdateAlert_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(UpdateAlertRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AlertServiceServer).UpdateAlert(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: AlertService_UpdateAlert_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AlertServiceServer).UpdateAlert(ctx, req.(*UpdateAlertRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _AlertService_PauseAlert_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(PauseAlertRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AlertServiceServer).PauseAlert(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: AlertService_PauseAlert_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AlertServiceServer).PauseAlert(ctx, req.(*PauseAlertRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _AlertService_ResumeAlert_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ResumeAlertRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AlertServiceServer).ResumeAlert(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: AlertService_ResumeAlert_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AlertServiceServer).ResumeAlert(ctx, req.(*ResumeAlertRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _AlertService_DeleteAlert_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(DeleteAlertRequest)
 	if err := dec(in); err != nil {
@@ -186,6 +286,18 @@ var AlertService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "CreateAlert",
 			Handler:    _AlertService_CreateAlert_Handler,
+		},
+		{
+			MethodName: "UpdateAlert",
+			Handler:    _AlertService_UpdateAlert_Handler,
+		},
+		{
+			MethodName: "PauseAlert",
+			Handler:    _AlertService_PauseAlert_Handler,
+		},
+		{
+			MethodName: "ResumeAlert",
+			Handler:    _AlertService_ResumeAlert_Handler,
 		},
 		{
 			MethodName: "DeleteAlert",

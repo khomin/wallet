@@ -3,7 +3,7 @@
 /* eslint-disable */
 // @ts-nocheck
 
-import { Alert, CreateAlertRequest, DeleteAlertRequest, DeleteAlertResponse, ListAlertsRequest, ListAlertsResponse } from "./alert_pb.js";
+import { Alert, CreateAlertRequest, DeleteAlertRequest, DeleteAlertResponse, ListAlertsRequest, ListAlertsResponse, PauseAlertRequest, ResumeAlertRequest, UpdateAlertRequest } from "./alert_pb.js";
 import { MethodKind } from "@bufbuild/protobuf";
 
 /**
@@ -27,6 +27,33 @@ export const AlertService = {
     createAlert: {
       name: "CreateAlert",
       I: CreateAlertRequest,
+      O: Alert,
+      kind: MethodKind.Unary,
+    },
+    /**
+     * @generated from rpc alert.v1.AlertService.UpdateAlert
+     */
+    updateAlert: {
+      name: "UpdateAlert",
+      I: UpdateAlertRequest,
+      O: Alert,
+      kind: MethodKind.Unary,
+    },
+    /**
+     * @generated from rpc alert.v1.AlertService.PauseAlert
+     */
+    pauseAlert: {
+      name: "PauseAlert",
+      I: PauseAlertRequest,
+      O: Alert,
+      kind: MethodKind.Unary,
+    },
+    /**
+     * @generated from rpc alert.v1.AlertService.ResumeAlert
+     */
+    resumeAlert: {
+      name: "ResumeAlert",
+      I: ResumeAlertRequest,
       O: Alert,
       kind: MethodKind.Unary,
     },

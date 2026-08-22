@@ -10,7 +10,8 @@ type AlertRepository interface {
 	ListActive(ctx context.Context) ([]domain.Alert, error)
 
 	Create(ctx context.Context, alert domain.Alert) (*domain.Alert, error)
+	Update(ctx context.Context, userID, id string, alert domain.AlertUpdate) (*domain.Alert, error)
+	Enable(ctx context.Context, userID, id string) (*domain.Alert, error)
+	Disable(ctx context.Context, userID, id string) (*domain.Alert, error)
 	Delete(ctx context.Context, userID string, id string) error
-	Enable(ctx context.Context, userID, id string) error
-	Disable(ctx context.Context, userID, id string) error
 }

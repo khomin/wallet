@@ -117,7 +117,7 @@ func (c *priceServiceClient) StreamPrices(ctx context.Context, in *StreamPricesR
 type PriceService_StreamPricesClient = grpc.ServerStreamingClient[PriceUpdate]
 
 // PriceServiceServer is the server API for PriceService service.
-// All implementations must embed UnimplementedPriceServiceServer
+// All implementations should embed UnimplementedPriceServiceServer
 // for forward compatibility.
 type PriceServiceServer interface {
 	ListCoins(context.Context, *ListCoinsRequest) (*ListCoinsResponse, error)
@@ -126,10 +126,9 @@ type PriceServiceServer interface {
 	GetPrices(context.Context, *GetPricesRequest) (*GetPricesResponse, error)
 	GetPrice(context.Context, *GetPriceRequest) (*GetPriceResponse, error)
 	StreamPrices(*StreamPricesRequest, grpc.ServerStreamingServer[PriceUpdate]) error
-	mustEmbedUnimplementedPriceServiceServer()
 }
 
-// UnimplementedPriceServiceServer must be embedded to have
+// UnimplementedPriceServiceServer should be embedded to have
 // forward compatible implementations.
 //
 // NOTE: this should be embedded by value instead of pointer to avoid a nil
@@ -154,8 +153,7 @@ func (UnimplementedPriceServiceServer) GetPrice(context.Context, *GetPriceReques
 func (UnimplementedPriceServiceServer) StreamPrices(*StreamPricesRequest, grpc.ServerStreamingServer[PriceUpdate]) error {
 	return status.Error(codes.Unimplemented, "method StreamPrices not implemented")
 }
-func (UnimplementedPriceServiceServer) mustEmbedUnimplementedPriceServiceServer() {}
-func (UnimplementedPriceServiceServer) testEmbeddedByValue()                      {}
+func (UnimplementedPriceServiceServer) testEmbeddedByValue() {}
 
 // UnsafePriceServiceServer may be embedded to opt out of forward compatibility for this service.
 // Use of this interface is not recommended, as added methods to PriceServiceServer will

@@ -193,7 +193,7 @@ export default function WalletsPage() {
                     className="border-b border-white/[0.02] hover:bg-white/[0.02] transition-colors"
                   >
                     <td className="py-3 pr-4">
-                      <div className="flex items-center gap-1.5">
+                      <div className="flex items-center gap-2 ml-2">
                         <img
                           src={coinImageMap[wallet.tokenSymbol.toLowerCase()]}
                           alt={wallet.tokenSymbol}

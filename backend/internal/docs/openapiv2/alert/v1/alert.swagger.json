@@ -96,10 +96,140 @@
         "tags": [
           "AlertService"
         ]
+      },
+      "patch": {
+        "operationId": "AlertService_UpdateAlert",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1Alert"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/AlertServiceUpdateAlertBody"
+            }
+          }
+        ],
+        "tags": [
+          "AlertService"
+        ]
+      }
+    },
+    "/v1/alerts/{id}:pause": {
+      "post": {
+        "operationId": "AlertService_PauseAlert",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1Alert"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/AlertServicePauseAlertBody"
+            }
+          }
+        ],
+        "tags": [
+          "AlertService"
+        ]
+      }
+    },
+    "/v1/alerts/{id}:resume": {
+      "post": {
+        "operationId": "AlertService_ResumeAlert",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1Alert"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/AlertServiceResumeAlertBody"
+            }
+          }
+        ],
+        "tags": [
+          "AlertService"
+        ]
       }
     }
   },
   "definitions": {
+    "AlertServicePauseAlertBody": {
+      "type": "object"
+    },
+    "AlertServiceResumeAlertBody": {
+      "type": "object"
+    },
+    "AlertServiceUpdateAlertBody": {
+      "type": "object",
+      "properties": {
+        "condition": {
+          "$ref": "#/definitions/v1Condition"
+        },
+        "price": {
+          "type": "number",
+          "format": "double"
+        }
+      }
+    },
     "protobufAny": {
       "type": "object",
       "properties": {

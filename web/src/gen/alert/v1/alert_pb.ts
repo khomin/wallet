@@ -13,7 +13,7 @@ import type { Message } from "@bufbuild/protobuf";
  * Describes the file alert/v1/alert.proto.
  */
 export const file_alert_v1_alert: GenFile = /*@__PURE__*/
-  fileDesc("ChRhbGVydC92MS9hbGVydC5wcm90bxIIYWxlcnQudjEiqQIKBUFsZXJ0EgoKAmlkGAEgASgJEg8KB3VzZXJfaWQYAiABKAkSEwoLY29pbl9zeW1ib2wYAyABKAkSJgoJY29uZGl0aW9uGAQgASgOMhMuYWxlcnQudjEuQ29uZGl0aW9uEg0KBXByaWNlGAUgASgBEg8KB2VuYWJsZWQYBiABKAgSNQoMdHJpZ2dlcmVkX2F0GAcgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcEgAiAEBEi4KCmNyZWF0ZWRfYXQYCCABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wEi4KCnVwZGF0ZWRfYXQYCSABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wQg8KDV90cmlnZ2VyZWRfYXQiXAoSQ3JlYXRlQWxlcnRSZXF1ZXN0Eg8KB2NvaW5faWQYAiABKAkSJgoJY29uZGl0aW9uGAMgASgOMhMuYWxlcnQudjEuQ29uZGl0aW9uEg0KBXByaWNlGAQgASgBIhMKEUxpc3RBbGVydHNSZXF1ZXN0IjUKEkxpc3RBbGVydHNSZXNwb25zZRIfCgZhbGVydHMYASADKAsyDy5hbGVydC52MS5BbGVydCIgChJEZWxldGVBbGVydFJlcXVlc3QSCgoCaWQYASABKAkiFQoTRGVsZXRlQWxlcnRSZXNwb25zZSpQCglDb25kaXRpb24SGQoVQ09ORElUSU9OX1VOU1BFQ0lGSUVEEAASEwoPQ09ORElUSU9OX0FCT1ZFEAESEwoPQ09ORElUSU9OX0JFTE9XEAIypQIKDEFsZXJ0U2VydmljZRJbCgpMaXN0QWxlcnRzEhsuYWxlcnQudjEuTGlzdEFsZXJ0c1JlcXVlc3QaHC5hbGVydC52MS5MaXN0QWxlcnRzUmVzcG9uc2UiEoLT5JMCDBIKL3YxL2FsZXJ0cxJTCgtDcmVhdGVBbGVydBIcLmFsZXJ0LnYxLkNyZWF0ZUFsZXJ0UmVxdWVzdBoPLmFsZXJ0LnYxLkFsZXJ0IhWC0+STAg86ASoiCi92MS9hbGVydHMSYwoLRGVsZXRlQWxlcnQSHC5hbGVydC52MS5EZWxldGVBbGVydFJlcXVlc3QaHS5hbGVydC52MS5EZWxldGVBbGVydFJlc3BvbnNlIheC0+STAhEqDy92MS9hbGVydHMve2lkfUIeWhx0cmFja2VyL2dlbi9hbGVydC92MTthbGVydHYxYgZwcm90bzM", [file_google_protobuf_empty, file_google_protobuf_timestamp, file_google_api_annotations]);
+  fileDesc("ChRhbGVydC92MS9hbGVydC5wcm90bxIIYWxlcnQudjEiqQIKBUFsZXJ0EgoKAmlkGAEgASgJEg8KB3VzZXJfaWQYAiABKAkSEwoLY29pbl9zeW1ib2wYAyABKAkSJgoJY29uZGl0aW9uGAQgASgOMhMuYWxlcnQudjEuQ29uZGl0aW9uEg0KBXByaWNlGAUgASgBEg8KB2VuYWJsZWQYBiABKAgSNQoMdHJpZ2dlcmVkX2F0GAcgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcEgAiAEBEi4KCmNyZWF0ZWRfYXQYCCABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wEi4KCnVwZGF0ZWRfYXQYCSABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wQg8KDV90cmlnZ2VyZWRfYXQiXAoSQ3JlYXRlQWxlcnRSZXF1ZXN0Eg8KB2NvaW5faWQYAiABKAkSJgoJY29uZGl0aW9uGAMgASgOMhMuYWxlcnQudjEuQ29uZGl0aW9uEg0KBXByaWNlGAQgASgBIlcKElVwZGF0ZUFsZXJ0UmVxdWVzdBIKCgJpZBgBIAEoCRImCgljb25kaXRpb24YAiABKA4yEy5hbGVydC52MS5Db25kaXRpb24SDQoFcHJpY2UYAyABKAEiHwoRUGF1c2VBbGVydFJlcXVlc3QSCgoCaWQYASABKAkiIAoSUmVzdW1lQWxlcnRSZXF1ZXN0EgoKAmlkGAEgASgJIhMKEUxpc3RBbGVydHNSZXF1ZXN0IjUKEkxpc3RBbGVydHNSZXNwb25zZRIfCgZhbGVydHMYASADKAsyDy5hbGVydC52MS5BbGVydCIgChJEZWxldGVBbGVydFJlcXVlc3QSCgoCaWQYASABKAkiFQoTRGVsZXRlQWxlcnRSZXNwb25zZSpQCglDb25kaXRpb24SGQoVQ09ORElUSU9OX1VOU1BFQ0lGSUVEEAASEwoPQ09ORElUSU9OX0FCT1ZFEAESEwoPQ09ORElUSU9OX0JFTE9XEAIyvgQKDEFsZXJ0U2VydmljZRJbCgpMaXN0QWxlcnRzEhsuYWxlcnQudjEuTGlzdEFsZXJ0c1JlcXVlc3QaHC5hbGVydC52MS5MaXN0QWxlcnRzUmVzcG9uc2UiEoLT5JMCDBIKL3YxL2FsZXJ0cxJTCgtDcmVhdGVBbGVydBIcLmFsZXJ0LnYxLkNyZWF0ZUFsZXJ0UmVxdWVzdBoPLmFsZXJ0LnYxLkFsZXJ0IhWC0+STAg86ASoiCi92MS9hbGVydHMSWAoLVXBkYXRlQWxlcnQSHC5hbGVydC52MS5VcGRhdGVBbGVydFJlcXVlc3QaDy5hbGVydC52MS5BbGVydCIagtPkkwIUOgEqMg8vdjEvYWxlcnRzL3tpZH0SXAoKUGF1c2VBbGVydBIbLmFsZXJ0LnYxLlBhdXNlQWxlcnRSZXF1ZXN0Gg8uYWxlcnQudjEuQWxlcnQiIILT5JMCGjoBKiIVL3YxL2FsZXJ0cy97aWR9OnBhdXNlEl8KC1Jlc3VtZUFsZXJ0EhwuYWxlcnQudjEuUmVzdW1lQWxlcnRSZXF1ZXN0Gg8uYWxlcnQudjEuQWxlcnQiIYLT5JMCGzoBKiIWL3YxL2FsZXJ0cy97aWR9OnJlc3VtZRJjCgtEZWxldGVBbGVydBIcLmFsZXJ0LnYxLkRlbGV0ZUFsZXJ0UmVxdWVzdBodLmFsZXJ0LnYxLkRlbGV0ZUFsZXJ0UmVzcG9uc2UiF4LT5JMCESoPL3YxL2FsZXJ0cy97aWR9Qh5aHHRyYWNrZXIvZ2VuL2FsZXJ0L3YxO2FsZXJ0djFiBnByb3RvMw", [file_google_protobuf_empty, file_google_protobuf_timestamp, file_google_api_annotations]);
 
 /**
  * @generated from message alert.v1.Alert
@@ -100,6 +100,67 @@ export const CreateAlertRequestSchema: GenMessage<CreateAlertRequest> = /*@__PUR
   messageDesc(file_alert_v1_alert, 1);
 
 /**
+ * @generated from message alert.v1.UpdateAlertRequest
+ */
+export type UpdateAlertRequest = Message<"alert.v1.UpdateAlertRequest"> & {
+  /**
+   * @generated from field: string id = 1;
+   */
+  id: string;
+
+  /**
+   * @generated from field: alert.v1.Condition condition = 2;
+   */
+  condition: Condition;
+
+  /**
+   * @generated from field: double price = 3;
+   */
+  price: number;
+};
+
+/**
+ * Describes the message alert.v1.UpdateAlertRequest.
+ * Use `create(UpdateAlertRequestSchema)` to create a new message.
+ */
+export const UpdateAlertRequestSchema: GenMessage<UpdateAlertRequest> = /*@__PURE__*/
+  messageDesc(file_alert_v1_alert, 2);
+
+/**
+ * @generated from message alert.v1.PauseAlertRequest
+ */
+export type PauseAlertRequest = Message<"alert.v1.PauseAlertRequest"> & {
+  /**
+   * @generated from field: string id = 1;
+   */
+  id: string;
+};
+
+/**
+ * Describes the message alert.v1.PauseAlertRequest.
+ * Use `create(PauseAlertRequestSchema)` to create a new message.
+ */
+export const PauseAlertRequestSchema: GenMessage<PauseAlertRequest> = /*@__PURE__*/
+  messageDesc(file_alert_v1_alert, 3);
+
+/**
+ * @generated from message alert.v1.ResumeAlertRequest
+ */
+export type ResumeAlertRequest = Message<"alert.v1.ResumeAlertRequest"> & {
+  /**
+   * @generated from field: string id = 1;
+   */
+  id: string;
+};
+
+/**
+ * Describes the message alert.v1.ResumeAlertRequest.
+ * Use `create(ResumeAlertRequestSchema)` to create a new message.
+ */
+export const ResumeAlertRequestSchema: GenMessage<ResumeAlertRequest> = /*@__PURE__*/
+  messageDesc(file_alert_v1_alert, 4);
+
+/**
  * @generated from message alert.v1.ListAlertsRequest
  */
 export type ListAlertsRequest = Message<"alert.v1.ListAlertsRequest"> & {
@@ -110,7 +171,7 @@ export type ListAlertsRequest = Message<"alert.v1.ListAlertsRequest"> & {
  * Use `create(ListAlertsRequestSchema)` to create a new message.
  */
 export const ListAlertsRequestSchema: GenMessage<ListAlertsRequest> = /*@__PURE__*/
-  messageDesc(file_alert_v1_alert, 2);
+  messageDesc(file_alert_v1_alert, 5);
 
 /**
  * @generated from message alert.v1.ListAlertsResponse
@@ -127,7 +188,7 @@ export type ListAlertsResponse = Message<"alert.v1.ListAlertsResponse"> & {
  * Use `create(ListAlertsResponseSchema)` to create a new message.
  */
 export const ListAlertsResponseSchema: GenMessage<ListAlertsResponse> = /*@__PURE__*/
-  messageDesc(file_alert_v1_alert, 3);
+  messageDesc(file_alert_v1_alert, 6);
 
 /**
  * @generated from message alert.v1.DeleteAlertRequest
@@ -144,7 +205,7 @@ export type DeleteAlertRequest = Message<"alert.v1.DeleteAlertRequest"> & {
  * Use `create(DeleteAlertRequestSchema)` to create a new message.
  */
 export const DeleteAlertRequestSchema: GenMessage<DeleteAlertRequest> = /*@__PURE__*/
-  messageDesc(file_alert_v1_alert, 4);
+  messageDesc(file_alert_v1_alert, 7);
 
 /**
  * @generated from message alert.v1.DeleteAlertResponse
@@ -157,7 +218,7 @@ export type DeleteAlertResponse = Message<"alert.v1.DeleteAlertResponse"> & {
  * Use `create(DeleteAlertResponseSchema)` to create a new message.
  */
 export const DeleteAlertResponseSchema: GenMessage<DeleteAlertResponse> = /*@__PURE__*/
-  messageDesc(file_alert_v1_alert, 5);
+  messageDesc(file_alert_v1_alert, 8);
 
 /**
  * @generated from enum alert.v1.Condition
@@ -203,6 +264,30 @@ export const AlertService: GenService<{
   createAlert: {
     methodKind: "unary";
     input: typeof CreateAlertRequestSchema;
+    output: typeof AlertSchema;
+  },
+  /**
+   * @generated from rpc alert.v1.AlertService.UpdateAlert
+   */
+  updateAlert: {
+    methodKind: "unary";
+    input: typeof UpdateAlertRequestSchema;
+    output: typeof AlertSchema;
+  },
+  /**
+   * @generated from rpc alert.v1.AlertService.PauseAlert
+   */
+  pauseAlert: {
+    methodKind: "unary";
+    input: typeof PauseAlertRequestSchema;
+    output: typeof AlertSchema;
+  },
+  /**
+   * @generated from rpc alert.v1.AlertService.ResumeAlert
+   */
+  resumeAlert: {
+    methodKind: "unary";
+    input: typeof ResumeAlertRequestSchema;
     output: typeof AlertSchema;
   },
   /**

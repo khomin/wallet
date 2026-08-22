@@ -117,7 +117,7 @@ func (c *walletServiceClient) StreamWallet(ctx context.Context, in *StreamWallet
 type WalletService_StreamWalletClient = grpc.ServerStreamingClient[WalletUpdate]
 
 // WalletServiceServer is the server API for WalletService service.
-// All implementations must embed UnimplementedWalletServiceServer
+// All implementations should embed UnimplementedWalletServiceServer
 // for forward compatibility.
 type WalletServiceServer interface {
 	ListWallets(context.Context, *ListWalletsRequest) (*ListWalletsResponse, error)
@@ -126,10 +126,9 @@ type WalletServiceServer interface {
 	DeleteWallet(context.Context, *DeleteWalletRequest) (*DeleteWalletResponse, error)
 	CreateWallet(context.Context, *CreateWalletRequest) (*CreateWalletResponse, error)
 	StreamWallet(*StreamWalletRequest, grpc.ServerStreamingServer[WalletUpdate]) error
-	mustEmbedUnimplementedWalletServiceServer()
 }
 
-// UnimplementedWalletServiceServer must be embedded to have
+// UnimplementedWalletServiceServer should be embedded to have
 // forward compatible implementations.
 //
 // NOTE: this should be embedded by value instead of pointer to avoid a nil
@@ -154,8 +153,7 @@ func (UnimplementedWalletServiceServer) CreateWallet(context.Context, *CreateWal
 func (UnimplementedWalletServiceServer) StreamWallet(*StreamWalletRequest, grpc.ServerStreamingServer[WalletUpdate]) error {
 	return status.Error(codes.Unimplemented, "method StreamWallet not implemented")
 }
-func (UnimplementedWalletServiceServer) mustEmbedUnimplementedWalletServiceServer() {}
-func (UnimplementedWalletServiceServer) testEmbeddedByValue()                       {}
+func (UnimplementedWalletServiceServer) testEmbeddedByValue() {}
 
 // UnsafeWalletServiceServer may be embedded to opt out of forward compatibility for this service.
 // Use of this interface is not recommended, as added methods to WalletServiceServer will

@@ -16,7 +16,6 @@ import (
 type AlertHandler struct {
 	alertRepo core.AlertRepository
 	userRepo  core.UserRepo
-	alertv1.UnimplementedAlertServiceServer
 }
 
 func NewAlertHandler(repo core.AlertRepository, userRepo core.UserRepo) alertv1.AlertServiceServer {
@@ -52,16 +51,50 @@ func (a *AlertHandler) CreateAlert(ctx context.Context, req *alertv1.CreateAlert
 	if err != nil {
 		return nil, status.Error(codes.Internal, err.Error())
 	}
-	return &alertv1.Alert{
-		Id:         result.ID,
-		UserId:     result.UserID,
-		CoinSymbol: result.CoinSymbol,
-		Condition:  conditionToRpc(result.Condition),
-		Price:      result.Price,
-		Enabled:    result.Enabled,
-		CreatedAt:  timestamppb.New(result.CreatedAt),
-		UpdatedAt:  timestamppb.New(result.UpdatedAt),
-	}, nil
+	alert := alertToGrpc(result)
+	return &alert, nil
+}
+
+func (a *AlertHandler) UpdateAlert(ctx context.Context, req *alertv1.UpdateAlertRequest) (*alertv1.Alert, error) {
+	user, ok := middleware.GetOAUTH(ctx)
+	if !ok {
+		return nil, status.Error(codes.Unauthenticated, "unauthorized")
+	}
+	result, err := a.alertRepo.Update(ctx, user.Subject, req.Id, domain.AlertUpdate{
+		Condition: conditionString(req.Condition),
+		Price:     req.Price,
+	})
+	if err != nil {
+		return nil, status.Error(codes.Internal, err.Error())
+	}
+	alert := alertToGrpc(result)
+	return &alert, nil
+}
+
+func (a *AlertHandler) PauseAlert(ctx context.Context, req *alertv1.PauseAlertRequest) (*alertv1.Alert, error) {
+	user, ok := middleware.GetOAUTH(ctx)
+	if !ok {
+		return nil, status.Error(codes.Unauthenticated, "unauthorized")
+	}
+	result, err := a.alertRepo.Disable(ctx, user.Subject, req.Id)
+	if err != nil {
+		return nil, status.Error(codes.Internal, err.Error())
+	}
+	alert := alertToGrpc(result)
+	return &alert, nil
+}
+
+func (a *AlertHandler) ResumeAlert(ctx context.Context, req *alertv1.ResumeAlertRequest) (*alertv1.Alert, error) {
+	user, ok := middleware.GetOAUTH(ctx)
+	if !ok {
+		return nil, status.Error(codes.Unauthenticated, "unauthorized")
+	}
+	result, err := a.alertRepo.Enable(ctx, user.Subject, req.Id)
+	if err != nil {
+		return nil, status.Error(codes.Internal, err.Error())
+	}
+	alert := alertToGrpc(result)
+	return &alert, nil
 }
 
 func (a *AlertHandler) DeleteAlert(ctx context.Context, req *alertv1.DeleteAlertRequest) (*alertv1.DeleteAlertResponse, error) {
@@ -86,21 +119,8 @@ func (a *AlertHandler) ListAlerts(ctx context.Context, req *alertv1.ListAlertsRe
 	}
 	out := []*alertv1.Alert{}
 	for _, i := range alerts {
-		var triggeredAt *timestamppb.Timestamp
-		if i.TriggeredAt != nil {
-			triggeredAt = timestamppb.New(*i.TriggeredAt)
-		}
-		out = append(out, &alertv1.Alert{
-			Id:          i.ID,
-			UserId:      i.UserID,
-			CoinSymbol:  i.CoinSymbol,
-			Condition:   conditionToRpc(i.Condition),
-			Price:       i.Price,
-			Enabled:     true,
-			CreatedAt:   timestamppb.New(i.CreatedAt),
-			TriggeredAt: triggeredAt,
-			UpdatedAt:   timestamppb.New(i.UpdatedAt),
-		})
+		alert := alertToGrpc(&i)
+		out = append(out, &alert)
 	}
 	return &alertv1.ListAlertsResponse{
 		Alerts: out,
@@ -125,4 +145,22 @@ func conditionString(s alertv1.Condition) string {
 		return "below"
 	}
 	return "unspecified"
+}
+
+func alertToGrpc(in *domain.Alert) alertv1.Alert {
+	var triggeredAt *timestamppb.Timestamp
+	if in.TriggeredAt != nil {
+		triggeredAt = timestamppb.New(*in.TriggeredAt)
+	}
+	return alertv1.Alert{
+		Id:          in.ID,
+		UserId:      in.UserID,
+		CoinSymbol:  in.CoinSymbol,
+		Condition:   conditionToRpc(in.Condition),
+		Price:       in.Price,
+		Enabled:     in.Enabled,
+		CreatedAt:   timestamppb.New(in.CreatedAt),
+		TriggeredAt: triggeredAt,
+		UpdatedAt:   timestamppb.New(in.UpdatedAt),
+	}
 }

@@ -21,6 +21,24 @@ service AlertService {
       body: "*"
     };
   }
+  rpc UpdateAlert(UpdateAlertRequest) returns (Alert) {
+    option (google.api.http) = {
+      patch: "/v1/alerts/{id}"
+      body : "*"
+    };
+  }
+  rpc PauseAlert(PauseAlertRequest) returns (Alert) {
+    option (google.api.http) = {
+      post: "/v1/alerts/{id}:pause"
+      body: "*"
+    };
+  }
+  rpc ResumeAlert(ResumeAlertRequest) returns (Alert) {
+    option (google.api.http) = {
+      post: "/v1/alerts/{id}:resume"
+      body: "*"
+    };
+  }
   rpc DeleteAlert(DeleteAlertRequest) returns (DeleteAlertResponse) {
     option (google.api.http) = {
       delete: "/v1/alerts/{id}"
@@ -50,6 +68,20 @@ message CreateAlertRequest {
   string    coin_id   = 2;
   Condition condition = 3;
   double    price     = 4;
+}
+
+message UpdateAlertRequest {
+  string    id        = 1;
+  Condition condition = 2;
+  double    price     = 3;
+}
+
+message PauseAlertRequest {
+  string id = 1;
+}
+
+message ResumeAlertRequest {
+  string id = 1;
 }
 
 message ListAlertsRequest {}

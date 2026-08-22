@@ -16,6 +16,11 @@ type Alert struct {
 	CreatedAt   time.Time
 }
 
+type AlertUpdate struct {
+	Condition string
+	Price     float64
+}
+
 const (
 	AlertConditionAbove = "above"
 	AlertConditionBelow = "below"

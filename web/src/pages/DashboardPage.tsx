@@ -130,7 +130,7 @@ export default function DashboardPage() {
                     className="border-b border-white/[0.02] hover:bg-white/[0.02] transition-colors"
                   >
                     <td className="py-3 pr-4">
-                      <div className="flex items-center gap-2">
+                      <div className="flex items-center gap-2 ml-2">
                         <img
                           src={coinImageMap[coin.symbol.toLowerCase()]}
                           alt={coin.symbol}
@@ -239,7 +239,7 @@ export default function DashboardPage() {
                   >
 
                     <td className="py-3 pr-4">
-                      <div className="flex items-center gap-1.5">
+                      <div className="flex items-center gap-2 ml-2">
                         <img
                           src={coinImageMap[wallet.tokenSymbol.toLowerCase()]}
                           alt={wallet.tokenSymbol}
