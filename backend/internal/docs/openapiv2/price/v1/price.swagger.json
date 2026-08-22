@@ -237,6 +237,20 @@
         }
       }
     },
+    "v1Chain": {
+      "type": "object",
+      "properties": {
+        "symbol": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "imageUrl": {
+          "type": "string"
+        }
+      }
+    },
     "v1GetCoinResponse": {
       "type": "object",
       "properties": {
@@ -384,7 +398,8 @@
         "chains": {
           "type": "array",
           "items": {
-            "type": "string"
+            "type": "object",
+            "$ref": "#/definitions/v1Chain"
           }
         },
         "addrs": {

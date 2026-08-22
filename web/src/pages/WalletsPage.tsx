@@ -3,6 +3,7 @@
 
 import { useState } from 'react';
 import type { Token } from '../gen/price/v1/price_pb';
+import WAValidator from 'multicoin-address-validator';
 import { useWallets, useCreateWallet, useDeleteWallet, useCoins } from '../hooks/useApi';
 import { Modal, Field, Spinner, ErrorBlock, EmptyBlock } from '../components/ui';
 import type { CreateWalletFormState } from '../types/api';
@@ -44,7 +45,7 @@ export default function WalletsPage() {
   // ── Modal state ───────────────────────────────────────────────────────
   const [showAddModal, setShowAddModal] = useState(false);
   const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
-  const [addStep, setAddStep] = useState<1 | 2>(1);
+  const [addStep, setAddStep] = useState<1 | 2 | 3>(1);
   const [assetSearch, setAssetSearch] = useState('');
   const [selectedAssetSymbol, setSelectedAssetSymbol] = useState('');
 
@@ -64,10 +65,11 @@ export default function WalletsPage() {
   );
 
   const chooseAsset = (coin: Token) => {
-    const chains = coin.chains.length > 0 ? coin.chains : [coin.symbol];
     setSelectedAssetSymbol(coin.symbol);
     setForm({
-      chains: chains,
+      // Native assets use their symbol as the chain identifier. Their
+      // metadata intentionally has no entries in `chains`.
+      chains: coin.isNative ? [coin.symbol] : [],
       address: '',
       tokenSymbol: coin.symbol.toUpperCase(),
       label: `My ${coin.name || coin.symbol} Wallet`,
@@ -75,7 +77,13 @@ export default function WalletsPage() {
     setAddStep(2);
   };
 
+  const chooseChain = (chain: string) => {
+    setForm((current) => ({ ...current, chains: [chain], address: '' }));
+    setAddStep(3);
+  };
+
   const networkLabel = (chain: string) => {
+    chain = chain.toUpperCase()
     const labels: Record<string, string> = { ETH: 'Ethereum ERC-20', SOL: 'Solana SPL', BTC: 'Bitcoin', TRX: 'Tron TRC-20' };
     return labels[chain] || chain;
   };
@@ -83,18 +91,20 @@ export default function WalletsPage() {
   const isAddressValid = (address: string, chain: string) => {
     const value = address.trim();
     if (!value) return false;
-    // Solana and Tron networks may be returned as SOL/SOLANA/SPL and
-    // TRX/TRON/TRC20 respectively, depending on the asset metadata.
-    if (/SOL|SOLANA|SPL/i.test(chain)) return /^[1-9A-HJ-NP-Za-km-z]{32,44}$/.test(value);
-    if (/BTC|BITCOIN/i.test(chain)) return /^(bc1|[13])[a-zA-HJ-NP-Z0-9]{25,90}$/.test(value);
-    if (/TRX|TRON|TRC/i.test(chain)) return /^T[1-9A-HJ-NP-Za-km-z]{33}$/.test(value);
-    return /^0x[a-fA-F0-9]{40}$/.test(value);
+    return WAValidator.validate(address, chain.toLowerCase())
   };
 
   const handleAddWallet = async () => {
-    if (!form.address.trim() || !form.tokenSymbol.trim() || !isAddressValid(form.address, form.chains[0])) return;
+    if (form.chains.length == 0) return
+    var targetChain = form.chains[0];
+    if (!form.address.trim() || !form.tokenSymbol.trim() || !isAddressValid(form.address, targetChain)) return;
     try {
-      await createWallet.mutateAsync(form);
+      await createWallet.mutateAsync({
+        chain: targetChain,
+        address: form.address,
+        tokenSymbol: form.tokenSymbol,
+        label: form.label,
+      });
       setShowAddModal(false);
       setAddStep(1);
       setSelectedAssetSymbol('');
@@ -122,9 +132,10 @@ export default function WalletsPage() {
     }
   };
 
-  var chain = form.chains[0]
-  var isValidAddress = isAddressValid(form.address, chain);
-  console.log(`BTEST_CHAIN: ${form.chains}`);
+  const chain = form.chains[0] || '';
+  const isValidAddress = isAddressValid(form.address, chain);
+  const isAddressStep = selectedAsset?.isNative ? addStep === 2 : addStep === 3;
+  const totalAddSteps = selectedAsset?.isNative ? 2 : 3;
 
   // ── Render ────────────────────────────────────────────────────────────
   return (
@@ -274,9 +285,11 @@ export default function WalletsPage() {
           <Modal onClose={closeAddModal} title="Add a wallet">
             <div className="mb-6 flex items-center gap-3">
               <div className="flex flex-1 items-center gap-2">
-                {[1, 2].map((step) => <div key={step} className={`h-1 flex-1 rounded-full transition-colors ${step <= addStep ? 'bg-purple-500' : 'bg-white/10'}`} />)}
+                {Array.from({ length: totalAddSteps }, (_, index) => index + 1).map((step) => (
+                  <div key={step} className={`h-1 flex-1 rounded-full transition-colors ${step <= addStep ? 'bg-purple-500' : 'bg-white/10'}`} />
+                ))}
               </div>
-              <span className="whitespace-nowrap text-[11px] font-medium uppercase tracking-wider text-gray-500">Step {addStep} of 2</span>
+              <span className="whitespace-nowrap text-[11px] font-medium uppercase tracking-wider text-gray-500">Step {addStep} of {totalAddSteps}</span>
             </div>
 
             <form onSubmit={(e) => { e.preventDefault(); handleAddWallet(); }}>
@@ -300,8 +313,23 @@ export default function WalletsPage() {
                     {coinsData?.token && coinsData.token.length === 0 && <p className="py-8 text-center text-xs text-gray-500">No supported assets found.</p>}
                   </div>
                 </div>
+              ) : addStep === 2 && !selectedAsset?.isNative ? (
+                <div className="animate-[fadeIn_.2s_ease-out]">
+                  <div className="mb-5">
+                    <h4 className="text-base font-semibold text-white">Select network</h4>
+                    <p className="mt-1 text-xs text-gray-500">Choose the chain for this asset.</p>
+                  </div>
+                  <div className="space-y-2">
+                    {selectedAsset?.chains.map((chain) => (
+                      <button type="button" key={`${chain.symbol}}`} onClick={() => chooseChain(chain.symbol)} className="group flex w-full items-center gap-3 rounded-xl border border-transparent p-3 text-left transition hover:border-white/10 hover:bg-white/[0.06]">
+                        {chain.imageUrl ? <img src={chain.imageUrl} alt="" className="h-6 w-6 rounded-full bg-white/10" /> : <span className="flex h-6 w-6 items-center justify-center rounded-full bg-purple-500/20 text-[10px] font-bold text-purple-300">{chain.symbol.slice(0, 2)}</span>}
+                        <span className="min-w-0 flex-1"><span className="block truncate text-sm font-medium text-gray-100">{chain.name || chain.symbol}</span><span className="text-xs text-gray-500">{chain.symbol.toUpperCase()}</span></span>
+                      </button>
+                    ))}
+                  </div>
+                </div>
               ) : (
-                < div className="animate-[fadeIn_.2s_ease-out]">
+                <div className="animate-[fadeIn_.2s_ease-out]">
                   <div className="mb-5 flex items-center justify-between rounded-xl border border-white/10 bg-white/[0.04] p-3">
                     <div className="flex items-center gap-3">{selectedAsset?.imageUrl ? <img src={selectedAsset.imageUrl} alt="" className="h-8 w-8 rounded-full" /> : <span className="flex h-8 w-8 items-center justify-center rounded-full bg-purple-500/20 text-xs text-purple-300">{form.tokenSymbol.slice(0, 2)}</span>}<div><p className="text-sm font-semibold text-white">{selectedAsset?.name || form.tokenSymbol}</p><p className="text-[11px] text-gray-500">{form.tokenSymbol} · {networkLabel(chain)}</p></div></div>
                     <button type="button" onClick={() => setAddStep(1)} className="text-xs font-medium text-purple-400 hover:text-purple-300">Change</button>
@@ -315,7 +343,7 @@ export default function WalletsPage() {
                 </div>
               )}
               {createWallet.isError && <p className="mt-4 text-xs text-red-400">{(createWallet.error as Error)?.message || 'Failed to create wallet'}</p>}
-              <div className="mt-7 flex items-center justify-between border-t border-white/5 pt-5"><button type="button" onClick={() => addStep === 2 ? setAddStep(1) : closeAddModal()} className="rounded-lg px-3 py-2 text-sm text-gray-500 hover:bg-white/5 hover:text-white">{addStep === 2 ? 'Back' : 'Cancel'}</button>{addStep === 2 && <button type="submit" disabled={createWallet.isPending || !isValidAddress} className="flex items-center gap-2 rounded-xl bg-purple-600 px-4 py-2.5 text-sm font-semibold text-white shadow-lg shadow-purple-900/20 transition hover:bg-purple-500 disabled:cursor-not-allowed disabled:opacity-40">{createWallet.isPending && <span className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-white/40 border-t-white" />}{createWallet.isPending ? 'Adding...' : 'Add Wallet'}</button>}</div>
+              <div className="mt-7 flex items-center justify-between border-t border-white/5 pt-5"><button type="button" onClick={() => isAddressStep ? setAddStep(selectedAsset?.isNative ? 1 : 2) : addStep === 2 ? setAddStep(1) : closeAddModal()} className="rounded-lg px-3 py-2 text-sm text-gray-500 hover:bg-white/5 hover:text-white">{addStep === 1 ? 'Cancel' : 'Back'}</button>{isAddressStep && <button type="submit" disabled={createWallet.isPending || !isValidAddress} className="flex items-center gap-2 rounded-xl bg-purple-600 px-4 py-2.5 text-sm font-semibold text-white shadow-lg shadow-purple-900/20 transition hover:bg-purple-500 disabled:cursor-not-allowed disabled:opacity-40">{createWallet.isPending && <span className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-white/40 border-t-white" />}{createWallet.isPending ? 'Adding...' : 'Add Wallet'}</button>}</div>
             </form>
           </Modal>
         )

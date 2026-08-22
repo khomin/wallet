@@ -83,13 +83,13 @@ func (r *TokenRegistry) GetByChainAndSymbol(chain, symbol string) (*domain.Token
 	return nil, fmt.Errorf("cannot find token")
 }
 
-func (r *TokenRegistry) GetBySymbol(symbol string) (domain.TokenRaw, bool) {
+func (r *TokenRegistry) GetBySymbol(symbol string) (domain.TokenMinimum, bool) {
 	r.mu.RLock()
 	defer r.mu.RUnlock()
 	symbol = strings.ToUpper(symbol)
 	token, found := r.bySymbol[symbol]
 	if !found {
-		return domain.TokenRaw{}, false
+		return domain.TokenMinimum{}, false
 	}
 	chains := []string{}
 	address := []string{}
@@ -97,7 +97,7 @@ func (r *TokenRegistry) GetBySymbol(symbol string) (domain.TokenRaw, bool) {
 		chains = append(chains, chain)
 		address = append(address, depl.Address)
 	}
-	return domain.TokenRaw{
+	return domain.TokenMinimum{
 		Symbol:   token.Symbol,
 		Chains:   chains,
 		Addrs:    address,
@@ -106,7 +106,7 @@ func (r *TokenRegistry) GetBySymbol(symbol string) (domain.TokenRaw, bool) {
 	}, true
 }
 
-func (r *TokenRegistry) GetByQuery(query string) []domain.TokenRaw {
+func (r *TokenRegistry) GetByQuery(query string) []domain.TokenMinimum {
 	if query == "" {
 		return nil
 	}
@@ -114,7 +114,7 @@ func (r *TokenRegistry) GetByQuery(query string) []domain.TokenRaw {
 	defer r.mu.RUnlock()
 
 	query = strings.ToUpper(query)
-	distinct := map[string]domain.TokenRaw{}
+	distinct := map[string]domain.TokenMinimum{}
 	for _, token := range r.byChainSymbol {
 		matches := strings.Contains(strings.ToUpper(token.Name), query) || strings.Contains(token.Symbol, query)
 		if matches {
@@ -124,7 +124,7 @@ func (r *TokenRegistry) GetByQuery(query string) []domain.TokenRaw {
 				chains = append(chains, chain)
 				addrs = append(addrs, depl.Address)
 			}
-			distinct[token.Name] = domain.TokenRaw{
+			distinct[token.Name] = domain.TokenMinimum{
 				Symbol:   token.Symbol,
 				Name:     token.Name,
 				Chains:   chains,
@@ -133,7 +133,7 @@ func (r *TokenRegistry) GetByQuery(query string) []domain.TokenRaw {
 			}
 		}
 	}
-	tokens := make([]domain.TokenRaw, 0, len(distinct))
+	tokens := make([]domain.TokenMinimum, 0, len(distinct))
 	for _, token := range distinct {
 		tokens = append(tokens, token)
 	}

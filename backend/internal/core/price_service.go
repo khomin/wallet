@@ -47,8 +47,14 @@ func (s *PriceService) GetCoins(ctx context.Context) ([]domain.TokenWithURL, err
 	for _, coin := range coins {
 		token, found := s.tokenRegistry.GetBySymbol(coin.Symbol)
 		if found {
+			chains := []domain.Chain{}
+			chains = s.makeChains(ctx, token.Chains)
 			tokens = append(tokens, domain.TokenWithURL{
-				TokenRaw: token,
+				Symbol:   token.Symbol,
+				Name:     token.Name,
+				Chains:   chains,
+				Addrs:    token.Addrs,
+				IsNative: token.IsNative,
 				ImageURL: coin.ImageURL,
 			})
 		}
@@ -63,8 +69,13 @@ func (s *PriceService) GetCoin(ctx context.Context, id string) (*domain.TokenWit
 	}
 	token, found := s.tokenRegistry.GetBySymbol(coin.Symbol)
 	if found {
+		chains := s.makeChains(ctx, token.Chains)
 		return &domain.TokenWithURL{
-			TokenRaw: token,
+			Symbol:   token.Symbol,
+			Name:     token.Name,
+			Addrs:    token.Addrs,
+			IsNative: token.IsNative,
+			Chains:   chains,
 			ImageURL: coin.ImageURL,
 		}, nil
 	}
@@ -76,8 +87,13 @@ func (s *PriceService) SearchCoins(ctx context.Context, text string) ([]domain.T
 	tokens := s.tokenRegistry.GetByQuery(text)
 	for _, token := range tokens {
 		coin := s.priceCache.GetCoinBySymbol(ctx, token.Symbol)
+		chains := s.makeChains(ctx, token.Chains)
 		out = append(out, domain.TokenWithURL{
-			TokenRaw: token,
+			Symbol:   token.Symbol,
+			Name:     token.Name,
+			Addrs:    token.Addrs,
+			IsNative: token.IsNative,
+			Chains:   chains,
 			ImageURL: coin.ImageURL,
 		})
 	}
@@ -107,4 +123,22 @@ func (s *PriceService) GetPrice(ctx context.Context, symbol string) (*domain.Tok
 		return price, nil
 	}
 	return nil, domain.ErrPriceNotFound
+}
+
+func (s *PriceService) makeChains(ctx context.Context, in []string) []domain.Chain {
+	chains := []domain.Chain{}
+	for _, i := range in {
+		v, ok := s.tokenRegistry.GetBySymbol(i)
+		if ok {
+			t := s.priceCache.GetCoinBySymbol(ctx, i)
+			if t != nil {
+				chains = append(chains, domain.Chain{
+					Symbol:   v.Symbol,
+					Name:     v.Name,
+					ImageUrl: t.ImageURL,
+				})
+			}
+		}
+	}
+	return chains
 }

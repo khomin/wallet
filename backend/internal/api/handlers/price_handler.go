@@ -36,10 +36,18 @@ func (s *PriceGrpcHandler) ListCoins(ctx context.Context, req *pricev1.ListCoins
 	}
 	out := make([]*pricev1.Token, 0, len(coins))
 	for _, i := range coins {
+		chains := []*pricev1.Chain{}
+		for _, i := range i.Chains {
+			chains = append(chains, &pricev1.Chain{
+				Symbol:   i.Symbol,
+				Name:     i.Name,
+				ImageUrl: i.ImageUrl,
+			})
+		}
 		out = append(out, &pricev1.Token{
 			Symbol:   i.Symbol,
 			Name:     i.Name,
-			Chains:   i.Chains,
+			Chains:   chains,
 			Addrs:    i.Addrs,
 			IsNative: i.IsNative,
 			ImageUrl: i.ImageURL,
@@ -56,11 +64,19 @@ func (s *PriceGrpcHandler) GetCoin(ctx context.Context, req *pricev1.GetCoinRequ
 	if err != nil {
 		return nil, err
 	}
+	chains := []*pricev1.Chain{}
+	for _, i := range coin.Chains {
+		chains = append(chains, &pricev1.Chain{
+			Symbol:   i.Symbol,
+			Name:     i.Name,
+			ImageUrl: i.ImageUrl,
+		})
+	}
 	return &pricev1.GetCoinResponse{
 		Token: &pricev1.Token{
 			Symbol:   coin.Symbol,
 			Name:     coin.Name,
-			Chains:   coin.Chains,
+			Chains:   chains,
 			Addrs:    coin.Addrs,
 			IsNative: coin.IsNative,
 			ImageUrl: coin.ImageURL,
@@ -126,10 +142,18 @@ func (s *PriceGrpcHandler) SearchCoin(ctx context.Context, req *pricev1.SearchCo
 	}
 	out := make([]*pricev1.Token, 0, len(tokens))
 	for _, i := range tokens {
+		chains := []*pricev1.Chain{}
+		for _, i := range i.Chains {
+			chains = append(chains, &pricev1.Chain{
+				Symbol:   i.Symbol,
+				Name:     i.Name,
+				ImageUrl: i.ImageUrl,
+			})
+		}
 		out = append(out, &pricev1.Token{
 			Symbol:   i.Symbol,
 			Name:     i.Name,
-			Chains:   i.Chains,
+			Chains:   chains,
 			Addrs:    i.Addrs,
 			IsNative: i.IsNative,
 			ImageUrl: i.ImageURL,

@@ -114,7 +114,7 @@ token_registry:
         name: "Ripple USD"
         deployments:
           ETH: { address: "0x0A2A1e2336D08FA5F61E2e89640954b0CD8C380d", decimals: 18 }
-          XRPL: { issuer: "rMxLiXwSbf1icmAn39wR45yAnq3s122o2u", currency: "RLUSD", decimals: 15 }
+          XRP: { address: "rMxCKbEDwqr76QuheSUMdEGf4B9xJ8m5De", decimals: 15 }
 
       - symbol: "WBTC"
         name: "Wrapped Bitcoin"

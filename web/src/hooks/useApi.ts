@@ -106,6 +106,9 @@ export function useCreateWallet() {
       const message = create(CreateWalletRequestSchema, req);
       return walletService.createWallet(message);
     },
+    onError(error) {
+      return error;
+    },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: queryKeys.wallets });
     },

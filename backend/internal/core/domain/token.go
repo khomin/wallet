@@ -5,31 +5,42 @@ import (
 	"time"
 )
 
-type TokenRaw struct {
-	Symbol   string   `json:"symbol"`  // e.g., "USDT"
-	Name     string   `json:"name"`    // e.g., "Tether USD"
-	Chains   []string `json:"chain"`   // e.g., "TRX"
-	Addrs    []string `json:"address"` // "native" or "0x..."
-	IsNative bool     `json:"is_native"`
+type TokenMinimum struct {
+	Symbol   string
+	Name     string
+	Chains   []string
+	Addrs    []string
+	IsNative bool
 }
 
 type TokenWithURL struct {
-	TokenRaw
-	ImageURL string `json:"image_url"`
+	Symbol   string
+	Name     string
+	Chains   []Chain
+	Addrs    []string
+	IsNative bool
+	ImageURL string
 }
 
+// TODO: what does it do?
 type TokenChain struct {
-	Symbol  string `json:"symbol"`  // e.g., "USDT"
-	Name    string `json:"name"`    // e.g., "Tether USD"
-	Chain   string `json:"chain"`   // e.g., "TRX"
-	Address string `json:"address"` // "native" or "0x..."
+	Symbol  string
+	Name    string
+	Chain   string
+	Address string
 }
 
 type TokenID struct {
-	ID       string `json:"id"`
-	Symbol   string `json:"symbol"`
-	Name     string `json:"name"`
-	ImageURL string `json:"image_url"`
+	ID       string
+	Symbol   string
+	Name     string
+	ImageURL string
+}
+
+type Chain struct {
+	Symbol   string
+	Name     string
+	ImageUrl string
 }
 
 type TokenPrice struct {
@@ -50,13 +61,13 @@ type TokenPrice struct {
 }
 
 type TokenBalance struct {
-	Chain      string   `json:"chain"`
-	Address    string   `json:"address"`     // User's wallet address
-	Token      TokenRaw `json:"token"`       // Token metadata
-	Balance    *big.Int `json:"balance_wei"` // Raw balance
-	BalanceDec float64  `json:"balance"`     // Human-readable
-	PriceUSD   float64  `json:"price_usd"`
-	ValueUSD   float64  `json:"value_usd"`
+	Chain      string       `json:"chain"`
+	Address    string       `json:"address"`     // User's wallet address
+	Token      TokenMinimum `json:"token"`       // Token metadata
+	Balance    *big.Int     `json:"balance_wei"` // Raw balance
+	BalanceDec float64      `json:"balance"`     // Human-readable
+	PriceUSD   float64      `json:"price_usd"`
+	ValueUSD   float64      `json:"value_usd"`
 }
 
 type AddressBalance struct {

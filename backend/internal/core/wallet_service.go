@@ -71,6 +71,9 @@ func (s *WalletService) ListWallets(ctx context.Context, user domain.User) ([]do
 }
 
 func (s *WalletService) CreateWallet(ctx context.Context, user domain.User, chain string, address string, symbol string, label string) error {
+	if chain == "" || symbol == "" || address == "" {
+		return fmt.Errorf("invalid arguments")
+	}
 	if err := s.userRepo.EnsureExists(ctx, user); err != nil {
 		return nil
 	}

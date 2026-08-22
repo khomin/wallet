@@ -704,7 +704,7 @@ type Token struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Symbol        string                 `protobuf:"bytes,2,opt,name=symbol,proto3" json:"symbol,omitempty"`
 	Name          string                 `protobuf:"bytes,3,opt,name=name,proto3" json:"name,omitempty"`
-	Chains        []string               `protobuf:"bytes,4,rep,name=chains,proto3" json:"chains,omitempty"`
+	Chains        []*Chain               `protobuf:"bytes,4,rep,name=chains,proto3" json:"chains,omitempty"`
 	Addrs         []string               `protobuf:"bytes,5,rep,name=addrs,proto3" json:"addrs,omitempty"`
 	IsNative      bool                   `protobuf:"varint,6,opt,name=is_native,json=isNative,proto3" json:"is_native,omitempty"`
 	ImageUrl      string                 `protobuf:"bytes,7,opt,name=image_url,json=imageUrl,proto3" json:"image_url,omitempty"`
@@ -756,7 +756,7 @@ func (x *Token) GetName() string {
 	return ""
 }
 
-func (x *Token) GetChains() []string {
+func (x *Token) GetChains() []*Chain {
 	if x != nil {
 		return x.Chains
 	}
@@ -778,6 +778,66 @@ func (x *Token) GetIsNative() bool {
 }
 
 func (x *Token) GetImageUrl() string {
+	if x != nil {
+		return x.ImageUrl
+	}
+	return ""
+}
+
+type Chain struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Symbol        string                 `protobuf:"bytes,1,opt,name=symbol,proto3" json:"symbol,omitempty"`
+	Name          string                 `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`
+	ImageUrl      string                 `protobuf:"bytes,3,opt,name=image_url,json=imageUrl,proto3" json:"image_url,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *Chain) Reset() {
+	*x = Chain{}
+	mi := &file_price_v1_price_proto_msgTypes[14]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *Chain) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*Chain) ProtoMessage() {}
+
+func (x *Chain) ProtoReflect() protoreflect.Message {
+	mi := &file_price_v1_price_proto_msgTypes[14]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use Chain.ProtoReflect.Descriptor instead.
+func (*Chain) Descriptor() ([]byte, []int) {
+	return file_price_v1_price_proto_rawDescGZIP(), []int{14}
+}
+
+func (x *Chain) GetSymbol() string {
+	if x != nil {
+		return x.Symbol
+	}
+	return ""
+}
+
+func (x *Chain) GetName() string {
+	if x != nil {
+		return x.Name
+	}
+	return ""
+}
+
+func (x *Chain) GetImageUrl() string {
 	if x != nil {
 		return x.ImageUrl
 	}
@@ -830,14 +890,18 @@ const file_price_v1_price_proto_rawDesc = "" +
 	" \x01(\x02R\x12marketCapChange24h\x12F\n" +
 	" market_cap_change_percentage_24h\x18\v \x01(\x02R\x1cmarketCapChangePercentage24h\x129\n" +
 	"\n" +
-	"updated_at\x18\f \x01(\v2\x1a.google.protobuf.TimestampR\tupdatedAt\"\x9b\x01\n" +
+	"updated_at\x18\f \x01(\v2\x1a.google.protobuf.TimestampR\tupdatedAt\"\xac\x01\n" +
 	"\x05Token\x12\x16\n" +
 	"\x06symbol\x18\x02 \x01(\tR\x06symbol\x12\x12\n" +
-	"\x04name\x18\x03 \x01(\tR\x04name\x12\x16\n" +
-	"\x06chains\x18\x04 \x03(\tR\x06chains\x12\x14\n" +
+	"\x04name\x18\x03 \x01(\tR\x04name\x12'\n" +
+	"\x06chains\x18\x04 \x03(\v2\x0f.price.v1.ChainR\x06chains\x12\x14\n" +
 	"\x05addrs\x18\x05 \x03(\tR\x05addrs\x12\x1b\n" +
 	"\tis_native\x18\x06 \x01(\bR\bisNative\x12\x1b\n" +
-	"\timage_url\x18\a \x01(\tR\bimageUrl2\xc4\x04\n" +
+	"\timage_url\x18\a \x01(\tR\bimageUrl\"P\n" +
+	"\x05Chain\x12\x16\n" +
+	"\x06symbol\x18\x01 \x01(\tR\x06symbol\x12\x12\n" +
+	"\x04name\x18\x02 \x01(\tR\x04name\x12\x1b\n" +
+	"\timage_url\x18\x03 \x01(\tR\bimageUrl2\xc4\x04\n" +
 	"\fPriceService\x12W\n" +
 	"\tListCoins\x12\x1a.price.v1.ListCoinsRequest\x1a\x1b.price.v1.ListCoinsResponse\"\x11\x82\xd3\xe4\x93\x02\v\x12\t/v1/coins\x12V\n" +
 	"\aGetCoin\x12\x18.price.v1.GetCoinRequest\x1a\x19.price.v1.GetCoinResponse\"\x16\x82\xd3\xe4\x93\x02\x10\x12\x0e/v1/coins/{id}\x12f\n" +
@@ -860,7 +924,7 @@ func file_price_v1_price_proto_rawDescGZIP() []byte {
 	return file_price_v1_price_proto_rawDescData
 }
 
-var file_price_v1_price_proto_msgTypes = make([]protoimpl.MessageInfo, 14)
+var file_price_v1_price_proto_msgTypes = make([]protoimpl.MessageInfo, 15)
 var file_price_v1_price_proto_goTypes = []any{
 	(*ListCoinsRequest)(nil),      // 0: price.v1.ListCoinsRequest
 	(*ListCoinsResponse)(nil),     // 1: price.v1.ListCoinsResponse
@@ -876,7 +940,8 @@ var file_price_v1_price_proto_goTypes = []any{
 	(*PriceUpdate)(nil),           // 11: price.v1.PriceUpdate
 	(*Price)(nil),                 // 12: price.v1.Price
 	(*Token)(nil),                 // 13: price.v1.Token
-	(*timestamppb.Timestamp)(nil), // 14: google.protobuf.Timestamp
+	(*Chain)(nil),                 // 14: price.v1.Chain
+	(*timestamppb.Timestamp)(nil), // 15: google.protobuf.Timestamp
 }
 var file_price_v1_price_proto_depIdxs = []int32{
 	13, // 0: price.v1.ListCoinsResponse.token:type_name -> price.v1.Token
@@ -885,24 +950,25 @@ var file_price_v1_price_proto_depIdxs = []int32{
 	12, // 3: price.v1.GetPriceResponse.price:type_name -> price.v1.Price
 	13, // 4: price.v1.SearchCoinsResponse.token:type_name -> price.v1.Token
 	12, // 5: price.v1.PriceUpdate.price:type_name -> price.v1.Price
-	14, // 6: price.v1.Price.updated_at:type_name -> google.protobuf.Timestamp
-	0,  // 7: price.v1.PriceService.ListCoins:input_type -> price.v1.ListCoinsRequest
-	2,  // 8: price.v1.PriceService.GetCoin:input_type -> price.v1.GetCoinRequest
-	8,  // 9: price.v1.PriceService.SearchCoin:input_type -> price.v1.SearchCoinsRequest
-	4,  // 10: price.v1.PriceService.GetPrices:input_type -> price.v1.GetPricesRequest
-	6,  // 11: price.v1.PriceService.GetPrice:input_type -> price.v1.GetPriceRequest
-	10, // 12: price.v1.PriceService.StreamPrices:input_type -> price.v1.StreamPricesRequest
-	1,  // 13: price.v1.PriceService.ListCoins:output_type -> price.v1.ListCoinsResponse
-	3,  // 14: price.v1.PriceService.GetCoin:output_type -> price.v1.GetCoinResponse
-	9,  // 15: price.v1.PriceService.SearchCoin:output_type -> price.v1.SearchCoinsResponse
-	5,  // 16: price.v1.PriceService.GetPrices:output_type -> price.v1.GetPricesResponse
-	7,  // 17: price.v1.PriceService.GetPrice:output_type -> price.v1.GetPriceResponse
-	11, // 18: price.v1.PriceService.StreamPrices:output_type -> price.v1.PriceUpdate
-	13, // [13:19] is the sub-list for method output_type
-	7,  // [7:13] is the sub-list for method input_type
-	7,  // [7:7] is the sub-list for extension type_name
-	7,  // [7:7] is the sub-list for extension extendee
-	0,  // [0:7] is the sub-list for field type_name
+	15, // 6: price.v1.Price.updated_at:type_name -> google.protobuf.Timestamp
+	14, // 7: price.v1.Token.chains:type_name -> price.v1.Chain
+	0,  // 8: price.v1.PriceService.ListCoins:input_type -> price.v1.ListCoinsRequest
+	2,  // 9: price.v1.PriceService.GetCoin:input_type -> price.v1.GetCoinRequest
+	8,  // 10: price.v1.PriceService.SearchCoin:input_type -> price.v1.SearchCoinsRequest
+	4,  // 11: price.v1.PriceService.GetPrices:input_type -> price.v1.GetPricesRequest
+	6,  // 12: price.v1.PriceService.GetPrice:input_type -> price.v1.GetPriceRequest
+	10, // 13: price.v1.PriceService.StreamPrices:input_type -> price.v1.StreamPricesRequest
+	1,  // 14: price.v1.PriceService.ListCoins:output_type -> price.v1.ListCoinsResponse
+	3,  // 15: price.v1.PriceService.GetCoin:output_type -> price.v1.GetCoinResponse
+	9,  // 16: price.v1.PriceService.SearchCoin:output_type -> price.v1.SearchCoinsResponse
+	5,  // 17: price.v1.PriceService.GetPrices:output_type -> price.v1.GetPricesResponse
+	7,  // 18: price.v1.PriceService.GetPrice:output_type -> price.v1.GetPriceResponse
+	11, // 19: price.v1.PriceService.StreamPrices:output_type -> price.v1.PriceUpdate
+	14, // [14:20] is the sub-list for method output_type
+	8,  // [8:14] is the sub-list for method input_type
+	8,  // [8:8] is the sub-list for extension type_name
+	8,  // [8:8] is the sub-list for extension extendee
+	0,  // [0:8] is the sub-list for field type_name
 }
 
 func init() { file_price_v1_price_proto_init() }
@@ -916,7 +982,7 @@ func file_price_v1_price_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_price_v1_price_proto_rawDesc), len(file_price_v1_price_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   14,
+			NumMessages:   15,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

@@ -38,6 +38,24 @@
 			"symbol": "USDT",
 			"label": "USDT wallet",
 			"addr": "TF6MrLnLa72U6PGZcx4pXhs8hSvsAgQ78t"
+		},
+		{
+			"chains": "XRP",
+			"symbol": "XRP",
+			"label": "",
+			"addr": "rprWYV9AVqvirCeSQTu3F42gDLBwaShXFc"
+		},
+		{
+			"chains": "XRP",
+			"symbol": "RLUSD",
+			"label": "",
+			"addr": "rBus8r29i65UbFoFUvv9C9iNioqrDNgJXC"
+		},
+		{
+			"chains": "SOL",
+			"symbol": "MSTRx",
+			"label": "",
+			"addr": "29eV5LuZwwVaoufKr5ShBejYVP6N4JZ14U3M5rffXsjp"
 		}
 	]
 }

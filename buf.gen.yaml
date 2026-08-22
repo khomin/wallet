@@ -22,9 +22,11 @@ plugins:
   # 5a. Generate TypeScript message types
   - remote: buf.build/bufbuild/es
     out: web/src/gen
-    opt: target=ts
+    opt:
+      - target=ts
 
   # 5b. Generate TypeScript service clients for React (Connect-ES)
   - remote: buf.build/connectrpc/es
     out: web/src/gen
-    opt: target=ts
+    opt: 
+      - target=ts
