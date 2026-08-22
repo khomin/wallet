@@ -66,15 +66,22 @@ export default function Layout() {
                   to={item.path}
                   draggable={false}
                   className={({ isActive }) =>
-                    `group relative flex select-none items-center gap-3 rounded-xl px-3 py-3 text-[13px] font-medium transition-[background-color,color,box-shadow] duration-200 ${isActive
-                      ? 'bg-violet-500/[0.14] text-violet-200 shadow-[inset_3px_0_0_#8b5cf6]'
+                    `group relative flex select-none items-center gap-3 rounded-xl px-3 py-3 text-[13px] font-medium transition-[background-color,color] duration-200 ${isActive
+                      ? 'bg-white/[0.07] text-white'
                       : 'text-slate-400 hover:bg-white/[0.045] hover:text-slate-100'
                     }`
                   }
                 >
-                  <Icon aria-hidden="true" size={18} strokeWidth={1.8} className="shrink-0 transition-colors" />
-                  <span>{item.label}</span>
-                  <span className="ml-auto text-slate-600 opacity-0 transition-opacity group-hover:opacity-100">›</span>
+                  {({ isActive }) => (
+                    <>
+                      <Icon aria-hidden="true" size={18} strokeWidth={1.8} className="shrink-0 transition-colors" />
+                      <span>{item.label}</span>
+                      <span
+                        aria-hidden="true"
+                        className={`ml-auto h-1.5 w-1.5 rounded-full transition-opacity ${isActive ? 'bg-slate-400 opacity-100' : 'bg-slate-600 opacity-0 group-hover:opacity-60'}`}
+                      />
+                    </>
+                  )}
                 </NavLink>
               );
             })}
