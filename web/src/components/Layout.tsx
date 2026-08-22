@@ -2,6 +2,16 @@
 // Sidebar + top bar that wraps all authenticated pages.
 
 import { NavLink, Outlet } from 'react-router-dom';
+import {
+  Bell,
+  ChartNoAxesCombined,
+  LayoutDashboard,
+  LogOut,
+  Settings2,
+  Tag,
+  WalletCards,
+  type LucideIcon,
+} from 'lucide-react';
 import { useAuth } from '../auth/AuthContext';
 
 // ─── Sidebar item definition ──────────────────────────────────────────────
@@ -9,15 +19,15 @@ import { useAuth } from '../auth/AuthContext';
 interface NavItem {
   path: string;
   label: string;
-  emoji: string;
+  icon: LucideIcon;
 }
 
 const NAV_ITEMS: NavItem[] = [
-  { path: '/dashboard', label: 'Dashboard', emoji: '📊' },
-  { path: '/wallets', label: 'Wallets', emoji: '👛' },
-  { path: '/alerts', label: 'Alerts', emoji: '🔔' },
-  { path: '/market', label: 'Market', emoji: '📈' },
-  { path: '/settings', label: 'Settings', emoji: '⚙️' },
+  { path: '/dashboard', label: 'Overview', icon: LayoutDashboard },
+  { path: '/wallets', label: 'Wallets', icon: WalletCards },
+  { path: '/alerts', label: 'Alerts', icon: Bell },
+  { path: '/market', label: 'Market', icon: ChartNoAxesCombined },
+  { path: '/settings', label: 'Settings', icon: Settings2 },
 ];
 
 // ─── Component ────────────────────────────────────────────────────────────
@@ -29,50 +39,64 @@ export default function Layout() {
     user?.name ?? user?.preferred_username ?? user?.email ?? 'Whale';
 
   return (
-    <div className="flex h-screen bg-gray-950 text-white">
+    <div className="flex h-screen bg-[#080a12] text-white">
       {/* ── Sidebar ──────────────────────────────────────────────────── */}
-      <aside className="w-60 shrink-0 border-r border-white/5 flex flex-col">
+      <aside className="flex w-64 shrink-0 flex-col border-r border-white/[0.07] bg-[#0d101a]">
         {/* Logo */}
-        <div className="flex items-center gap-2 px-5 py-5 border-b border-white/5">
-          <span className="text-2xl">🐋</span>
-          <span className="text-lg font-semibold tracking-tight">WhaleTracker</span>
+        <div className="flex h-[82px] items-center gap-3 border-b border-white/[0.07] px-6">
+          <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-violet-500 to-indigo-600 shadow-lg shadow-violet-950/40">
+            <span className="text-lg font-black tracking-tight">W</span>
+          </div>
+          <div>
+            <div className="text-[15px] font-semibold tracking-tight text-white">WhaleTracker</div>
+            <div className="mt-0.5 text-[10px] font-medium uppercase tracking-[0.18em] text-slate-500">Portfolio intelligence</div>
+          </div>
         </div>
 
         {/* Nav items */}
-        <nav className="flex-1 px-3 py-4 space-y-1">
-          {NAV_ITEMS.map((item) => (
-            <NavLink
-              key={item.path}
-              to={item.path}
-              className={({ isActive }) =>
-                `flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm transition-colors ${isActive
-                  ? 'bg-purple-600/20 text-purple-300 font-medium'
-                  : 'text-gray-400 hover:bg-white/[0.04] hover:text-gray-200'
-                }`
-              }
-            >
-              <span className="text-lg">{item.emoji}</span>
-              <span>{item.label}</span>
-            </NavLink>
-          ))}
+        <nav aria-label="Primary navigation" className="flex-1 px-3 py-7">
+          <p className="mb-3 px-3 text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-600">Workspace</p>
+          <div className="space-y-1">
+            {NAV_ITEMS.map((item) => {
+              const Icon = item.icon;
+
+              return (
+                <NavLink
+                  key={item.path}
+                  to={item.path}
+                  draggable={false}
+                  className={({ isActive }) =>
+                    `group relative flex select-none items-center gap-3 rounded-xl px-3 py-3 text-[13px] font-medium transition-[background-color,color,box-shadow] duration-200 ${isActive
+                      ? 'bg-violet-500/[0.14] text-violet-200 shadow-[inset_3px_0_0_#8b5cf6]'
+                      : 'text-slate-400 hover:bg-white/[0.045] hover:text-slate-100'
+                    }`
+                  }
+                >
+                  <Icon aria-hidden="true" size={18} strokeWidth={1.8} className="shrink-0 transition-colors" />
+                  <span>{item.label}</span>
+                  <span className="ml-auto text-slate-600 opacity-0 transition-opacity group-hover:opacity-100">›</span>
+                </NavLink>
+              );
+            })}
+          </div>
         </nav>
 
         {/* Footer */}
-        <div className="px-3 py-4 border-t border-white/5">
-          <div className="flex items-center gap-2 rounded-lg px-3 py-2 text-xs text-gray-500">
-            <span>🏷️</span>
-            <span>v0.1.0</span>
+        <div className="border-t border-white/[0.07] px-4 py-5">
+          <div className="flex items-center gap-2 px-2 text-[11px] text-slate-600">
+            <Tag aria-hidden="true" size={13} />
+            <span>WhaleTracker v0.1.0</span>
           </div>
         </div>
       </aside>
 
       {/* ── Main content area ────────────────────────────────────────── */}
-      <div className="flex-1 flex flex-col min-w-0">
+      <div className="flex min-w-0 flex-1 flex-col">
         {/* Top bar */}
-        <header className="flex items-center justify-end px-8 py-4 border-b border-white/5 shrink-0">
+        <header className="flex shrink-0 items-center justify-end border-b border-white/[0.07] px-8 py-4">
           <div className="flex items-center gap-3">
             <div className="flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-1.5">
-              <div className="h-6 w-6 rounded-full bg-purple-600 flex items-center justify-center text-xs font-bold">
+              <div className="flex h-7 w-7 items-center justify-center rounded-full bg-gradient-to-br from-violet-500 to-indigo-600 text-xs font-bold">
                 {displayName.charAt(0).toUpperCase()}
               </div>
               <span className="text-sm text-gray-300">{displayName}</span>
@@ -80,10 +104,11 @@ export default function Layout() {
 
             <button
               onClick={logout}
-              className="rounded-lg border border-white/10 px-3 py-1.5 text-sm text-gray-400
-                         hover:border-red-500/40 hover:text-red-400 transition-colors cursor-pointer"
+              className="inline-flex items-center gap-2 rounded-lg border border-white/10 px-3 py-1.5 text-sm text-gray-400
+                         transition-colors hover:border-red-500/40 hover:text-red-400 cursor-pointer"
             >
-              Log out
+              <LogOut aria-hidden="true" size={15} />
+              <span>Log out</span>
             </button>
           </div>
         </header>
