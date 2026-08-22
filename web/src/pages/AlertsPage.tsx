@@ -117,6 +117,14 @@ export default function AlertsPage() {
     }
   };
 
+  const handleReactivate = async (id: string) => {
+    try {
+      await resumeAlert.mutateAsync(id);
+    } catch {
+      // The list refetches after a successful mutation; errors stay local.
+    }
+  };
+
   const handleDelete = async (id: string) => {
     try {
       await deleteAlert.mutateAsync(id);
@@ -166,23 +174,17 @@ export default function AlertsPage() {
                   <td className="py-4 pr-4 text-gray-300">{alert.condition === Condition.ABOVE ? 'Rises above' : 'Falls below'}</td>
                   <td className="py-4 pr-4 font-mono text-gray-200">{fmtUSD(alert.price)}</td>
                   <td className="py-4 pr-4">
-                    {triggered ? (
-                      <span className="inline-flex items-center gap-1.5 rounded-full border border-amber-500/20 bg-amber-500/10 px-2.5 py-1 text-xs text-amber-400">
-                        <span className="h-1.5 w-1.5 rounded-full bg-amber-400" /> Triggered
-                      </span>
-                    ) : (
-                      <button
-                        onClick={() => void handleToggle(alert.id, alert.enabled)}
-                        disabled={pauseAlert.isPending || resumeAlert.isPending}
-                        title={alert.enabled ? 'Pause alert' : 'Resume alert'}
-                        aria-label={alert.enabled ? `Pause ${alert.coinSymbol} alert` : `Resume ${alert.coinSymbol} alert`}
-                        className={`group inline-flex items-center gap-2 rounded-full border px-2.5 py-1 text-xs transition-all disabled:cursor-wait disabled:opacity-50 ${alert.enabled ? 'border-emerald-500/20 bg-emerald-500/10 text-emerald-400 hover:border-emerald-400/50 hover:bg-emerald-500/20' : 'border-white/10 bg-white/[0.06] text-gray-400 hover:border-purple-400/40 hover:bg-purple-500/10 hover:text-purple-300'}`}
-                      >
-                        <span className={`h-1.5 w-1.5 rounded-full ${alert.enabled ? 'bg-emerald-400 shadow-[0_0_7px_rgba(52,211,153,0.8)]' : 'bg-gray-500'}`} />
-                        {alert.enabled ? 'Active' : 'Paused'}
-                        <span className="ml-0.5 text-[10px] opacity-60">{alert.enabled ? 'Ⅱ' : '▶'}</span>
-                      </button>
-                    )}
+                    <button
+                      onClick={() => triggered ? void handleReactivate(alert.id) : void handleToggle(alert.id, alert.enabled)}
+                      disabled={pauseAlert.isPending || resumeAlert.isPending}
+                      title={triggered ? 'Activate alert again' : alert.enabled ? 'Pause alert' : 'Resume alert'}
+                      aria-label={triggered ? `Activate ${alert.coinSymbol} alert again` : alert.enabled ? `Pause ${alert.coinSymbol} alert` : `Resume ${alert.coinSymbol} alert`}
+                      className={`group inline-flex items-center gap-2 rounded-full border px-2.5 py-1 text-xs transition-all disabled:cursor-wait disabled:opacity-50 ${triggered ? 'border-amber-500/20 bg-amber-500/10 text-amber-400 hover:border-amber-400/50 hover:bg-amber-500/20' : alert.enabled ? 'border-emerald-500/20 bg-emerald-500/10 text-emerald-400 hover:border-emerald-400/50 hover:bg-emerald-500/20' : 'border-white/10 bg-white/[0.06] text-gray-400 hover:border-purple-400/40 hover:bg-purple-500/10 hover:text-purple-300'}`}
+                    >
+                      <span className={`h-1.5 w-1.5 rounded-full ${triggered ? 'bg-amber-400' : alert.enabled ? 'bg-emerald-400 shadow-[0_0_7px_rgba(52,211,153,0.8)]' : 'bg-gray-500'}`} />
+                      {triggered ? 'Triggered' : alert.enabled ? 'Active' : 'Paused'}
+                      <span className="ml-0.5 text-[10px] opacity-60">{triggered ? '↻' : alert.enabled ? 'Ⅱ' : '▶'}</span>
+                    </button>
                   </td>
                   <td className="py-4 pr-4 text-xs text-gray-500">{fmtDate(alert.createdAt)}</td>
                   <td className="py-4 pr-4 text-right">
@@ -254,7 +256,7 @@ export default function AlertsPage() {
                 <button type="button" onClick={() => setEditCondition(Condition.ABOVE)} className={`rounded-lg px-3 py-2 text-xs transition-colors ${editCondition === Condition.ABOVE ? 'bg-white/[0.08] text-gray-200' : 'text-gray-500 hover:text-gray-300'}`}>Above</button>
                 <button type="button" onClick={() => setEditCondition(Condition.BELOW)} className={`rounded-lg px-3 py-2 text-xs transition-colors ${editCondition === Condition.BELOW ? 'bg-white/[0.08] text-gray-200' : 'text-gray-500 hover:text-gray-300'}`}>Below</button>
               </div>
-              <div className="relative min-w-0 flex-1"><span className="pointer-events-none absolute left-3 top-3 text-sm text-gray-600">$</span><input type="number" min="0" step="any" required value={editPrice} onChange={(event) => setEditPrice(event.target.value)} className="w-full rounded-xl border border-white/10 bg-gray-950/40 py-3 pl-7 pr-3 font-mono text-sm text-gray-300 outline-none focus:border-purple-500/60 focus:ring-2 focus:ring-purple-500/20" /></div>
+              <div className="relative min-w-0 flex-1"><span className="pointer-events-none absolute left-3 top-3 text-sm text-gray-600">$</span><input type="number" min="0" step="any" required value={editPrice} onChange={(event) => setEditPrice(event.target.value)} className="w-full [appearance:textfield] rounded-xl border border-white/10 bg-gray-950/40 py-3 pl-7 pr-3 font-mono text-sm text-gray-300 outline-none placeholder:text-gray-600 focus:border-purple-500/60 focus:ring-2 focus:ring-purple-500/20 [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none" /></div>
             </div>
           </Field>
           {updateAlert.isError && <p className="mt-4 text-xs text-red-400">{updateAlert.error.message || 'Failed to update alert'}</p>}
