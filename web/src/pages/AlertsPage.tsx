@@ -2,6 +2,7 @@
 // Price-alert CRUD backed by the generated grpc-gateway client.
 
 import { useState } from 'react';
+import type { Token } from '../gen/price/v1/price_pb';
 import { Condition } from '../gen/alert/v1/alert_pb';
 import { useAlerts, useCoins, useCreateAlert, useDeleteAlert } from '../hooks/useApi';
 import { EmptyBlock, ErrorBlock, Field, Modal, Spinner } from '../components/ui';
@@ -22,12 +23,14 @@ export default function AlertsPage() {
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
   const [coinId, setCoinId] = useState('');
+  const [coinSearch, setCoinSearch] = useState('');
   const [condition, setCondition] = useState<Condition>(Condition.ABOVE);
   const [price, setPrice] = useState('');
 
   const alerts = data?.alerts ?? [];
   const resetForm = () => {
     setCoinId('');
+    setCoinSearch('');
     setCondition(Condition.ABOVE);
     setPrice('');
     setShowCreateModal(false);
@@ -45,6 +48,16 @@ export default function AlertsPage() {
     } catch {
       // The mutation error is rendered in the modal.
     }
+  };
+
+  const selectedCoin = coinsData?.token.find((coin) => coin.symbol === coinId);
+  const filteredCoins = (coinsData?.token ?? []).filter((coin) =>
+    `${coin.name} ${coin.symbol}`.toLowerCase().includes(coinSearch.toLowerCase()),
+  );
+
+  const chooseCoin = (coin: Token) => {
+    setCoinId(coin.symbol);
+    setCoinSearch('');
   };
 
   const handleDelete = async (id: string) => {
@@ -109,13 +122,36 @@ export default function AlertsPage() {
         <form onSubmit={(event) => { event.preventDefault(); void handleCreate(); }}>
           <div className="space-y-4">
             <Field label="Asset">
-              <select value={coinId} onChange={(event) => setCoinId(event.target.value)} className="w-full rounded-xl border border-white/10 bg-black/20 px-3 py-3 text-sm text-white outline-none focus:border-purple-500/60">
-                <option value="">Select an asset</option>
-                {(coinsData?.token ?? []).map((coin) => <option key={coin.symbol} value={coin.symbol}>{coin.name || coin.symbol} ({coin.symbol.toUpperCase()})</option>)}
-              </select>
+              {selectedCoin ? (
+                <div className="flex items-center gap-3 rounded-xl border border-purple-500/40 bg-purple-500/[0.08] p-3">
+                  {selectedCoin.imageUrl ? <img src={selectedCoin.imageUrl} alt="" className="h-7 w-7 rounded-full" /> : <span className="flex h-7 w-7 items-center justify-center rounded-full bg-purple-500/20 text-[10px] font-bold text-purple-300">{selectedCoin.symbol.slice(0, 2)}</span>}
+                  <span className="min-w-0 flex-1"><span className="block truncate text-sm font-medium text-gray-100">{selectedCoin.name || selectedCoin.symbol}</span><span className="text-xs text-gray-500">{selectedCoin.symbol.toUpperCase()}</span></span>
+                  <button type="button" onClick={() => setCoinId('')} className="text-xs font-medium text-purple-300 hover:text-purple-200">Change</button>
+                </div>
+              ) : (
+                <>
+                  <div className="relative mb-3">
+                    <svg className="pointer-events-none absolute left-3 top-3 h-4 w-4 text-gray-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="11" cy="11" r="7" /><path d="m20 20-4-4" /></svg>
+                    <input autoFocus value={coinSearch} onChange={(event) => setCoinSearch(event.target.value)} placeholder="Search crypto asset..." className="w-full rounded-xl border border-white/10 bg-black/20 py-2.5 pl-10 pr-3 text-xs text-gray-300 outline-none placeholder:text-gray-600 focus:border-purple-500/60 focus:ring-2 focus:ring-purple-500/20" />
+                  </div>
+                  <div className="dark-scrollbar max-h-56 space-y-1 overflow-y-auto pr-1">
+                    {filteredCoins.map((coin) => <button type="button" key={coin.symbol} onClick={() => chooseCoin(coin)} className="group flex w-full items-center gap-3 rounded-xl border border-transparent p-3 text-left transition hover:border-white/10 hover:bg-white/[0.06]">
+                      {coin.imageUrl ? <img src={coin.imageUrl} alt="" className="h-7 w-7 rounded-full bg-white/10" /> : <span className="flex h-7 w-7 items-center justify-center rounded-full bg-purple-500/20 text-[10px] font-bold text-purple-300">{coin.symbol.slice(0, 2)}</span>}
+                      <span className="min-w-0 flex-1"><span className="block truncate text-sm font-medium text-gray-100">{coin.name || coin.symbol}</span><span className="text-xs text-gray-500">{coin.symbol.toUpperCase()}</span></span>
+                    </button>)}
+                    {filteredCoins.length === 0 && <p className="py-6 text-center text-xs text-gray-500">No supported assets found.</p>}
+                  </div>
+                </>
+              )}
             </Field>
             <Field label="Notify me when price">
-              <div className="flex gap-2"><select value={condition} onChange={(event) => setCondition(Number(event.target.value) as Condition)} className="rounded-xl border border-white/10 bg-black/20 px-3 text-sm text-white outline-none focus:border-purple-500/60"><option value={Condition.ABOVE}>Rises above</option><option value={Condition.BELOW}>Falls below</option></select><input type="number" min="0" step="any" required value={price} onChange={(event) => setPrice(event.target.value)} placeholder="Target price (USD)" className="min-w-0 flex-1 rounded-xl border border-white/10 bg-black/20 px-3 py-3 font-mono text-sm text-white outline-none focus:border-purple-500/60" /></div>
+              <div className="flex gap-2">
+                <div className="flex shrink-0 rounded-xl border border-white/10 bg-gray-950/40 p-1">
+                  <button type="button" onClick={() => setCondition(Condition.ABOVE)} className={`rounded-lg px-3 py-2 text-xs transition-colors ${condition === Condition.ABOVE ? 'bg-white/[0.08] text-gray-200' : 'text-gray-500 hover:text-gray-300'}`}>Above</button>
+                  <button type="button" onClick={() => setCondition(Condition.BELOW)} className={`rounded-lg px-3 py-2 text-xs transition-colors ${condition === Condition.BELOW ? 'bg-white/[0.08] text-gray-200' : 'text-gray-500 hover:text-gray-300'}`}>Below</button>
+                </div>
+                <div className="relative min-w-0 flex-1"><span className="pointer-events-none absolute left-3 top-3 text-sm text-gray-600">$</span><input type="number" min="0" step="any" required value={price} onChange={(event) => setPrice(event.target.value)} placeholder="Target price" className="w-full rounded-xl border border-white/10 bg-gray-950/40 py-3 pl-7 pr-3 font-mono text-sm text-gray-300 outline-none placeholder:text-gray-600 focus:border-purple-500/60 focus:ring-2 focus:ring-purple-500/20" /></div>
+              </div>
             </Field>
           </div>
           {createAlert.isError && <p className="mt-4 text-xs text-red-400">{createAlert.error.message || 'Failed to create alert'}</p>}
