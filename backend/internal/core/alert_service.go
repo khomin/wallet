@@ -35,7 +35,7 @@ func NewAlertService(
 	}
 }
 
-func (s *AlertService) EvaluateAlerts(ctx context.Context) {
+func (s *AlertService) ProcessAlerts(ctx context.Context) {
 	users, err := s.userRepo.List(ctx)
 	if err != nil {
 		s.log.WithError(err).Error("failed to fetch users")
@@ -90,7 +90,7 @@ func (s *AlertService) triggerAlert(ctx context.Context, user domain.User, alert
 			return
 		}
 	}
-	if _, err := s.alertRepo.Disable(ctx, user.ID, alert.ID); err != nil {
+	if _, err := s.alertRepo.DisableAsCompleted(ctx, user.ID, alert.ID); err != nil {
 		s.log.WithError(err).Error("failed to disable triggered alert")
 	}
 }

@@ -39,10 +39,14 @@ import {
 import {
   ListAlertsResponseSchema,
   CreateAlertRequestSchema,
+  UpdateAlertRequestSchema,
   DeleteAlertResponseSchema,
   AlertSchema,
   type ListAlertsResponse,
   type CreateAlertRequest,
+  type UpdateAlertRequest,
+  type PauseAlertRequest,
+  type ResumeAlertRequest,
   type DeleteAlertResponse,
   type Alert,
 } from '../gen/alert/v1/alert_pb';
@@ -311,6 +315,21 @@ export const alertService = {
       AlertSchema,
     ),
 
+  updateAlert: (req: MessageShape<typeof UpdateAlertRequestSchema>) =>
+    requestJsonWithBody(
+      'PATCH',
+      `/v1/alerts/${encodeURIComponent(req.id)}`,
+      UpdateAlertRequestSchema,
+      req,
+      AlertSchema,
+    ),
+
+  pauseAlert: (id: string) =>
+    requestJson('POST', `/v1/alerts/${encodeURIComponent(id)}:pause`, AlertSchema),
+
+  resumeAlert: (id: string) =>
+    requestJson('POST', `/v1/alerts/${encodeURIComponent(id)}:resume`, AlertSchema),
+
   deleteAlert: (id: string) =>
     requestJson(
       'DELETE',
@@ -332,6 +351,9 @@ export type {
   PriceUpdate,
   ListAlertsResponse,
   CreateAlertRequest,
+  UpdateAlertRequest,
+  PauseAlertRequest,
+  ResumeAlertRequest,
   DeleteAlertResponse,
   Alert,
 };

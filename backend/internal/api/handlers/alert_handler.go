@@ -76,7 +76,7 @@ func (a *AlertHandler) PauseAlert(ctx context.Context, req *alertv1.PauseAlertRe
 	if !ok {
 		return nil, status.Error(codes.Unauthenticated, "unauthorized")
 	}
-	result, err := a.alertRepo.Disable(ctx, user.Subject, req.Id)
+	result, err := a.alertRepo.Pause(ctx, user.Subject, req.Id)
 	if err != nil {
 		return nil, status.Error(codes.Internal, err.Error())
 	}

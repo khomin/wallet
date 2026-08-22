@@ -62,7 +62,7 @@ services:
     restart: unless-stopped
     ports:
       - "5672:5672" # AMQP protocol port
-      - "15672:15672" # Management UI dashboard
+      - "15672:15672" # Management 
     environment:
       - RABBITMQ_DEFAULT_USER=admin
       - RABBITMQ_DEFAULT_PASS=supersecretpassword

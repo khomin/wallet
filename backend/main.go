@@ -121,7 +121,7 @@ func main() {
 		AlertService:       alertService,
 		FetchCoinsInterval: app.Cfg.CoinGecko.PriceFetcher,
 		OnPriceChanged: func(ctx context.Context, prices []domain.TokenPrice) {
-			go alertService.EvaluateAlerts(ctx)
+			go alertService.ProcessAlerts(ctx)
 			if bytes, err := json.Marshal(prices); err == nil {
 				priceEventPublisher.Publish(bytes)
 			}
@@ -172,8 +172,9 @@ func main() {
 	gwmux := runtime.NewServeMux(
 		runtime.WithMarshalerOption(runtime.MIMEWildcard, &runtime.JSONPb{
 			MarshalOptions: protojson.MarshalOptions{
-				UseProtoNames:   true,
-				EmitUnpopulated: false,
+				UseProtoNames:     true,
+				EmitUnpopulated:   true,
+				EmitDefaultValues: true,
 			},
 			UnmarshalOptions: protojson.UnmarshalOptions{
 				DiscardUnknown: true,
@@ -277,7 +278,7 @@ func setupHttpHandler(gwmux *runtime.ServeMux) http.Handler {
 func corsMiddleware(h http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Access-Control-Allow-Origin", "*")
-		w.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
+		w.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, PATCH, DELETE, OPTIONS")
 		w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")
 		if r.Method == "OPTIONS" {
 			w.WriteHeader(http.StatusOK)

@@ -1,11 +1,11 @@
 info:
-  name: delete-wallet
+  name: pause alert
   type: http
-  seq: 12
+  seq: 20
 
 http:
-  method: DELETE
-  url: "{{url}}/v1/wallets/b72f09c0-51d4-46fb-be45-dfa82035108e"
+  method: POST
+  url: "{{url}}/v1/alerts/59d63adf-5230-4692-8411-4d7dfa024f55:pause"
   auth: inherit
 
 settings:

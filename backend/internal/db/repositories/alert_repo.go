@@ -103,8 +103,10 @@ func (r *AlertRepository) Create(ctx context.Context, alert domain.Alert) (*doma
 
 func (r *AlertRepository) Update(ctx context.Context, userID, id string, alert domain.AlertUpdate) (*domain.Alert, error) {
 	query := `
-		UPDATE alerts (condition, price)
-		VALUES ($3, $4)
+		UPDATE alerts 
+		SET 
+			condition = $3,
+			price = $4
 		WHERE user_id = $1 AND id = $2
 		RETURNING id, user_id, (SELECT symbol FROM coins WHERE id = coin_id), condition, price, enabled, triggered_at, created_at, updated_at
 	`
@@ -137,18 +139,46 @@ func (r *AlertRepository) Delete(ctx context.Context, userID string, id string) 
 	return nil
 }
 
-func (r *AlertRepository) Disable(ctx context.Context, userID string, id string) (*domain.Alert, error) {
+func (r *AlertRepository) DisableAsCompleted(ctx context.Context, userID string, id string) (*domain.Alert, error) {
 	alertID, err := uuid.Parse(id)
 	if err != nil {
 		return nil, domain.ErrInvalidArgument
 	}
-	query := `UPDATE alerts
+	query := `
+		UPDATE alerts
 		SET
 			enabled = FALSE,
 			triggered_at = NOW(),
 			updated_at = NOW()
 		WHERE user_id = $1 AND id = $2 
-		RETURNING *`
+		RETURNING id, user_id, (SELECT symbol FROM coins WHERE id = coin_id), condition, price, enabled, triggered_at, created_at, updated_at
+	`
+	row := r.db.Pool.QueryRow(ctx, query,
+		userID,
+		alertID,
+	)
+	out, err := scanAlert(row)
+	if err != nil {
+		return nil, err
+	}
+	created := alertToDomain(out)
+	return &created, nil
+}
+
+func (r *AlertRepository) Pause(ctx context.Context, userID string, id string) (*domain.Alert, error) {
+	alertID, err := uuid.Parse(id)
+	if err != nil {
+		return nil, domain.ErrInvalidArgument
+	}
+	query := `
+		UPDATE alerts
+		SET 
+			enabled = FALSE,
+			updated_at = NOW(),
+			triggered_at = NULL
+		WHERE user_id = $1 AND id = $2
+		RETURNING id, user_id, (SELECT symbol FROM coins WHERE id = coin_id), condition, price, enabled, triggered_at, created_at, updated_at
+	`
 	row := r.db.Pool.QueryRow(ctx, query,
 		userID,
 		alertID,
@@ -166,12 +196,15 @@ func (r *AlertRepository) Enable(ctx context.Context, userID string, id string) 
 	if err != nil {
 		return nil, domain.ErrInvalidArgument
 	}
-	query := `UPDATE alerts
+	query := `
+		UPDATE alerts
 		SET 
 			enabled = TRUE,
-			updated_at = NOW()
+			updated_at = NOW(),
+			triggered_at = NULL
 		WHERE user_id = $1 AND id = $2
-		RETURNING *`
+		RETURNING id, user_id, (SELECT symbol FROM coins WHERE id = coin_id), condition, price, enabled, triggered_at, created_at, updated_at
+	`
 	row := r.db.Pool.QueryRow(ctx, query,
 		userID,
 		alertID,

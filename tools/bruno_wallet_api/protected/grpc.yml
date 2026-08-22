@@ -1,12 +1,12 @@
 info:
   name: grpc
   type: grpc
-  seq: 12
+  seq: 13
 
 grpc:
   url: "{{grpcUrl}}"
-  method: /price.v1.PriceService/SearchCoin
-  methodType: unary
+  method: /wallet.v1.WalletService/StreamWallet
+  methodType: server-streaming
   message: |-
     {
        "text": "xrp"

@@ -11,7 +11,10 @@ import { create } from '@bufbuild/protobuf';
 import type { MessageInitShape } from '@bufbuild/protobuf';
 import { walletService, priceService, alertService } from '../services/grpcGateway';
 import { CreateWalletRequestSchema } from '../gen/wallet/v1/wallet_pb';
-import { CreateAlertRequestSchema } from '../gen/alert/v1/alert_pb';
+import {
+  CreateAlertRequestSchema,
+  UpdateAlertRequestSchema,
+} from '../gen/alert/v1/alert_pb';
 import { GetPricesResponseSchema } from '../gen/price/v1/price_pb';
 import type {
   ListWalletsResponse,
@@ -233,6 +236,41 @@ export function useCreateAlert() {
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: queryKeys.alerts });
     },
+  });
+}
+
+/** Update an alert's condition or target price */
+export function useUpdateAlert() {
+  const qc = useQueryClient();
+  return useMutation<Alert, Error, MessageInitShape<typeof UpdateAlertRequestSchema>>({
+    mutationFn: async (req) => {
+      const message = create(UpdateAlertRequestSchema, req);
+      return alertService.updateAlert(message);
+    },
+    onError(error) {
+      return error;
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: queryKeys.alerts });
+    },
+  });
+}
+
+/** Pause an active alert */
+export function usePauseAlert() {
+  const qc = useQueryClient();
+  return useMutation<Alert, Error, string>({
+    mutationFn: (id) => alertService.pauseAlert(id),
+    onSuccess: () => qc.invalidateQueries({ queryKey: queryKeys.alerts }),
+  });
+}
+
+/** Resume a paused alert */
+export function useResumeAlert() {
+  const qc = useQueryClient();
+  return useMutation<Alert, Error, string>({
+    mutationFn: (id) => alertService.resumeAlert(id),
+    onSuccess: () => qc.invalidateQueries({ queryKey: queryKeys.alerts }),
   });
 }
 

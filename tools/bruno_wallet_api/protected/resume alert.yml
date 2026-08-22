@@ -1,11 +1,11 @@
 info:
-  name: delete-wallet
+  name: resume alert
   type: http
-  seq: 12
+  seq: 19
 
 http:
-  method: DELETE
-  url: "{{url}}/v1/wallets/b72f09c0-51d4-46fb-be45-dfa82035108e"
+  method: POST
+  url: "{{url}}/v1/alerts/0a11c4d3-f949-43f9-aa4d-637dc2abe51d:resume"
   auth: inherit
 
 settings:

@@ -3,8 +3,18 @@
 
 import { useState } from 'react';
 import type { Token } from '../gen/price/v1/price_pb';
+import type { Alert } from '../gen/alert/v1/alert_pb';
 import { Condition } from '../gen/alert/v1/alert_pb';
-import { useAlerts, useCoins, useCreateAlert, useDeleteAlert, usePrices } from '../hooks/useApi';
+import {
+  useAlerts,
+  useCoins,
+  useCreateAlert,
+  useDeleteAlert,
+  usePauseAlert,
+  useResumeAlert,
+  useUpdateAlert,
+  usePrices,
+} from '../hooks/useApi';
 import { EmptyBlock, ErrorBlock, Field, Modal, Spinner } from '../components/ui';
 
 const fmtUSD = (value: number) =>
@@ -20,7 +30,13 @@ export default function AlertsPage() {
   const { data: coinsData } = useCoins();
   const createAlert = useCreateAlert();
   const deleteAlert = useDeleteAlert();
+  const pauseAlert = usePauseAlert();
+  const resumeAlert = useResumeAlert();
+  const updateAlert = useUpdateAlert();
   const [showCreateModal, setShowCreateModal] = useState(false);
+  const [editingAlert, setEditingAlert] = useState<Alert | null>(null);
+  const [editCondition, setEditCondition] = useState<Condition>(Condition.ABOVE);
+  const [editPrice, setEditPrice] = useState('');
   const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
   const [coinId, setCoinId] = useState('');
   const [coinSearch, setCoinSearch] = useState('');
@@ -62,6 +78,43 @@ export default function AlertsPage() {
   const chooseCoin = (coin: Token) => {
     setCoinId(coin.symbol);
     setCoinSearch('');
+  };
+
+  const openEdit = (alert: Alert) => {
+    setEditingAlert(alert);
+    setEditCondition(alert.condition);
+    setEditPrice(String(alert.price));
+    updateAlert.reset();
+  };
+
+  const closeEdit = () => {
+    setEditingAlert(null);
+    updateAlert.reset();
+  };
+
+  const handleUpdate = async () => {
+    if (!editingAlert) return;
+    const targetPrice = Number(editPrice);
+    if (!Number.isFinite(targetPrice) || targetPrice <= 0) return;
+    try {
+      await updateAlert.mutateAsync({
+        id: editingAlert.id,
+        condition: editCondition,
+        price: targetPrice,
+      });
+      closeEdit();
+    } catch {
+      // The mutation error is rendered in the edit modal.
+    }
+  };
+
+  const handleToggle = async (id: string, enabled: boolean) => {
+    try {
+      if (enabled) await pauseAlert.mutateAsync(id);
+      else await resumeAlert.mutateAsync(id);
+    } catch {
+      // The list refetches after a successful mutation; errors stay local.
+    }
   };
 
   const handleDelete = async (id: string) => {
@@ -112,9 +165,32 @@ export default function AlertsPage() {
                   </div></td>
                   <td className="py-4 pr-4 text-gray-300">{alert.condition === Condition.ABOVE ? 'Rises above' : 'Falls below'}</td>
                   <td className="py-4 pr-4 font-mono text-gray-200">{fmtUSD(alert.price)}</td>
-                  <td className="py-4 pr-4"><span className={`rounded-full px-2.5 py-1 text-xs ${triggered ? 'bg-amber-500/10 text-amber-400' : alert.enabled ? 'bg-emerald-500/10 text-emerald-400' : 'bg-white/10 text-gray-500'}`}>{triggered ? 'Triggered' : alert.enabled ? 'Active' : 'Disabled'}</span></td>
+                  <td className="py-4 pr-4">
+                    {triggered ? (
+                      <span className="inline-flex items-center gap-1.5 rounded-full border border-amber-500/20 bg-amber-500/10 px-2.5 py-1 text-xs text-amber-400">
+                        <span className="h-1.5 w-1.5 rounded-full bg-amber-400" /> Triggered
+                      </span>
+                    ) : (
+                      <button
+                        onClick={() => void handleToggle(alert.id, alert.enabled)}
+                        disabled={pauseAlert.isPending || resumeAlert.isPending}
+                        title={alert.enabled ? 'Pause alert' : 'Resume alert'}
+                        aria-label={alert.enabled ? `Pause ${alert.coinSymbol} alert` : `Resume ${alert.coinSymbol} alert`}
+                        className={`group inline-flex items-center gap-2 rounded-full border px-2.5 py-1 text-xs transition-all disabled:cursor-wait disabled:opacity-50 ${alert.enabled ? 'border-emerald-500/20 bg-emerald-500/10 text-emerald-400 hover:border-emerald-400/50 hover:bg-emerald-500/20' : 'border-white/10 bg-white/[0.06] text-gray-400 hover:border-purple-400/40 hover:bg-purple-500/10 hover:text-purple-300'}`}
+                      >
+                        <span className={`h-1.5 w-1.5 rounded-full ${alert.enabled ? 'bg-emerald-400 shadow-[0_0_7px_rgba(52,211,153,0.8)]' : 'bg-gray-500'}`} />
+                        {alert.enabled ? 'Active' : 'Paused'}
+                        <span className="ml-0.5 text-[10px] opacity-60">{alert.enabled ? 'Ⅱ' : '▶'}</span>
+                      </button>
+                    )}
+                  </td>
                   <td className="py-4 pr-4 text-xs text-gray-500">{fmtDate(alert.createdAt)}</td>
-                  <td className="py-4 pr-4 text-right"><button onClick={() => setDeleteConfirmId(alert.id)} className="text-xs text-gray-500 transition-colors hover:text-red-400">Delete</button></td>
+                  <td className="py-4 pr-4 text-right">
+                    <div className="flex items-center justify-end gap-3">
+                      <button onClick={() => openEdit(alert)} className="text-xs text-gray-500 transition-colors hover:text-purple-300">Edit</button>
+                      <button onClick={() => setDeleteConfirmId(alert.id)} className="text-xs text-gray-500 transition-colors hover:text-red-400">Delete</button>
+                    </div>
+                  </td>
                 </tr>;
               })}</tbody>
             </table>
@@ -163,6 +239,26 @@ export default function AlertsPage() {
           </div>
           {createAlert.isError && <p className="mt-4 text-xs text-red-400">{createAlert.error.message || 'Failed to create alert'}</p>}
           <div className="mt-7 flex justify-end gap-3 border-t border-white/5 pt-5"><button type="button" onClick={resetForm} className="rounded-lg px-4 py-2 text-sm text-gray-400 hover:text-white">Cancel</button><button type="submit" disabled={createAlert.isPending || !coinId || Number(price) <= 0} className="rounded-xl bg-purple-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-purple-500 disabled:cursor-not-allowed disabled:opacity-40">{createAlert.isPending ? 'Creating...' : 'Create alert'}</button></div>
+        </form>
+      </Modal>}
+
+      {editingAlert && <Modal onClose={closeEdit} title="Tune your alert">
+        <form onSubmit={(event) => { event.preventDefault(); void handleUpdate(); }}>
+          <div className="mb-5 rounded-xl border border-purple-500/20 bg-purple-500/[0.06] px-4 py-3">
+            <p className="text-xs text-gray-500">Watching</p>
+            <p className="mt-1 font-medium text-white">{editingAlert.coinSymbol.toUpperCase()} <span className="font-normal text-gray-500">price alert</span></p>
+          </div>
+          <Field label="Notify me when price">
+            <div className="flex gap-2">
+              <div className="flex shrink-0 rounded-xl border border-white/10 bg-gray-950/40 p-1">
+                <button type="button" onClick={() => setEditCondition(Condition.ABOVE)} className={`rounded-lg px-3 py-2 text-xs transition-colors ${editCondition === Condition.ABOVE ? 'bg-white/[0.08] text-gray-200' : 'text-gray-500 hover:text-gray-300'}`}>Above</button>
+                <button type="button" onClick={() => setEditCondition(Condition.BELOW)} className={`rounded-lg px-3 py-2 text-xs transition-colors ${editCondition === Condition.BELOW ? 'bg-white/[0.08] text-gray-200' : 'text-gray-500 hover:text-gray-300'}`}>Below</button>
+              </div>
+              <div className="relative min-w-0 flex-1"><span className="pointer-events-none absolute left-3 top-3 text-sm text-gray-600">$</span><input type="number" min="0" step="any" required value={editPrice} onChange={(event) => setEditPrice(event.target.value)} className="w-full rounded-xl border border-white/10 bg-gray-950/40 py-3 pl-7 pr-3 font-mono text-sm text-gray-300 outline-none focus:border-purple-500/60 focus:ring-2 focus:ring-purple-500/20" /></div>
+            </div>
+          </Field>
+          {updateAlert.isError && <p className="mt-4 text-xs text-red-400">{updateAlert.error.message || 'Failed to update alert'}</p>}
+          <div className="mt-7 flex justify-end gap-3 border-t border-white/5 pt-5"><button type="button" onClick={closeEdit} className="rounded-lg px-4 py-2 text-sm text-gray-400 hover:text-white">Cancel</button><button type="submit" disabled={updateAlert.isPending || Number(editPrice) <= 0} className="rounded-xl bg-purple-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-purple-500 disabled:cursor-not-allowed disabled:opacity-40">{updateAlert.isPending ? 'Saving...' : 'Save changes'}</button></div>
         </form>
       </Modal>}
 

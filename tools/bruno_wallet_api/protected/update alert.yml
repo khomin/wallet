@@ -1,18 +1,18 @@
 info:
-  name: create-alert
+  name: update alert
   type: http
-  seq: 16
+  seq: 17
 
 http:
-  method: POST
-  url: "{{url}}/v1/alerts"
+  method: PATCH
+  url: "{{url}}/v1/alerts/59d63adf-5230-4692-8411-4d7dfa024f55"
   body:
     type: json
     data: |-
       {
         "coin_id": "ETH",
         "condition": "CONDITION_ABOVE",
-        "price": 1880.25
+        "price": 1880.45
       }
   auth: inherit
 
