@@ -62,9 +62,8 @@ type CoinGeckoConfig struct {
 }
 
 type EmailConfig struct {
-	SMTPHost string `mapstructure:"smtp_host"`
-	SMTPPort int    `mapstructure:"smtp_port"`
-	From     string `mapstructure:"from"`
+	ApiKey string `mapstructure:"api_key"`
+	From   string `mapstructure:"from"`
 }
 
 type BlockchainConfig struct {

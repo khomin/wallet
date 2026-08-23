@@ -74,6 +74,7 @@ require (
 	github.com/prometheus/client_model v0.6.1 // indirect
 	github.com/prometheus/common v0.52.2 // indirect
 	github.com/prometheus/procfs v0.13.0 // indirect
+	github.com/resend/resend-go/v3 v3.16.0 // indirect
 	github.com/rjeczalik/notify v0.9.3 // indirect
 	github.com/sagikazarmark/locafero v0.11.0 // indirect
 	github.com/shengdoushi/base58 v1.0.0 // indirect

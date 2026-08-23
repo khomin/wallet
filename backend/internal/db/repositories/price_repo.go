@@ -125,9 +125,6 @@ func (r *AlertRepository) GetPrices(ctx context.Context) ([]domain.TokenPrice, e
 		); err != nil {
 			return nil, err
 		}
-		if snapshot.Symbol == "XRP" {
-			print("hooh")
-		}
 		snapshots = append(snapshots, snapshot)
 	}
 	if err := rows.Err(); err != nil {

@@ -3,7 +3,6 @@ package handlers
 import (
 	"context"
 	"errors"
-	pricev1 "tracker/gen/price/v1"
 	walletv1 "tracker/gen/wallet/v1"
 	"tracker/internal/api/middleware"
 	"tracker/internal/core"
@@ -15,7 +14,6 @@ import (
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
-	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
 type WalletGrpcHandler struct {
@@ -52,20 +50,7 @@ func (s *WalletGrpcHandler) ListWallets(ctx context.Context, req *walletv1.ListW
 			BalanceUsd:    float32(i.Balance),
 			HasError:      i.HasError,
 			ErrorMsg:      i.ErrorMsg,
-			Price: &pricev1.Price{
-				Symbol:                        i.Symbol,
-				Name:                          i.Price.Name,
-				PriceUsd:                      float32(i.Price.CurrentPrice),
-				MarketCap:                     float32(i.Price.MarketCap),
-				TotalVolume:                   float32(i.Price.TotalVolume),
-				High_24H:                      float32(i.Price.High_24h),
-				Low_24H:                       float32(i.Price.Low_24h),
-				PriceChange_24H:               float32(i.Price.PriceChange_24h),
-				PriceChangePercentage_24H:     float32(i.Price.PriceChangePercentage_24h),
-				MarketCapChange_24H:           float32(i.Price.MarketCapChange_24h),
-				MarketCapChangePercentage_24H: float32(i.Price.MarketCapChange_percentage_24h),
-				UpdatedAt:                     timestamppb.New(i.Price.UpdatedAt),
-			},
+			Price:         i.Price.ToGrpc(),
 		})
 	}
 	return &walletv1.ListWalletsResponse{

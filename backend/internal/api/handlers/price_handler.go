@@ -11,7 +11,6 @@ import (
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
-	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
 type PriceGrpcHandler struct {
@@ -91,20 +90,7 @@ func (s *PriceGrpcHandler) GetPrices(ctx context.Context, req *pricev1.GetPrices
 	}
 	out := make([]*pricev1.Price, 0, len(prices))
 	for _, i := range prices {
-		out = append(out, &pricev1.Price{
-			Symbol:                        i.Symbol,
-			Name:                          i.Name,
-			PriceUsd:                      float32(i.CurrentPrice),
-			MarketCap:                     float32(i.MarketCap),
-			TotalVolume:                   float32(i.TotalVolume),
-			High_24H:                      float32(i.High_24h),
-			Low_24H:                       float32(i.Low_24h),
-			PriceChange_24H:               float32(i.PriceChange_24h),
-			PriceChangePercentage_24H:     float32(i.PriceChangePercentage_24h),
-			MarketCapChange_24H:           float32(i.MarketCapChange_24h),
-			MarketCapChangePercentage_24H: float32(i.MarketCapChange_percentage_24h),
-			UpdatedAt:                     timestamppb.New(i.UpdatedAt),
-		})
+		out = append(out, i.ToGrpc())
 	}
 	return &pricev1.GetPricesResponse{
 		Total: int32(len(prices)),
@@ -118,20 +104,7 @@ func (s *PriceGrpcHandler) GetPrice(ctx context.Context, req *pricev1.GetPriceRe
 		return nil, err
 	}
 	return &pricev1.GetPriceResponse{
-		Price: &pricev1.Price{
-			Symbol:                        price.Symbol,
-			Name:                          price.Name,
-			PriceUsd:                      float32(price.CurrentPrice),
-			MarketCap:                     float32(price.MarketCap),
-			TotalVolume:                   float32(price.TotalVolume),
-			High_24H:                      float32(price.High_24h),
-			Low_24H:                       float32(price.Low_24h),
-			PriceChange_24H:               float32(price.PriceChange_24h),
-			PriceChangePercentage_24H:     float32(price.PriceChangePercentage_24h),
-			MarketCapChange_24H:           float32(price.MarketCapChange_24h),
-			MarketCapChangePercentage_24H: float32(price.MarketCapChange_percentage_24h),
-			UpdatedAt:                     timestamppb.New(price.UpdatedAt),
-		},
+		Price: price.ToGrpc(),
 	}, nil
 }
 

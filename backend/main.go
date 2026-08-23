@@ -73,18 +73,10 @@ func main() {
 	walletRepo := repositories.NewWalletRepository(db)
 	userRepo := repositories.NewUserRepo(db)
 	alertRepo := repositories.NewAlertRepository(db)
+	priceCache := core.NewPriceCache(redisClient)
 
 	coingeckoClient := coingecko.NewCoinGeckoClient(app.Cfg.CoinGecko.APIKey)
 	alchemyClient := alchemy.NewAlchemyClient(app.Cfg.Alchemy.APIKey)
-
-	emailSender, err := notification.NewSMTPSender(
-		app.Cfg.Email.SMTPHost,
-		app.Cfg.Email.SMTPPort,
-		app.Cfg.Email.From,
-	)
-	if err != nil {
-		logrus.WithError(err).Fatal("failed to configure alert email sender")
-	}
 
 	ethMainnetClient := client.NewRateLimiterProvider(&app.Cfg.Blockchain.RateLimitConfig, ethereum.NewEthereumClient(ethereum.EthConfig{RpcURL: app.Cfg.Blockchain.EthereumMainnet, Decimal: 18}))
 	ethArbitrumClient := client.NewRateLimiterProvider(&app.Cfg.Blockchain.RateLimitConfig, ethereum.NewEthereumClient(ethereum.EthConfig{RpcURL: app.Cfg.Blockchain.EthereumArbitrum, Decimal: 18}))
@@ -96,17 +88,44 @@ func main() {
 	tronClient := client.NewRateLimiterProvider(&app.Cfg.Blockchain.RateLimitConfig, tron.NewTronClient(app.Cfg.Blockchain.TronGRPC, app.Cfg.Blockchain.TronAPIKey))
 	rippleClient := client.NewRateLimiterProvider(&app.Cfg.Blockchain.RateLimitConfig, ripple.NewRippleClient(app.Cfg.Blockchain.RippleMainnet))
 
-	priceCache := core.NewPriceCache(redisClient)
+	//
+	// alert / email
+	//
+	alertEventPublisher, err := messaging.NewPublisher(mq, messaging.AlertTriggered)
+	if err != nil {
+		logrus.Fatalf("failed to init alert publisher: %v", err)
+	}
+	alertEventConsumer, err := messaging.NewConsumer(mq, messaging.AlertTriggered)
+	if err != nil {
+		logrus.Fatalf("failed to init alert consumer: %v", err)
+	}
+	alertService := core.NewAlertService(alertRepo, userRepo, priceCache, func(cmd domain.NotificationCommand) error {
+		bytes, err := json.Marshal(cmd)
+		if err != nil {
+			return fmt.Errorf("marshal notification cmd: %w", err)
+		}
+		if err := alertEventPublisher.Publish(bytes); err != nil {
+			return fmt.Errorf("publish notification cmd: %w", err)
+		}
+		return nil
+	})
+	emailSender, err := notification.NewEmailSender(app.Cfg.Email.ApiKey, app.Cfg.Email.From)
+	if err != nil {
+		logrus.Fatalf("failed to init email sender: %v", err)
+	}
+	emailWorker := notification.NewEmailWorker(alertEventConsumer, emailSender)
+	go emailWorker.Start(ctx)
 
-	alertService := core.NewAlertService(alertRepo, userRepo, priceCache, emailSender)
-
+	//
+	// prices
+	//
 	priceEventPublisher, err := messaging.NewPublisher(mq, messaging.QueuePriceChanged)
 	if err != nil {
-		logrus.Fatal(err)
+		logrus.Fatalf("failed to init price publisher: %v", err)
 	}
 	priceEventConsumer, err := messaging.NewConsumer(mq, messaging.QueuePriceChanged)
 	if err != nil {
-		logrus.Fatal(err)
+		logrus.Fatalf("failed to init price consumer: %v", err)
 	}
 	priceHub := core.NewPriceHub(priceEventConsumer)
 	priceHub.Start()
@@ -146,7 +165,7 @@ func main() {
 	})
 
 	if err := blockchainService.ConnectAll(ctx); err != nil {
-		logrus.WithError(err).Warn("failed to connect all blockchain clients")
+		logrus.Fatalf("failed to init blockchain service: %v", err)
 	}
 
 	walletService := core.NewWalletService(core.WalletDeps{
@@ -192,15 +211,15 @@ func main() {
 	opts := []grpc.DialOption{grpc.WithTransportCredentials(insecure.NewCredentials())}
 	reflection.Register(grpcServer)
 
-	priceGrpcServer := handlers.NewPriceGrpcHandler(priceService, priceHub)
-	walletGrpcServer := handlers.NewWalletGrpcHandler(walletService, walletWorker)
-	userServer := handlers.NewUserHandler(userRepo)
-	alertServer := handlers.NewAlertHandler(alertRepo, userRepo)
+	priceGrpcHandler := handlers.NewPriceGrpcHandler(priceService, priceHub)
+	walletGrpcHandler := handlers.NewWalletGrpcHandler(walletService, walletWorker)
+	userHandler := handlers.NewUserHandler(userRepo)
+	alertHandler := handlers.NewAlertHandler(alertRepo, userRepo)
 
-	pricev1.RegisterPriceServiceServer(grpcServer, priceGrpcServer)
-	walletv1.RegisterWalletServiceServer(grpcServer, walletGrpcServer)
-	userv1.RegisterUserServiceServer(grpcServer, userServer)
-	alertv1.RegisterAlertServiceServer(grpcServer, alertServer)
+	pricev1.RegisterPriceServiceServer(grpcServer, priceGrpcHandler)
+	walletv1.RegisterWalletServiceServer(grpcServer, walletGrpcHandler)
+	userv1.RegisterUserServiceServer(grpcServer, userHandler)
+	alertv1.RegisterAlertServiceServer(grpcServer, alertHandler)
 
 	if err := pricev1.RegisterPriceServiceHandlerFromEndpoint(ctx, gwmux, grpcAddr, opts); err != nil {
 		logrus.Fatalf("failed to register price gateway: %v", err)

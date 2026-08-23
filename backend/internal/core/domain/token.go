@@ -3,6 +3,9 @@ package domain
 import (
 	"math/big"
 	"time"
+	pricev1 "tracker/gen/price/v1"
+
+	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
 type TokenMinimum struct {
@@ -83,4 +86,21 @@ func (t *TokenPrice) LessThanOrEqual(price float64) bool {
 
 func (t *TokenPrice) GreaterThanOrEqual(price float64) bool {
 	return t.CurrentPrice >= price
+}
+
+func (t *TokenPrice) ToGrpc() *pricev1.Price {
+	return &pricev1.Price{
+		Symbol:                        t.Symbol,
+		Name:                          t.Name,
+		PriceUsd:                      float32(t.CurrentPrice),
+		MarketCap:                     float32(t.MarketCap),
+		TotalVolume:                   float32(t.TotalVolume),
+		High_24H:                      float32(t.High_24h),
+		Low_24H:                       float32(t.Low_24h),
+		PriceChange_24H:               float32(t.PriceChange_24h),
+		PriceChangePercentage_24H:     float32(t.PriceChangePercentage_24h),
+		MarketCapChange_24H:           float32(t.MarketCapChange_24h),
+		MarketCapChangePercentage_24H: float32(t.MarketCapChange_percentage_24h),
+		UpdatedAt:                     timestamppb.New(t.UpdatedAt),
+	}
 }

@@ -9,7 +9,6 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/sirupsen/logrus"
-	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
 type PriceHub struct {
@@ -26,19 +25,19 @@ func NewPriceHub(consumer *messaging.Consumer) *PriceHub {
 }
 
 func (h *PriceHub) Start() {
+	log := logrus.WithField("EmailWorker", "Start")
 	go func() {
 		for {
 			deliveries, closeChan, err := h.consumer.Consume()
 			if err != nil {
-				logrus.Debugf("[PriceHub] RabbitMQ consume error: %v, retrying...", err)
+				log.Debugf("consume error: %v, retrying...", err)
 				continue
 			}
-			logrus.Debugf("[PriceHub] Listening for price updates from RabbitMQ...")
 		loop:
 			for {
 				select {
 				case err := <-closeChan:
-					logrus.Debugf("[PriceHub] Channel closed: %v. Reconnecting...", err)
+					log.Debugf("Channel closed: %v. Reconnecting...", err)
 					break loop
 				case d, ok := <-deliveries:
 					if !ok {
@@ -46,7 +45,7 @@ func (h *PriceHub) Start() {
 					}
 					var event []domain.TokenPrice
 					if err := json.Unmarshal(d.Body, &event); err != nil {
-						logrus.Debugf("[PriceHub] Failed to unmarshal price update: %v", err)
+						log.Debugf("Failed to unmarshal event: %v", err)
 						_ = d.Nack(false, false)
 						continue
 					}
@@ -54,20 +53,7 @@ func (h *PriceHub) Start() {
 
 					prices := []*pricev1.Price{}
 					for _, i := range event {
-						prices = append(prices, &pricev1.Price{
-							Symbol:                        i.Symbol,
-							Name:                          i.Name,
-							PriceUsd:                      float32(i.CurrentPrice),
-							MarketCap:                     float32(i.MarketCap),
-							TotalVolume:                   float32(i.TotalVolume),
-							High_24H:                      float32(i.High_24h),
-							Low_24H:                       float32(i.Low_24h),
-							PriceChange_24H:               float32(i.PriceChange_24h),
-							PriceChangePercentage_24H:     float32(i.PriceChangePercentage_24h),
-							MarketCapChange_24H:           float32(i.MarketCapChange_24h),
-							MarketCapChangePercentage_24H: float32(i.MarketCapChange_percentage_24h),
-							UpdatedAt:                     timestamppb.New(i.UpdatedAt),
-						})
+						prices = append(prices, i.ToGrpc())
 					}
 					h.broadcast(&pricev1.PriceUpdate{
 						Price: prices,

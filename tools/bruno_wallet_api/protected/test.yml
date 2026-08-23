@@ -1,0 +1,15 @@
+info:
+  name: test
+  type: http
+  seq: 21
+
+http:
+  method: POST
+  url: "{{url}}/v1/alerts/0a11c4d3-f949-43f9-aa4d-637dc2abe51d:resume"
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

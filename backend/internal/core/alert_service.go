@@ -2,36 +2,31 @@ package core
 
 import (
 	"context"
-	"fmt"
 	"tracker/internal/core/domain"
 
 	"github.com/sirupsen/logrus"
 )
 
-type EmailSender interface {
-	Send(ctx context.Context, recipient, subject, body string) error
-}
-
 type AlertService struct {
-	alertRepo   AlertRepository
-	userRepo    UserRepo
-	priceCache  PriceCache
-	emailSender EmailSender
-	log         *logrus.Entry
+	alertRepo      AlertRepository
+	userRepo       UserRepo
+	priceCache     PriceCache
+	onNotification func(cmd domain.NotificationCommand) error
+	log            *logrus.Entry
 }
 
 func NewAlertService(
 	alertRepo AlertRepository,
 	userRepo UserRepo,
 	priceCache PriceCache,
-	emailSender EmailSender,
+	onNotification func(cmd domain.NotificationCommand) error,
 ) *AlertService {
 	return &AlertService{
-		alertRepo:   alertRepo,
-		userRepo:    userRepo,
-		priceCache:  priceCache,
-		emailSender: emailSender,
-		log:         logrus.WithField("component", "AlertService"),
+		alertRepo:      alertRepo,
+		userRepo:       userRepo,
+		priceCache:     priceCache,
+		onNotification: onNotification,
+		log:            logrus.WithField("component", "AlertService"),
 	}
 }
 
@@ -77,20 +72,31 @@ func (s *AlertService) isTriggered(alert domain.Alert, price *domain.TokenPrice)
 	}
 }
 
-func (s *AlertService) triggerAlert(ctx context.Context, user domain.User, alert domain.Alert, _ *domain.TokenPrice) {
-	s.log.WithField("alert_id", alert.ID).Infof("Alert triggered for %s", alert.CoinSymbol)
+func (s *AlertService) triggerAlert(ctx context.Context, user domain.User, alert domain.Alert, price *domain.TokenPrice) {
+	log := s.log.WithField("alert_id", alert.ID)
+	log.Infof("Alert triggered for %s", alert.CoinSymbol)
 
-	if s.emailSender != nil {
-		subject := fmt.Sprintf("%s price alert triggered", alert.CoinSymbol)
-		body := fmt.Sprintf("Hello %s,\n\nYour %s price alert was triggered.", user.Name, alert.CoinSymbol)
-
-		// TODO: push this to a RabbitMQ queue instead of blocking
-		if err := s.emailSender.Send(ctx, user.Email, subject, body); err != nil {
-			s.log.WithError(err).Error("failed to send alert email")
+	if s.onNotification != nil {
+		coin := s.priceCache.GetCoinBySymbol(ctx, alert.CoinSymbol)
+		coinName := "<name>"
+		if coin != nil {
+			coinName = coin.Name
+		}
+		err := s.onNotification(domain.NotificationCommand{
+			UserID:     user.Name,
+			CoinName:   coinName,
+			CoinSymbol: alert.CoinSymbol,
+			Email:      user.Email,
+			UserName:   user.Name,
+			AlertID:    alert.ID,
+			Price:      price.CurrentPrice,
+		})
+		if err != nil {
+			log.WithError(err).Error("failed to send alert email")
 			return
 		}
 	}
 	if _, err := s.alertRepo.DisableAsCompleted(ctx, user.ID, alert.ID); err != nil {
-		s.log.WithError(err).Error("failed to disable triggered alert")
+		log.WithError(err).Error("failed to disable triggered alert")
 	}
 }
