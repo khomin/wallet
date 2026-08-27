@@ -20,7 +20,8 @@ func NewTokenVerifier(ctx context.Context, issuerURL string, clientID string) (T
 	// Configure the verifier with your client ID
 	// This will validate the 'aud' claim matches your client
 	verifier := provider.Verifier(&oidc.Config{
-		ClientID: clientID,
+		ClientID:        clientID,
+		SkipIssuerCheck: true,
 	})
 	return &tokenVerifier{
 		verifier: verifier,

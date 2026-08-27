@@ -56,7 +56,6 @@ class KeycloakService {
       code_challenge: challenge,
       code_challenge_method: 'S256',
     });
-    // http://localhost:9090/realms/whale-tracker/protocol/openid-connect/auth
     window.location.href = `${OIDC_ENDPOINTS.authorization}?${params}`;
   }
 
@@ -82,8 +81,6 @@ class KeycloakService {
       scope: "openid profile email",
     });
     try {
-      console.log(`code: ${code}`)
-      console.log(`code_verifier: ${codeVerifier}`)
       const response = await fetch(OIDC_ENDPOINTS.token, {
         method: 'POST',
         headers: { 'Content-Type': 'application/x-www-form-urlencoded' },

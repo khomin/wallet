@@ -151,14 +151,14 @@ function parseGatewayError(text: string, status: number): GatewayError {
 
 export const walletService = {
   listWallets: () =>
-    requestJson('GET', '/v1/wallets', ListWalletsResponseSchema),
+    requestJson('GET', 'v1/wallets', ListWalletsResponseSchema),
 
   /**
    * Read the grpc-gateway server stream. Server-streaming responses are
    * newline-delimited JSON messages, just like the price stream above.
    */
   streamWallets: async function* (symbols: string[] = [], signal?: AbortSignal): AsyncGenerator<WalletUpdate> {
-    const url = new URL('/v1/wallets/stream', API_CONFIG.baseUrl);
+    const url = new URL('v1/wallets/stream', API_CONFIG.baseUrl);
     for (const symbol of symbols) {
       url.searchParams.append('symbols', symbol.toLowerCase());
     }
@@ -223,7 +223,7 @@ export const walletService = {
   createWallet: (req: MessageShape<typeof CreateWalletRequestSchema>) =>
     requestJsonWithBody(
       'POST',
-      '/v1/wallets',
+      'v1/wallets',
       CreateWalletRequestSchema,
       req,
       CreateWalletResponseSchema,
@@ -232,7 +232,7 @@ export const walletService = {
   deleteWallet: (id: string) =>
     requestJson(
       'DELETE',
-      `/v1/wallets/${encodeURIComponent(id)}`,
+      `v1/wallets/${encodeURIComponent(id)}`,
       DeleteWalletResponseSchema,
     ),
 };
@@ -241,14 +241,14 @@ export const walletService = {
 
 export const priceService = {
   listCoins: () =>
-    requestJson('GET', '/v1/coins', ListCoinsResponseSchema),
+    requestJson('GET', 'v1/coins', ListCoinsResponseSchema),
 
   getPrices: (symbols: string[]) => {
     const query = new URLSearchParams();
     for (const symbol of symbols) {
       query.append('symbols', symbol.toLowerCase());
     }
-    return requestJson('GET', '/v1/prices', GetPricesResponseSchema, query);
+    return requestJson('GET', 'v1/prices', GetPricesResponseSchema, query);
   },
 
   /**
@@ -256,7 +256,7 @@ export const priceService = {
    * server-streaming response as newline-delimited JSON messages.
    */
   streamPrices: async function* (symbols: string[], signal?: AbortSignal): AsyncGenerator<PriceUpdate> {
-    const url = new URL('/v1/prices/stream', API_CONFIG.baseUrl);
+    const url = new URL('v1/prices/stream', API_CONFIG.baseUrl);
     for (const symbol of symbols) {
       url.searchParams.append('symbols', symbol.toLowerCase());
     }
@@ -304,12 +304,12 @@ export const priceService = {
 
 export const alertService = {
   listAlerts: () =>
-    requestJson('GET', '/v1/alerts', ListAlertsResponseSchema),
+    requestJson('GET', 'v1/alerts', ListAlertsResponseSchema),
 
   createAlert: (req: MessageShape<typeof CreateAlertRequestSchema>) =>
     requestJsonWithBody(
       'POST',
-      '/v1/alerts',
+      'v1/alerts',
       CreateAlertRequestSchema,
       req,
       AlertSchema,
@@ -318,22 +318,22 @@ export const alertService = {
   updateAlert: (req: MessageShape<typeof UpdateAlertRequestSchema>) =>
     requestJsonWithBody(
       'PATCH',
-      `/v1/alerts/${encodeURIComponent(req.id)}`,
+      `v1/alerts/${encodeURIComponent(req.id)}`,
       UpdateAlertRequestSchema,
       req,
       AlertSchema,
     ),
 
   pauseAlert: (id: string) =>
-    requestJson('POST', `/v1/alerts/${encodeURIComponent(id)}:pause`, AlertSchema),
+    requestJson('POST', `v1/alerts/${encodeURIComponent(id)}:pause`, AlertSchema),
 
   resumeAlert: (id: string) =>
-    requestJson('POST', `/v1/alerts/${encodeURIComponent(id)}:resume`, AlertSchema),
+    requestJson('POST', `v1/alerts/${encodeURIComponent(id)}:resume`, AlertSchema),
 
   deleteAlert: (id: string) =>
     requestJson(
       'DELETE',
-      `/v1/alerts/${encodeURIComponent(id)}`,
+      `v1/alerts/${encodeURIComponent(id)}`,
       DeleteAlertResponseSchema,
     ),
 };
