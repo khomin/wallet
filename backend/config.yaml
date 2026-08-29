@@ -24,7 +24,7 @@ rabbit:
   url: 	"amqp://admin:supersecretpassword@localhost:5672"
 
 email:
-  api_key:
+  api_key: ""
   from: "onboarding@resend.dev"
 
 alchemy:
@@ -45,7 +45,7 @@ blockchain:
   bnb: "https://bsc-mainnet.public.blastapi.io"
   solana_rpc: "https://api.mainnet-beta.solana.com"
   tron_grpc: "grpc.trongrid.io:50051"
-  tron_api_key:
+  tron_api_key: ""
   riplle_mainnet_rpc: "https://s1.ripple.com:51234"
   bitcoin:
     host: "https://mempool.space/api"

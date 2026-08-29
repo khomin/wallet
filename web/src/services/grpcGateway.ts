@@ -1,4 +1,4 @@
-// ─── gRPC-HTTP Gateway Client ────────────────────────────────────────────────
+// ─── gRPC-HTTP Gateway Client ────────────────────────────────────────────────────────────────
 // Typed fetch client for the grpc-gateway JSON API generated into /src/gen.
 // It replaces the old axios REST client (services/api.ts) and keeps the same
 // responsibilities:
@@ -178,45 +178,58 @@ export const walletService = {
     const decoder = new TextDecoder();
     let buffered = '';
 
+    // Clean up reader on abort
+    const abortHandler = () => {
+      reader.cancel().catch(() => { });
+    };
+    signal?.addEventListener('abort', abortHandler, { once: true });
+
     const consume = (line: string): WalletUpdate | undefined => {
       const trimmed = line.trim();
       if (!trimmed) return undefined;
 
+      // First try: standard { wallet: ... } envelope
       const update = fromJsonString(WalletUpdateSchema, trimmed, {
         ignoreUnknownFields: true,
       });
       if (update.wallet) return update;
 
-      // Some stream handlers serialize the WalletUpdate payload directly
-      // instead of wrapping it as { wallet: ... }. Normalize that shape too.
+      // Fallback: some handlers send { result: { wallet: ... } } or raw wallet
       try {
-        const raw = JSON.parse(trimmed)
-        if (raw.result != undefined) {
-          const payload = raw.result.wallet ?? raw;
+        const raw = JSON.parse(trimmed);
+        const payload = raw.result?.wallet ?? raw.wallet ?? raw;
+        if (payload) {
           const wallet = fromJsonString(WalletSchema, JSON.stringify(payload), {
             ignoreUnknownFields: true,
           });
           return create(WalletUpdateSchema, { wallet });
         }
       } catch {
+        // If JSON parsing fails, return the originally parsed update (may have wallet: undefined)
         return update;
       }
+      return undefined;
     };
 
-    while (true) {
-      const { done, value } = await reader.read();
-      buffered += decoder.decode(value, { stream: !done });
-      const lines = buffered.split(/\r?\n/);
-      buffered = lines.pop() ?? '';
-      for (const line of lines) {
-        const update = consume(line);
-        if (update) yield update;
+    try {
+      while (true) {
+        const { done, value } = await reader.read();
+        buffered += decoder.decode(value, { stream: !done });
+        const lines = buffered.split(/\r?\n/);
+        buffered = lines.pop() ?? '';
+        for (const line of lines) {
+          const update = consume(line);
+          if (update) yield update;
+        }
+        if (done) {
+          const update = consume(buffered);
+          if (update) yield update;
+          break;
+        }
       }
-      if (done) {
-        const update = consume(buffered);
-        if (update) yield update;
-        break;
-      }
+    } finally {
+      signal?.removeEventListener('abort', abortHandler);
+      reader.releaseLock();
     }
   },
 
@@ -357,3 +370,4 @@ export type {
   DeleteAlertResponse,
   Alert,
 };
+

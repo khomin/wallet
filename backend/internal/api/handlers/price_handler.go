@@ -147,20 +147,16 @@ func (s *PriceGrpcHandler) StreamPrices(
 	if !ok {
 		return status.Error(codes.Unauthenticated, "unauthorized")
 	}
-
 	subID, priceChan := s.priceHub.Subscribe()
 	defer s.priceHub.Unsubscribe(subID)
-
 	for {
 		select {
 		case <-ctx.Done():
 			return ctx.Err()
-
 		case update, open := <-priceChan:
 			if !open {
 				return nil
 			}
-
 			if err := stream.Send(update); err != nil {
 				return err
 			}

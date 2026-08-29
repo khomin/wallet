@@ -12,7 +12,7 @@ services:
     ports:
       - "80:80"
     volumes:
-      - ./nginx.local.conf:/etc/nginx/conf.d/default.conf:ro
+      - ./nginx.prod.conf:/etc/nginx/conf.d/default.conf:ro
     extra_hosts:
       - "host.docker.internal:host-gateway"
 
@@ -31,7 +31,7 @@ services:
   keycloak:
     image: quay.io/keycloak/keycloak:latest
     container_name: keycloak_server
-    command: start-dev --import-realm
+    command: start --optimized --import-realm
     environment:
       KC_PROXY_HEADERS: xforwarded
       KC_HTTP_ENABLED: 'true'
@@ -83,8 +83,8 @@ services:
     container_name: rabbitmq
     restart: unless-stopped
     ports:
-      - "5672:5672" # AMQP protocol port
-      - "15672:15672" # Management 
+      - "5672:5672"
+      - "15672:15672"
     environment:
       - RABBITMQ_DEFAULT_USER=admin
       - RABBITMQ_DEFAULT_PASS=supersecretpassword

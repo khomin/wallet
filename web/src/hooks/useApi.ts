@@ -6,7 +6,7 @@
 // protobuf types generated into /src/gen.
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { create } from '@bufbuild/protobuf';
 import type { MessageInitShape } from '@bufbuild/protobuf';
 import { walletService, priceService, alertService } from '../services/grpcGateway';
@@ -44,11 +44,16 @@ export function useWallets() {
     queryKey: queryKeys.wallets,
     queryFn: () => walletService.listWallets(),
   });
+  const startedRef = useRef(false);
 
   useEffect(() => {
     // Let the initial list establish the source of truth before applying
     // streamed updates. An empty symbols list means all wallets for the user.
     if (!query.isSuccess) return;
+
+    // Prevent duplicate streams if the effect re-runs
+    if (startedRef.current) return;
+    startedRef.current = true;
 
     const controller = new AbortController();
     let mounted = true;
@@ -91,8 +96,9 @@ export function useWallets() {
     return () => {
       mounted = false;
       controller.abort();
+      startedRef.current = false; // Allow restart if effect re-runs
     };
-  }, [query.isSuccess, queryClient]);
+  }, [queryClient]);
 
   return query;
 }

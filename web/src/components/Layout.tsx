@@ -2,14 +2,17 @@
 // Sidebar + top bar that wraps all authenticated pages.
 
 import { NavLink, Outlet } from 'react-router-dom';
+import { useState, useEffect } from 'react';
 import {
   Bell,
   ChartNoAxesCombined,
   LayoutDashboard,
   LogOut,
+  Menu,
   Settings2,
   Tag,
   WalletCards,
+  X,
   type LucideIcon,
 } from 'lucide-react';
 import { useAuth } from '../auth/AuthContext';
@@ -34,14 +37,49 @@ const NAV_ITEMS: NavItem[] = [
 
 export default function Layout() {
   const { user, logout } = useAuth();
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
+
+  // Detect mobile viewport
+  useEffect(() => {
+    const checkMobile = () => setIsMobile(window.innerWidth < 1024);
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
+
+  // Close sidebar on navigation (mobile)
+  const handleNavClick = () => {
+    if (isMobile) setSidebarOpen(false);
+  };
 
   const displayName =
     user?.name ?? user?.preferred_username ?? user?.email ?? 'Whale';
 
   return (
     <div className="flex h-screen bg-[#080a12] text-white">
+      {/* ── Mobile Overlay ─────────────────────────────────────────────── */}
+      {isMobile && sidebarOpen && (
+        <div
+          className="fixed inset-0 z-40 bg-black/50 backdrop-blur-sm"
+          onClick={() => setSidebarOpen(false)}
+          aria-hidden="true"
+        />
+      )}
+
       {/* ── Sidebar ──────────────────────────────────────────────────── */}
-      <aside className="flex w-64 shrink-0 flex-col border-r border-white/[0.07] bg-[#0d101a]">
+      <aside
+        className={`
+          flex w-64 shrink-0 flex-col border-r border-white/[0.07] bg-[#0d101a]
+          z-50 transition-transform duration-300 ease-in-out
+          ${isMobile
+            ? 'fixed inset-y-0 left-0 transform lg:translate-x-0'
+            : 'translate-x-0'
+          }
+          ${isMobile && sidebarOpen ? 'translate-x-0' : '-translate-x-full'}
+        `}
+        aria-label="Main navigation"
+      >
         {/* Logo */}
         <div className="flex h-[82px] items-center gap-3 border-b border-white/[0.07] px-6">
           <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-violet-500 to-indigo-600 shadow-lg shadow-violet-950/40">
@@ -65,6 +103,7 @@ export default function Layout() {
                   key={item.path}
                   to={item.path}
                   draggable={false}
+                  onClick={handleNavClick}
                   className={({ isActive }) =>
                     `group relative flex select-none items-center gap-3 rounded-xl px-3 py-3 text-[13px] font-medium transition-[background-color,color] duration-200 ${isActive
                       ? 'bg-white/[0.07] text-white'
@@ -100,9 +139,26 @@ export default function Layout() {
       {/* ── Main content area ────────────────────────────────────────── */}
       <div className="flex min-w-0 flex-1 flex-col">
         {/* Top bar */}
-        <header className="flex shrink-0 items-center justify-end border-b border-white/[0.07] px-8 py-4">
+        <header className="flex shrink-0 items-center justify-between border-b border-white/[0.07] px-4 py-3 lg:px-8 lg:py-4">
+          {/* Mobile menu button */}
+          <button
+            className="lg:hidden inline-flex items-center justify-center p-2 rounded-lg text-gray-400 hover:text-white hover:bg-white/5 transition-colors cursor-pointer"
+            onClick={() => setSidebarOpen(true)}
+            aria-label="Open navigation menu"
+            aria-expanded={sidebarOpen}
+            aria-controls="sidebar"
+          >
+            {sidebarOpen ? (
+              <X size={20} aria-hidden="true" />
+            ) : (
+              <Menu size={20} aria-hidden="true" />
+            )}
+          </button>
+
+          <div className="flex-1 lg:flex-none" />
+
           <div className="flex items-center gap-3">
-            <div className="flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-1.5">
+            <div className="flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-1.5 hidden sm:flex">
               <div className="flex h-7 w-7 items-center justify-center rounded-full bg-gradient-to-br from-violet-500 to-indigo-600 text-xs font-bold">
                 {displayName.charAt(0).toUpperCase()}
               </div>
@@ -115,13 +171,13 @@ export default function Layout() {
                          transition-colors hover:border-red-500/40 hover:text-red-400 cursor-pointer"
             >
               <LogOut aria-hidden="true" size={15} />
-              <span>Log out</span>
+              <span className="hidden sm:inline">Log out</span>
             </button>
           </div>
         </header>
 
         {/* Page content injected by router */}
-        <main className="flex-1 overflow-y-auto p-8">
+        <main className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8">
           <Outlet />
         </main>
       </div>
