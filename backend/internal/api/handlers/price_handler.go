@@ -143,7 +143,7 @@ func (s *PriceGrpcHandler) StreamPrices(
 	stream grpc.ServerStreamingServer[pricev1.PriceUpdate],
 ) error {
 	ctx := stream.Context()
-	_, ok := middleware.GetOAUTH(ctx)
+	_, ok := middleware.GetUser(ctx)
 	if !ok {
 		return status.Error(codes.Unauthenticated, "unauthorized")
 	}

@@ -134,7 +134,7 @@ func (r *AlertRepository) Delete(ctx context.Context, userID string, id string) 
 		return err
 	}
 	if res.RowsAffected() == 0 {
-		return domain.ErrAlertNotFound
+		return domain.ErrorNotFound
 	}
 	return nil
 }

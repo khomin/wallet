@@ -3,6 +3,7 @@ package middleware
 import (
 	"context"
 	"strings"
+	"tracker/internal/core/domain"
 
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
@@ -35,7 +36,12 @@ func StreamAuthInterceptor(verifier TokenVerifier) grpc.StreamServerInterceptor 
 			return status.Error(codes.Unauthenticated, "invalid or expired token")
 		}
 
-		newCtx := SetOAUTH(ctx, claims)
+		newCtx := SetUser(ctx, domain.User{
+			ID:     claims.Subject,
+			Name:   claims.Name,
+			Email:  claims.Email,
+			IsDemo: claims.IsDemo,
+		})
 
 		wrappedStream := &wrappedServerStream{
 			ServerStream: ss,

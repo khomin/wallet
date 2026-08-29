@@ -6,6 +6,7 @@ import (
 	alertv1 "tracker/gen/alert/v1"
 	"tracker/internal/api/middleware"
 	"tracker/internal/core"
+	"tracker/internal/core/demo"
 	"tracker/internal/core/domain"
 
 	"google.golang.org/grpc/codes"
@@ -15,13 +16,21 @@ import (
 
 type AlertHandler struct {
 	alertRepo core.AlertRepository
+	alertDemo demo.DemoAlerts
 	userRepo  core.UserRepo
 }
 
-func NewAlertHandler(repo core.AlertRepository, userRepo core.UserRepo) alertv1.AlertServiceServer {
+type AlertDeps struct {
+	Repo      core.AlertRepository
+	AlertDemo demo.DemoAlerts
+	UserRepo  core.UserRepo
+}
+
+func NewAlertHandler(deps *AlertDeps) alertv1.AlertServiceServer {
 	return &AlertHandler{
-		alertRepo: repo,
-		userRepo:  userRepo,
+		alertRepo: deps.Repo,
+		userRepo:  deps.UserRepo,
+		alertDemo: deps.AlertDemo,
 	}
 }
 
@@ -29,19 +38,18 @@ func (a *AlertHandler) CreateAlert(ctx context.Context, req *alertv1.CreateAlert
 	if req.CoinId == "" || req.Condition == alertv1.Condition_CONDITION_UNSPECIFIED {
 		return nil, status.Error(codes.InvalidArgument, "missing or invalid required arguments")
 	}
-	user, ok := middleware.GetOAUTH(ctx)
+	user, ok := middleware.GetUser(ctx)
 	if !ok {
 		return nil, status.Error(codes.Unauthenticated, "unauthorized")
 	}
-	if err := a.userRepo.EnsureExists(ctx, domain.User{
-		ID:    user.Subject,
-		Name:  user.Name,
-		Email: user.Email,
-	}); err != nil {
+	if user.IsDemo {
+		return nil, status.Error(codes.PermissionDenied, domain.ErrNotAllowedInDemoMode.Error())
+	}
+	if err := a.userRepo.EnsureExists(ctx, user); err != nil {
 		return nil, err
 	}
 	result, err := a.alertRepo.Create(ctx, domain.Alert{
-		UserID:     user.Subject,
+		UserID:     user.ID,
 		CoinSymbol: req.CoinId,
 		Condition:  conditionString(req.Condition),
 		Price:      req.Price,
@@ -56,11 +64,14 @@ func (a *AlertHandler) CreateAlert(ctx context.Context, req *alertv1.CreateAlert
 }
 
 func (a *AlertHandler) UpdateAlert(ctx context.Context, req *alertv1.UpdateAlertRequest) (*alertv1.Alert, error) {
-	user, ok := middleware.GetOAUTH(ctx)
+	user, ok := middleware.GetUser(ctx)
 	if !ok {
 		return nil, status.Error(codes.Unauthenticated, "unauthorized")
 	}
-	result, err := a.alertRepo.Update(ctx, user.Subject, req.Id, domain.AlertUpdate{
+	if user.IsDemo {
+		return nil, status.Error(codes.PermissionDenied, domain.ErrNotAllowedInDemoMode.Error())
+	}
+	result, err := a.alertRepo.Update(ctx, user.ID, req.Id, domain.AlertUpdate{
 		Condition: conditionString(req.Condition),
 		Price:     req.Price,
 	})
@@ -72,11 +83,14 @@ func (a *AlertHandler) UpdateAlert(ctx context.Context, req *alertv1.UpdateAlert
 }
 
 func (a *AlertHandler) PauseAlert(ctx context.Context, req *alertv1.PauseAlertRequest) (*alertv1.Alert, error) {
-	user, ok := middleware.GetOAUTH(ctx)
+	user, ok := middleware.GetUser(ctx)
 	if !ok {
 		return nil, status.Error(codes.Unauthenticated, "unauthorized")
 	}
-	result, err := a.alertRepo.Pause(ctx, user.Subject, req.Id)
+	if user.IsDemo {
+		return nil, status.Error(codes.PermissionDenied, domain.ErrNotAllowedInDemoMode.Error())
+	}
+	result, err := a.alertRepo.Pause(ctx, user.ID, req.Id)
 	if err != nil {
 		return nil, status.Error(codes.Internal, err.Error())
 	}
@@ -85,11 +99,14 @@ func (a *AlertHandler) PauseAlert(ctx context.Context, req *alertv1.PauseAlertRe
 }
 
 func (a *AlertHandler) ResumeAlert(ctx context.Context, req *alertv1.ResumeAlertRequest) (*alertv1.Alert, error) {
-	user, ok := middleware.GetOAUTH(ctx)
+	user, ok := middleware.GetUser(ctx)
 	if !ok {
 		return nil, status.Error(codes.Unauthenticated, "unauthorized")
 	}
-	result, err := a.alertRepo.Enable(ctx, user.Subject, req.Id)
+	if user.IsDemo {
+		return nil, status.Error(codes.PermissionDenied, domain.ErrNotAllowedInDemoMode.Error())
+	}
+	result, err := a.alertRepo.Enable(ctx, user.ID, req.Id)
 	if err != nil {
 		return nil, status.Error(codes.Internal, err.Error())
 	}
@@ -98,26 +115,36 @@ func (a *AlertHandler) ResumeAlert(ctx context.Context, req *alertv1.ResumeAlert
 }
 
 func (a *AlertHandler) DeleteAlert(ctx context.Context, req *alertv1.DeleteAlertRequest) (*alertv1.DeleteAlertResponse, error) {
-	user, ok := middleware.GetOAUTH(ctx)
+	user, ok := middleware.GetUser(ctx)
 	if !ok {
 		return nil, status.Error(codes.Unauthenticated, "unauthorized")
 	}
-	if err := a.alertRepo.Delete(ctx, user.Subject, req.Id); err != nil {
+	if user.IsDemo {
+		return nil, status.Error(codes.PermissionDenied, domain.ErrNotAllowedInDemoMode.Error())
+	}
+	if err := a.alertRepo.Delete(ctx, user.ID, req.Id); err != nil {
 		return nil, status.Error(codes.Internal, err.Error())
 	}
 	return &alertv1.DeleteAlertResponse{}, nil
 }
 
 func (a *AlertHandler) ListAlerts(ctx context.Context, req *alertv1.ListAlertsRequest) (*alertv1.ListAlertsResponse, error) {
-	user, ok := middleware.GetOAUTH(ctx)
+	user, ok := middleware.GetUser(ctx)
 	if !ok {
 		return nil, status.Error(codes.Unauthenticated, "unauthorized")
 	}
-	alerts, err := a.alertRepo.ListByUser(ctx, user.Subject)
+	out := []*alertv1.Alert{}
+	if user.IsDemo {
+		for _, i := range a.alertDemo.GetAlerts() {
+			alert := alertToGrpc(&i)
+			out = append(out, &alert)
+		}
+		return &alertv1.ListAlertsResponse{Alerts: out}, nil
+	}
+	alerts, err := a.alertRepo.ListByUser(ctx, user.ID)
 	if err != nil {
 		return nil, status.Error(codes.Internal, err.Error())
 	}
-	out := []*alertv1.Alert{}
 	for _, i := range alerts {
 		alert := alertToGrpc(&i)
 		out = append(out, &alert)

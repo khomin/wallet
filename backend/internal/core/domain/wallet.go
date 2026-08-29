@@ -13,7 +13,7 @@ type Wallet struct {
 	UserID  string `json:"user_id"`
 }
 
-type WalletWithBalance struct {
+type WalletBalance struct {
 	Wallet
 	Balance    float64
 	BalanceUSD float64
@@ -27,7 +27,7 @@ type WalletCreatedEvent struct {
 	UserID string `json:"user_id"`
 }
 
-func (w *WalletWithBalance) ToGrpc() *walletv1.Wallet {
+func (w *WalletBalance) ToGrpc() *walletv1.Wallet {
 	return &walletv1.Wallet{
 		Id:            w.Wallet.ID,
 		Address:       w.Wallet.Address,

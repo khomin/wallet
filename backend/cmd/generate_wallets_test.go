@@ -16,6 +16,7 @@ import (
 	"tracker/internal/client/solana"
 	"tracker/internal/client/tron"
 	"tracker/internal/core"
+	"tracker/internal/core/demo"
 	"tracker/internal/core/domain"
 	"tracker/internal/db"
 	"tracker/internal/db/repositories"
@@ -95,6 +96,7 @@ func TestGenerateWallets(t *testing.T) {
 
 	svc := core.NewWalletService(core.WalletDeps{
 		WalletRepo:        walletRepo,
+		WalletDemo:        demo.NewDemoWallets(),
 		PriceService:      priceService,
 		UserRepo:          repositories.NewUserRepo(db),
 		BlockchainService: blockchainService,
@@ -143,7 +145,7 @@ func TestGenerateWallets(t *testing.T) {
 
 	// add in loop
 	for _, token := range imported.Tokens {
-		if err = svc.CreateWallet(context.Background(), domain.User{
+		if err = svc.CreateWallet(context.Background(), &domain.User{
 			ID:    imported.UserID,
 			Name:  imported.UserID,
 			Email: imported.UserID,

@@ -65,7 +65,7 @@ func (s *PriceService) GetCoins(ctx context.Context) ([]domain.TokenWithURL, err
 func (s *PriceService) GetCoin(ctx context.Context, id string) (*domain.TokenWithURL, error) {
 	coin := s.priceCache.GetCoinBySymbol(ctx, id)
 	if coin == nil {
-		return nil, domain.ErrPriceNotFound
+		return nil, domain.ErrorNotFound
 	}
 	token, found := s.tokenRegistry.GetBySymbol(coin.Symbol)
 	if found {
@@ -79,7 +79,7 @@ func (s *PriceService) GetCoin(ctx context.Context, id string) (*domain.TokenWit
 			ImageURL: coin.ImageURL,
 		}, nil
 	}
-	return nil, domain.ErrPriceNotFound
+	return nil, domain.ErrorNotFound
 }
 
 func (s *PriceService) SearchCoins(ctx context.Context, text string) ([]domain.TokenWithURL, error) {
@@ -122,7 +122,7 @@ func (s *PriceService) GetPrice(ctx context.Context, symbol string) (*domain.Tok
 	if price != nil {
 		return price, nil
 	}
-	return nil, domain.ErrPriceNotFound
+	return nil, domain.ErrorNotFound
 }
 
 func (s *PriceService) makeChains(ctx context.Context, in []string) []domain.Chain {

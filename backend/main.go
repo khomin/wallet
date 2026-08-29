@@ -24,6 +24,7 @@ import (
 	"tracker/internal/client/solana"
 	"tracker/internal/client/tron"
 	"tracker/internal/core"
+	"tracker/internal/core/demo"
 	"tracker/internal/core/domain"
 	"tracker/internal/db"
 	"tracker/internal/db/repositories"
@@ -169,9 +170,12 @@ func main() {
 	}
 
 	walletService := core.NewWalletService(core.WalletDeps{
-		WalletRepo: walletRepo, PriceService: priceService,
-		UserRepo: userRepo, BlockchainService: blockchainService,
-		TokenRegistry: tokenRegistry,
+		WalletRepo:        walletRepo,
+		WalletDemo:        demo.NewDemoWallets(),
+		PriceService:      priceService,
+		UserRepo:          userRepo,
+		BlockchainService: blockchainService,
+		TokenRegistry:     tokenRegistry,
 	})
 
 	walletWorker := core.NewWalletWorker(&core.NewWalletDeps{
@@ -187,6 +191,7 @@ func main() {
 	if err != nil {
 		logrus.Fatalf("failed to create jwt verifier %s", err.Error())
 	}
+	verifierDemo := middleware.NewDemoTokenVerifier(verifier)
 
 	gwmux := runtime.NewServeMux(
 		runtime.WithMarshalerOption(runtime.MIMEWildcard, &runtime.JSONPb{
@@ -205,8 +210,8 @@ func main() {
 	grpcAddr := fmt.Sprintf(":%d", app.Cfg.Server.PortGRPC)
 
 	grpcServer := grpc.NewServer(
-		grpc.UnaryInterceptor(middleware.UnaryAuthInterceptor(verifier)),
-		grpc.StreamInterceptor(middleware.StreamAuthInterceptor(verifier)),
+		grpc.UnaryInterceptor(middleware.UnaryAuthInterceptor(verifierDemo)),
+		grpc.StreamInterceptor(middleware.StreamAuthInterceptor(verifierDemo)),
 	)
 	opts := []grpc.DialOption{grpc.WithTransportCredentials(insecure.NewCredentials())}
 	reflection.Register(grpcServer)
@@ -214,7 +219,11 @@ func main() {
 	priceGrpcHandler := handlers.NewPriceGrpcHandler(priceService, priceHub)
 	walletGrpcHandler := handlers.NewWalletGrpcHandler(walletService, walletWorker)
 	userHandler := handlers.NewUserHandler(userRepo)
-	alertHandler := handlers.NewAlertHandler(alertRepo, userRepo)
+	alertHandler := handlers.NewAlertHandler(&handlers.AlertDeps{
+		Repo:      alertRepo,
+		AlertDemo: *demo.NewDemoAlerts(),
+		UserRepo:  userRepo,
+	})
 
 	pricev1.RegisterPriceServiceServer(grpcServer, priceGrpcHandler)
 	walletv1.RegisterWalletServiceServer(grpcServer, walletGrpcHandler)

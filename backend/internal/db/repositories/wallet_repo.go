@@ -22,7 +22,7 @@ func NewWalletRepository(db *db.DataBase) core.WalletRepository {
 	return &walletRepository{db: db}
 }
 
-func (r *walletRepository) List(ctx context.Context, userID string) ([]domain.WalletWithBalance, error) {
+func (r *walletRepository) List(ctx context.Context, userID string) ([]domain.WalletBalance, error) {
 	query := `SELECT
 		w.id, w.user_id,  w.address, w.chain, coin.symbol, w.label, w.updated_at,
 		balance.value_crypto,
@@ -50,7 +50,7 @@ func (r *walletRepository) List(ctx context.Context, userID string) ([]domain.Wa
 	}
 	defer rows.Close()
 
-	var wallets []domain.WalletWithBalance
+	var wallets []domain.WalletBalance
 	for rows.Next() {
 		var w models.WalletBalance
 		if err := rows.Scan(
@@ -88,7 +88,7 @@ func (r *walletRepository) List(ctx context.Context, userID string) ([]domain.Wa
 	return wallets, nil
 }
 
-func (r *walletRepository) Get(ctx context.Context, userID string, id uuid.UUID) (*domain.WalletWithBalance, error) {
+func (r *walletRepository) Get(ctx context.Context, userID string, id uuid.UUID) (*domain.WalletBalance, error) {
 	query := `SELECT
 			w.id, w.user_id,  w.address, w.chain, coin.symbol, w.label, w.updated_at,
 			balance.value_crypto,
@@ -151,7 +151,7 @@ func (r *walletRepository) Get(ctx context.Context, userID string, id uuid.UUID)
 		out := walletToDomain2(w)
 		return &out, nil
 	}
-	return nil, domain.ErrWalletNotFound
+	return nil, domain.ErrorNotFound
 }
 
 func (r *walletRepository) Create(ctx context.Context, userID string, chain string, address string, symbol string, label string) (*domain.Wallet, error) {
@@ -182,9 +182,9 @@ func (r *walletRepository) Create(ctx context.Context, userID string, chain stri
 	); err != nil {
 		var pgErr *pgconn.PgError
 		if errors.As(err, &pgErr) && pgErr.Code == "23505" {
-			return nil, domain.ErrWalletAlreadyExists
+			return nil, domain.ErrorWWalletAlreadyExists
 		}
-		return nil, domain.ErrWalletInternalError
+		return nil, domain.ErrorWWalletInternalError
 	}
 	out := walletToDomain(wallet)
 	return &out, nil
@@ -208,7 +208,7 @@ func (r *walletRepository) Edit(ctx context.Context, userID string, id uuid.UUID
 		&wallet.Label,
 		&wallet.UpdatedAt,
 	); err != nil {
-		return nil, domain.ErrWalletNotFound
+		return nil, domain.ErrorNotFound
 	}
 	out := walletToDomain(wallet)
 	return &out, nil
@@ -218,7 +218,7 @@ func (r *walletRepository) Delete(ctx context.Context, userID string, id uuid.UU
 	query := `DELETE FROM wallets WHERE id = $1`
 	res, err := r.db.Pool.Exec(ctx, query, id)
 	if res.RowsAffected() == 0 {
-		return domain.ErrWalletNotFound
+		return domain.ErrorNotFound
 	}
 	return err
 }
@@ -298,14 +298,14 @@ func walletToDomain(in models.Wallet) domain.Wallet {
 	}
 }
 
-func walletToDomain2(in models.WalletBalance) domain.WalletWithBalance {
+func walletToDomain2(in models.WalletBalance) domain.WalletBalance {
 	hasError := false
 	var errorMsg string
 	if !in.BalanceUSD.Valid || !in.Balance.Valid {
 		hasError = true
 		errorMsg = "Unable to fetch live balance"
 	}
-	return domain.WalletWithBalance{
+	return domain.WalletBalance{
 		Wallet: domain.Wallet{
 			ID:      in.Wallet.ID.String(),
 			Address: in.Wallet.Address,

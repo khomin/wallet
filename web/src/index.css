@@ -14,6 +14,65 @@ body {
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  /* Global dark-theme scrollbars */
+  scrollbar-width: thin;
+  scrollbar-color: rgba(148, 163, 184, 0.28) transparent;
+}
+
+body::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+body::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+body::-webkit-scrollbar-thumb {
+  border-radius: 9999px;
+  background: rgba(148, 163, 184, 0.28);
+  border: 2px solid transparent;
+  background-clip: content-box;
+}
+
+body::-webkit-scrollbar-thumb:hover {
+  background: rgba(148, 163, 184, 0.45);
+  background-clip: content-box;
+}
+
+body::-webkit-scrollbar-corner {
+  background: transparent;
+}
+
+/* Apply to all scrollable elements */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(148, 163, 184, 0.28) transparent;
+}
+
+*::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+*::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+*::-webkit-scrollbar-thumb {
+  border-radius: 9999px;
+  background: rgba(148, 163, 184, 0.28);
+  border: 2px solid transparent;
+  background-clip: content-box;
+}
+
+*::-webkit-scrollbar-thumb:hover {
+  background: rgba(148, 163, 184, 0.45);
+  background-clip: content-box;
+}
+
+*::-webkit-scrollbar-corner {
+  background: transparent;
 }
 
 /* Full-height root for React */

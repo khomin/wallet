@@ -139,7 +139,7 @@ func (w *WalletWorker) synchronizeWallets(ctx context.Context) error {
 	return nil
 }
 
-func (w *WalletWorker) updateBalance(ctx context.Context, wallet domain.Wallet) (*domain.WalletWithBalance, error) {
+func (w *WalletWorker) updateBalance(ctx context.Context, wallet domain.Wallet) (*domain.WalletBalance, error) {
 	uuid, err := uuid.Parse(wallet.ID)
 	if err != nil {
 		return nil, err

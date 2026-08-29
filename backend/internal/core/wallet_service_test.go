@@ -16,7 +16,7 @@ type fakeWalletRepo struct {
 	err     error
 }
 
-func (f *fakeWalletRepo) List(ctx context.Context, userID string) ([]domain.WalletWithBalance, error) {
+func (f *fakeWalletRepo) List(ctx context.Context, userID string) ([]domain.WalletBalance, error) {
 	return nil, nil
 }
 
@@ -32,7 +32,7 @@ func (f *fakeWalletRepo) Delete(ctx context.Context, userID string, id uuid.UUID
 	return nil
 }
 
-func (f *fakeWalletRepo) Get(ctx context.Context, userID string, id uuid.UUID) (*domain.WalletWithBalance, error) {
+func (f *fakeWalletRepo) Get(ctx context.Context, userID string, id uuid.UUID) (*domain.WalletBalance, error) {
 	return nil, nil
 }
 
@@ -51,7 +51,7 @@ func (r *fakeUserRepo) List(ctx context.Context) ([]domain.User, error) {
 	return nil, nil
 }
 
-func (f *fakeUserRepo) EnsureExists(ctx context.Context, user domain.User) error {
+func (f *fakeUserRepo) EnsureExists(ctx context.Context, user *domain.User) error {
 	return nil
 }
 
@@ -74,7 +74,7 @@ func TestDeleteWalletReturnsDeletedWallet(t *testing.T) {
 		TokenRegistry:     &TokenRegistry{},
 		UserRepo:          &fakeUserRepo{},
 	})
-	err := svc.DeleteWallet(context.Background(), domain.User{
+	err := svc.DeleteWallet(context.Background(), &domain.User{
 		ID:    want.UserID,
 		Name:  want.UserID,
 		Email: want.UserID,

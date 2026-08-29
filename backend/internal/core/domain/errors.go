@@ -3,10 +3,9 @@ package domain
 import "errors"
 
 var (
-	ErrWalletNotFound      = errors.New("not found")
-	ErrWalletAlreadyExists = errors.New("already exists")
-	ErrWalletInternalError = errors.New("internal error")
-	ErrPriceNotFound       = errors.New("not found")
-	ErrAlertNotFound       = errors.New("not found")
-	ErrInvalidArgument     = errors.New("invalid argument")
+	ErrorNotFound             = errors.New("Not found")
+	ErrorWWalletAlreadyExists = errors.New("Already exists")
+	ErrorWWalletInternalError = errors.New("Internal error")
+	ErrInvalidArgument        = errors.New("Invalid argument")
+	ErrNotAllowedInDemoMode   = errors.New("Cannot work in demo mode")
 )

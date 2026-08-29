@@ -22,9 +22,9 @@ const fmtLarge = (n: number) => {
   return fmtUSD(n);
 };
 
-// ─── Default symbols to show initially ──────────────────────────────────
+// ─── Fallback symbols (used if API fails) ────────────────────────────────
 
-const DEFAULT_SYMBOLS = [
+const FALLBACK_SYMBOLS = [
   'BTC', 'ETH', 'SOL', 'BNB', 'XRP', 'ADA', 'DOGE', 'MATIC',
   'DOT', 'LINK', 'AVAX', 'UNI', 'SHIB', 'LTC', 'ATOM', 'ETC',
 ];
@@ -49,7 +49,9 @@ export default function MarketPage() {
     coinImageMap[c.symbol.toLowerCase()] = c.imageUrl;
   }
 
-  // Filter coins by search input, or show defaults
+  // Determine symbols to show:
+  // - If search: filter from allCoins
+  // - If no search: use ALL coins from API (or fallback if loading/error)
   const displayedSymbols =
     search.trim().length > 0
       ? allCoins
@@ -59,7 +61,9 @@ export default function MarketPage() {
             c.name.toLowerCase().includes(search.toLowerCase()),
         )
         .map((c) => c.symbol)
-      : DEFAULT_SYMBOLS;
+      : coinsLoading || coinsError
+        ? FALLBACK_SYMBOLS
+        : allCoins.map((c) => c.symbol);
 
   const {
     data: pricesData,
@@ -99,6 +103,29 @@ export default function MarketPage() {
 
       {/* Prices table */}
       <div className="rounded-xl border border-white/5 bg-white/[0.03] p-6">
+        {/* Show loading state for initial load (no search) */}
+        {!search.trim() && coinsLoading && !coinsError && (
+          <div className="text-center py-8">
+            <Spinner />
+            <p className="text-sm text-gray-500 mt-2">Loading market data...</p>
+          </div>
+        )}
+
+        {/* Show error state for initial load (no search) */}
+        {!search.trim() && coinsError && (
+          <div className="text-center py-8">
+            <p className="text-amber-400 text-sm mb-2">
+              Failed to load coin list — using defaults
+            </p>
+            <button
+              onClick={() => refetchCoins()}
+              className="text-xs text-purple-400 hover:text-purple-300 cursor-pointer"
+            >
+              Retry
+            </button>
+          </div>
+        )}
+
         {pricesLoading && !coinsLoading && <Spinner />}
 
         {!pricesLoading && prices.length > 0 && (

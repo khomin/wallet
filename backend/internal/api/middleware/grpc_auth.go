@@ -11,10 +11,6 @@ import (
 	"google.golang.org/grpc/status"
 )
 
-type TokenVerifier interface {
-	Verify(ctx context.Context, rawToken string) (domain.JwtClaims, error)
-}
-
 func UnaryAuthInterceptor(verifier TokenVerifier) grpc.UnaryServerInterceptor {
 	return func(
 		ctx context.Context,
@@ -42,7 +38,12 @@ func UnaryAuthInterceptor(verifier TokenVerifier) grpc.UnaryServerInterceptor {
 			return nil, status.Errorf(codes.Unauthenticated, "invalid or expired token: %v", err)
 		}
 
-		newCtx := SetOAUTH(ctx, claims)
+		newCtx := SetUser(ctx, domain.User{
+			ID:     claims.Subject,
+			Name:   claims.Name,
+			Email:  claims.Email,
+			IsDemo: claims.IsDemo,
+		})
 
 		return handler(newCtx, req)
 	}
@@ -63,11 +64,11 @@ const (
 	OAUTH = "oauth_claims"
 )
 
-func SetOAUTH(ctx context.Context, v domain.JwtClaims) context.Context {
+func SetUser(ctx context.Context, v domain.User) context.Context {
 	return context.WithValue(ctx, OAUTH, v)
 }
 
-func GetOAUTH(ctx context.Context) (*domain.JwtClaims, bool) {
-	v, ok := ctx.Value(OAUTH).(domain.JwtClaims)
+func GetUser(ctx context.Context) (*domain.User, bool) {
+	v, ok := ctx.Value(OAUTH).(domain.User)
 	return &v, ok
 }

@@ -30,11 +30,11 @@ func NewWalletGrpcHandler(walletService *core.WalletService, walletWorker *core.
 }
 
 func (s *WalletGrpcHandler) ListWallets(ctx context.Context, req *walletv1.ListWalletsRequest) (*walletv1.ListWalletsResponse, error) {
-	user, ok := middleware.GetOAUTH(ctx)
+	user, ok := middleware.GetUser(ctx)
 	if !ok {
 		return nil, status.Error(codes.Unauthenticated, "unauthorized")
 	}
-	wallets, err := s.walletService.ListWallets(ctx, domain.User{ID: user.Subject, Name: user.Name, Email: user.Email})
+	wallets, err := s.walletService.ListWallets(ctx, user)
 	if err != nil {
 		return nil, err
 	}
@@ -47,7 +47,7 @@ func (s *WalletGrpcHandler) ListWallets(ctx context.Context, req *walletv1.ListW
 			TokenSymbol:   i.Wallet.Symbol,
 			Label:         i.Wallet.Label,
 			BalanceCrypto: float32(i.Balance),
-			BalanceUsd:    float32(i.Balance),
+			BalanceUsd:    float32(i.BalanceUSD),
 			HasError:      i.HasError,
 			ErrorMsg:      i.ErrorMsg,
 			Price:         i.Price.ToGrpc(),
@@ -60,7 +60,7 @@ func (s *WalletGrpcHandler) ListWallets(ctx context.Context, req *walletv1.ListW
 }
 
 func (s *WalletGrpcHandler) GetWallet(ctx context.Context, req *walletv1.GetWalletRequest) (*walletv1.GetWalletResponse, error) {
-	user, ok := middleware.GetOAUTH(ctx)
+	user, ok := middleware.GetUser(ctx)
 	if !ok {
 		return nil, status.Error(codes.Unauthenticated, "unauthorized")
 	}
@@ -68,9 +68,9 @@ func (s *WalletGrpcHandler) GetWallet(ctx context.Context, req *walletv1.GetWall
 	if err != nil {
 		return nil, status.Error(codes.InvalidArgument, "id parameter is required")
 	}
-	wallet, err := s.walletService.GetWallet(ctx, domain.User{ID: user.Subject, Name: user.Name, Email: user.Email}, uuid)
+	wallet, err := s.walletService.GetWallet(ctx, user, uuid)
 	if err != nil {
-		if errors.Is(err, domain.ErrWalletNotFound) {
+		if errors.Is(err, domain.ErrorNotFound) {
 			return nil, status.Error(codes.NotFound, "wallet not found")
 		}
 		return nil, status.Error(codes.Internal, err.Error())
@@ -81,15 +81,15 @@ func (s *WalletGrpcHandler) GetWallet(ctx context.Context, req *walletv1.GetWall
 }
 
 func (s *WalletGrpcHandler) CreateWallet(ctx context.Context, req *walletv1.CreateWalletRequest) (*walletv1.CreateWalletResponse, error) {
-	user, ok := middleware.GetOAUTH(ctx)
+	user, ok := middleware.GetUser(ctx)
 	if !ok {
 		return nil, status.Error(codes.Unauthenticated, "unauthorized")
 	}
-	err := s.walletService.CreateWallet(ctx, domain.User{ID: user.Subject, Name: user.Name, Email: user.Email}, req.Chain, req.Address, req.TokenSymbol, req.Label)
+	err := s.walletService.CreateWallet(ctx, user, req.Chain, req.Address, req.TokenSymbol, req.Label)
 	if err != nil {
-		if errors.Is(err, domain.ErrWalletNotFound) {
+		if errors.Is(err, domain.ErrorNotFound) {
 			return nil, status.Error(codes.NotFound, "wallet not found")
-		} else if errors.Is(err, domain.ErrWalletAlreadyExists) {
+		} else if errors.Is(err, domain.ErrorWWalletAlreadyExists) {
 			return nil, status.Error(codes.AlreadyExists, "wallet already exists")
 		}
 		return nil, status.Error(codes.Internal, err.Error())
@@ -98,7 +98,7 @@ func (s *WalletGrpcHandler) CreateWallet(ctx context.Context, req *walletv1.Crea
 }
 
 func (s *WalletGrpcHandler) EditWallet(ctx context.Context, req *walletv1.EditWalletRequest) (*walletv1.EditWalletResponse, error) {
-	user, ok := middleware.GetOAUTH(ctx)
+	user, ok := middleware.GetUser(ctx)
 	if !ok {
 		return nil, status.Error(codes.Unauthenticated, "unauthorized")
 	}
@@ -106,9 +106,9 @@ func (s *WalletGrpcHandler) EditWallet(ctx context.Context, req *walletv1.EditWa
 	if err != nil {
 		return nil, status.Error(codes.InvalidArgument, "id parameter is required")
 	}
-	wallet, err := s.walletService.EditWallet(ctx, domain.User{ID: user.Subject, Name: user.Name, Email: user.Email}, uuid, req.Label)
+	wallet, err := s.walletService.EditWallet(ctx, user, uuid, req.Label)
 	if err != nil {
-		if errors.Is(err, domain.ErrWalletNotFound) {
+		if errors.Is(err, domain.ErrorNotFound) {
 			return nil, status.Error(codes.NotFound, "wallet not found")
 		}
 		return nil, status.Error(codes.Internal, err.Error())
@@ -120,7 +120,7 @@ func (s *WalletGrpcHandler) EditWallet(ctx context.Context, req *walletv1.EditWa
 }
 
 func (s *WalletGrpcHandler) DeleteWallet(ctx context.Context, req *walletv1.DeleteWalletRequest) (*walletv1.DeleteWalletResponse, error) {
-	user, ok := middleware.GetOAUTH(ctx)
+	user, ok := middleware.GetUser(ctx)
 	if !ok {
 		return nil, status.Error(codes.Unauthenticated, "unauthorized")
 	}
@@ -128,9 +128,9 @@ func (s *WalletGrpcHandler) DeleteWallet(ctx context.Context, req *walletv1.Dele
 	if err != nil {
 		return nil, status.Error(codes.InvalidArgument, "id parameter is required")
 	}
-	err = s.walletService.DeleteWallet(ctx, domain.User{ID: user.Subject, Name: user.Name, Email: user.Email}, uuid)
+	err = s.walletService.DeleteWallet(ctx, user, uuid)
 	if err != nil {
-		if errors.Is(err, domain.ErrWalletNotFound) {
+		if errors.Is(err, domain.ErrorNotFound) {
 			return nil, status.Error(codes.NotFound, err.Error())
 		}
 		return nil, status.Error(codes.Internal, err.Error())
@@ -145,12 +145,12 @@ func (s *WalletGrpcHandler) StreamWallet(
 	stream grpc.ServerStreamingServer[walletv1.WalletUpdate],
 ) error {
 	ctx := stream.Context()
-	user, ok := middleware.GetOAUTH(ctx)
+	user, ok := middleware.GetUser(ctx)
 	if !ok {
 		return status.Error(codes.Unauthenticated, "unauthorized")
 	}
-	channel, streamID := s.walletWorker.Subscribe(user.Subject)
-	defer s.walletWorker.UnSubscribe(user.Subject, streamID)
+	channel, streamID := s.walletWorker.Subscribe(user.ID)
+	defer s.walletWorker.UnSubscribe(user.ID, streamID)
 	for {
 		select {
 		case <-ctx.Done():

@@ -25,7 +25,7 @@ func TestAlertRepo(t *testing.T) {
 	//
 	// new user first
 	//
-	err = userRepo.EnsureExists(ctx, expectedUser)
+	err = userRepo.EnsureExists(ctx, &expectedUser)
 	if err != nil {
 		t.Fatal(err)
 	}

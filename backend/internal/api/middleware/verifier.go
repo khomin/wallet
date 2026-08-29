@@ -8,6 +8,10 @@ import (
 	"github.com/coreos/go-oidc/v3/oidc"
 )
 
+type TokenVerifier interface {
+	Verify(ctx context.Context, rawToken string) (domain.JwtClaims, error)
+}
+
 type tokenVerifier struct {
 	verifier *oidc.IDTokenVerifier
 }
@@ -33,7 +37,7 @@ func (v *tokenVerifier) Verify(ctx context.Context, rawToken string) (domain.Jwt
 	if err != nil {
 		return domain.JwtClaims{}, err
 	}
-	var claims map[string]interface{}
+	var claims map[string]any
 	if err := i.Claims(&claims); err != nil {
 		return domain.JwtClaims{}, err
 	}
@@ -41,5 +45,6 @@ func (v *tokenVerifier) Verify(ctx context.Context, rawToken string) (domain.Jwt
 		Email:   claims["email"].(string),
 		Subject: claims["sub"].(string),
 		Name:    claims["name"].(string),
+		IsDemo:  false,
 	}, nil
 }

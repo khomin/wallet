@@ -30,9 +30,10 @@ const fmtLarge = (n: number) => {
   return fmtUSD(n);
 };
 
-// ─── Popular coins to always show ────────────────────────────────────────
+// ─── Default fallback symbols (used if API fails) ────────────────────────
 
-const POPULAR_SYMBOLS = ['BTC', 'ETH', 'SOL', 'BNB', 'XRP', 'ADA', 'DOGE', 'MATIC'];
+const FALLBACK_SYMBOLS = ['BTC', 'ETH', 'SOL', 'BNB', 'XRP', 'ADA', 'DOGE', 'MATIC'];
+const DISPLAY_LIMIT = 8;
 
 // ─── Component ────────────────────────────────────────────────────────────
 
@@ -40,14 +41,25 @@ export default function DashboardPage() {
   const navigate = useNavigate();
 
   const { data: walletsData, isLoading: walletsLoading } = useWallets();
-  const { data: pricesData, isLoading: pricesLoading } = usePrices(POPULAR_SYMBOLS);
-  const { data: coinsData } = useCoins();
+  const {
+    data: coinsData,
+    isLoading: coinsLoading,
+    isError: coinsError,
+    refetch: refetchCoins,
+  } = useCoins();
 
   // Build a lookup map: symbol → image_url
   const coinImageMap: Record<string, string> = {};
   for (const c of coinsData?.token ?? []) {
     coinImageMap[c.symbol.toLowerCase()] = c.imageUrl;
   }
+
+  // Determine symbols to show: top 8 from API, or fallback if loading/error
+  const allCoins = coinsData?.token ?? [];
+  const apiSymbols = allCoins.slice(0, DISPLAY_LIMIT).map((c) => c.symbol.toUpperCase());
+  const displaySymbols = coinsLoading || coinsError ? FALLBACK_SYMBOLS : apiSymbols;
+
+  const { data: pricesData, isLoading: pricesLoading } = usePrices(displaySymbols);
 
   const wallets = walletsData?.wallet ?? [];
   const totalBalance = wallets.reduce((acc, w) => acc + w.balanceUsd, 0);
@@ -221,13 +233,43 @@ export default function DashboardPage() {
 
       {/* Market Overview */}
       <div className="rounded-xl border border-white/5 bg-white/[0.03] p-6">
-        <h2 className="text-sm font-semibold text-white mb-4">
-          📈 Market Overview
-        </h2>
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-sm font-semibold text-white">
+            📈 Market Overview
+          </h2>
+          <button
+            onClick={() => navigate('/market')}
+            className="text-xs text-purple-400 hover:text-purple-300 transition-colors cursor-pointer"
+          >
+            View all →
+          </button>
+        </div>
 
-        {pricesLoading && <Spinner />}
+        {/* Coins loading/error state (for the market overview) */}
+        {coinsLoading && !coinsError && (
+          <div className="text-center py-8">
+            <Spinner />
+            <p className="text-sm text-gray-500 mt-2">Loading market data...</p>
+          </div>
+        )}
 
-        {!pricesLoading && prices.length > 0 && (
+        {coinsError && (
+          <div className="text-center py-8">
+            <p className="text-amber-400 text-sm mb-2">
+              Failed to load coin list — using defaults
+            </p>
+            <button
+              onClick={() => refetchCoins()}
+              className="text-xs text-purple-400 hover:text-purple-300 cursor-pointer"
+            >
+              Retry
+            </button>
+          </div>
+        )}
+
+        {!coinsLoading && !coinsError && pricesLoading && <Spinner />}
+
+        {!coinsLoading && !coinsError && !pricesLoading && prices.length > 0 && (
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
@@ -298,7 +340,7 @@ export default function DashboardPage() {
           </div>
         )}
 
-        {!pricesLoading && prices.length === 0 && (
+        {!coinsLoading && !coinsError && !pricesLoading && prices.length === 0 && (
           <p className="text-sm text-gray-500 py-8 text-center">
             Market data unavailable.
           </p>

@@ -39,7 +39,7 @@ func (r *userRepo) List(ctx context.Context) ([]domain.User, error) {
 	return out, nil
 }
 
-func (r *userRepo) EnsureExists(ctx context.Context, user domain.User) error {
+func (r *userRepo) EnsureExists(ctx context.Context, user *domain.User) error {
 	query := `INSERT INTO users (id, name, email) 
 		VALUES ($1, $2, $3)
 		ON CONFLICT (id)

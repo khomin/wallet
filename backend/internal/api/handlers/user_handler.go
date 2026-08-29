@@ -22,12 +22,12 @@ func NewUserHandler(repo core.UserRepo) userv1.UserServiceServer {
 }
 
 func (p *UserHandler) GetUser(ctx context.Context, req *userv1.GetCurrentUserRequest) (*userv1.GetCurrentUserResponse, error) {
-	user, ok := middleware.GetOAUTH(ctx)
+	user, ok := middleware.GetUser(ctx)
 	if !ok {
 		return nil, status.Error(codes.Unauthenticated, "unauthorized")
 	}
 	return &userv1.GetCurrentUserResponse{
-		Id:   user.Subject,
+		Id:   user.ID,
 		Name: user.Name,
 	}, nil
 }
