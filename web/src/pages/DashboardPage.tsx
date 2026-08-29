@@ -93,92 +93,6 @@ export default function DashboardPage() {
         />
       </div>
 
-      {/* Market Overview */}
-      <div className="rounded-xl border border-white/5 bg-white/[0.03] p-6">
-        <h2 className="text-sm font-semibold text-white mb-4">
-          📈 Market Overview
-        </h2>
-
-        {pricesLoading && <Spinner />}
-
-        {!pricesLoading && prices.length > 0 && (
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="border-b border-white/5 text-left">
-                  <th className="pb-3 text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Coin
-                  </th>
-                  <th className="pb-3 text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Price
-                  </th>
-                  <th className="pb-3 text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    24h Change
-                  </th>
-                  <th className="pb-3 text-xs font-medium text-gray-500 uppercase tracking-wider hidden sm:table-cell">
-                    Market Cap
-                  </th>
-                  <th className="pb-3 text-xs font-medium text-gray-500 uppercase tracking-wider hidden sm:table-cell">
-                    Volume (24h)
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                {prices.map((coin) => (
-                  <tr
-                    key={coin.symbol}
-                    className="border-b border-white/[0.02] hover:bg-white/[0.02] transition-colors"
-                  >
-                    <td className="py-3 pr-4">
-                      <div className="flex items-center gap-2 ml-2">
-                        <img
-                          src={coinImageMap[coin.symbol.toLowerCase()]}
-                          alt={coin.symbol}
-                          className="w-5 h-5 rounded-full"
-                          onError={(e) => {
-                            (e.currentTarget as HTMLImageElement).style.display = 'none';
-                          }}
-                        />
-                        <span className="font-medium text-white">
-                          {coin.symbol.toUpperCase()}
-                        </span>
-                        <span className="text-xs text-gray-500">{coin.name}</span>
-                      </div>
-                    </td>
-                    <td className="py-3 pr-4 text-gray-200 font-mono text-xs">
-                      {fmtUSD(coin.priceUsd)}
-                    </td>
-                    <td className="py-3 pr-4">
-                      <span
-                        className={
-                          coin.priceChangePercentage24h >= 0
-                            ? 'text-green-400'
-                            : 'text-red-400'
-                        }
-                      >
-                        {fmtPct(coin.priceChangePercentage24h)}
-                      </span>
-                    </td>
-                    <td className="py-3 pr-4 text-gray-400 font-mono text-xs hidden sm:table-cell">
-                      {fmtLarge(coin.marketCap)}
-                    </td>
-                    <td className="py-3 text-gray-400 font-mono text-xs hidden sm:table-cell">
-                      {fmtLarge(coin.totalVolume)}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
-
-        {!pricesLoading && prices.length === 0 && (
-          <p className="text-sm text-gray-500 py-8 text-center">
-            Market data unavailable.
-          </p>
-        )}
-      </div>
-
       {/* Wallet Snapshot */}
       <div className="rounded-xl border border-white/5 bg-white/[0.03] p-6">
         <div className="flex items-center justify-between mb-4">
@@ -302,6 +216,92 @@ export default function DashboardPage() {
               </tbody>
             </table>
           </div>
+        )}
+      </div>
+
+      {/* Market Overview */}
+      <div className="rounded-xl border border-white/5 bg-white/[0.03] p-6">
+        <h2 className="text-sm font-semibold text-white mb-4">
+          📈 Market Overview
+        </h2>
+
+        {pricesLoading && <Spinner />}
+
+        {!pricesLoading && prices.length > 0 && (
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b border-white/5 text-left">
+                  <th className="pb-3 text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Coin
+                  </th>
+                  <th className="pb-3 text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Price
+                  </th>
+                  <th className="pb-3 text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    24h Change
+                  </th>
+                  <th className="pb-3 text-xs font-medium text-gray-500 uppercase tracking-wider hidden sm:table-cell">
+                    Market Cap
+                  </th>
+                  <th className="pb-3 text-xs font-medium text-gray-500 uppercase tracking-wider hidden sm:table-cell">
+                    Volume (24h)
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                {prices.map((coin) => (
+                  <tr
+                    key={coin.symbol}
+                    className="border-b border-white/[0.02] hover:bg-white/[0.02] transition-colors"
+                  >
+                    <td className="py-3 pr-4">
+                      <div className="flex items-center gap-2 ml-2">
+                        <img
+                          src={coinImageMap[coin.symbol.toLowerCase()]}
+                          alt={coin.symbol}
+                          className="w-5 h-5 rounded-full"
+                          onError={(e) => {
+                            (e.currentTarget as HTMLImageElement).style.display = 'none';
+                          }}
+                        />
+                        <span className="font-medium text-white">
+                          {coin.symbol.toUpperCase()}
+                        </span>
+                        <span className="text-xs text-gray-500">{coin.name}</span>
+                      </div>
+                    </td>
+                    <td className="py-3 pr-4 text-gray-200 font-mono text-xs">
+                      {fmtUSD(coin.priceUsd)}
+                    </td>
+                    <td className="py-3 pr-4">
+                      <span
+                        className={
+                          coin.priceChangePercentage24h >= 0
+                            ? 'text-green-400'
+                            : 'text-red-400'
+                        }
+                      >
+                        {fmtPct(coin.priceChangePercentage24h)}
+                      </span>
+                    </td>
+                    <td className="py-3 pr-4 text-gray-400 font-mono text-xs hidden sm:table-cell">
+                      {fmtLarge(coin.marketCap)}
+                    </td>
+                    <td className="py-3 text-gray-400 font-mono text-xs hidden sm:table-cell">
+                      {fmtLarge(coin.totalVolume)}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+
+        {!pricesLoading && prices.length === 0 && (
+          <p className="text-sm text-gray-500 py-8 text-center">
+            Market data unavailable.
+          </p>
         )}
       </div>
     </div>
