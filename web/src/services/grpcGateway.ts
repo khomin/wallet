@@ -289,26 +289,37 @@ export const priceService = {
     const decoder = new TextDecoder();
     let buffered = '';
 
+    // ─── Abort handling (mirrors streamWallets) ───
+    const abortHandler = () => {
+      reader.cancel().catch(() => { });
+    };
+    signal?.addEventListener('abort', abortHandler, { once: true });
+
     const consume = (line: string): PriceUpdate | undefined => {
       const trimmed = line.trim();
       if (!trimmed) return undefined;
       return fromJsonString(PriceUpdateSchema, trimmed, { ignoreUnknownFields: true });
     };
 
-    while (true) {
-      const { done, value } = await reader.read();
-      buffered += decoder.decode(value, { stream: !done });
-      const lines = buffered.split(/\r?\n/);
-      buffered = lines.pop() ?? '';
-      for (const line of lines) {
-        const update = consume(line);
-        if (update) yield update;
+    try {
+      while (true) {
+        const { done, value } = await reader.read();
+        buffered += decoder.decode(value, { stream: !done });
+        const lines = buffered.split(/\r?\n/);
+        buffered = lines.pop() ?? '';
+        for (const line of lines) {
+          const update = consume(line);
+          if (update) yield update;
+        }
+        if (done) {
+          const update = consume(buffered);
+          if (update) yield update;
+          break;
+        }
       }
-      if (done) {
-        const update = consume(buffered);
-        if (update) yield update;
-        break;
-      }
+    } finally {
+      signal?.removeEventListener('abort', abortHandler);
+      reader.releaseLock();
     }
   },
 };
