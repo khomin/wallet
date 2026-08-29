@@ -7,7 +7,6 @@ import {
   Bell,
   ChartNoAxesCombined,
   LayoutDashboard,
-  LogOut,
   Menu,
   Settings2,
   Tag,
@@ -87,7 +86,7 @@ export default function Layout() {
           </div>
           <div>
             <div className="text-[15px] font-semibold tracking-tight text-white">WhaleTracker</div>
-            <div className="mt-0.5 text-[10px] font-medium uppercase tracking-[0.18em] text-slate-500">Portfolio intelligence</div>
+            <div className="mt-0.5 text-[11px] font-medium text-slate-400 truncate">{displayName}</div>
           </div>
         </div>
 
@@ -138,8 +137,8 @@ export default function Layout() {
 
       {/* ── Main content area ────────────────────────────────────────── */}
       <div className="flex min-w-0 flex-1 flex-col">
-        {/* Top bar */}
-        <header className="flex shrink-0 items-center justify-between border-b border-white/[0.07] px-4 py-3 lg:px-8 lg:py-4">
+        {/* Top bar - compact, just mobile menu button */}
+        <header className="flex shrink-0 items-center border-b border-white/[0.07] px-4 py-2.5 lg:px-8 lg:py-3">
           {/* Mobile menu button */}
           <button
             className="lg:hidden inline-flex items-center justify-center p-2 rounded-lg text-gray-400 hover:text-white hover:bg-white/5 transition-colors cursor-pointer"
@@ -154,26 +153,6 @@ export default function Layout() {
               <Menu size={20} aria-hidden="true" />
             )}
           </button>
-
-          <div className="flex-1 lg:flex-none" />
-
-          <div className="flex items-center gap-3">
-            <div className="flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-1.5 hidden sm:flex">
-              <div className="flex h-7 w-7 items-center justify-center rounded-full bg-gradient-to-br from-violet-500 to-indigo-600 text-xs font-bold">
-                {displayName.charAt(0).toUpperCase()}
-              </div>
-              <span className="text-sm text-gray-300">{displayName}</span>
-            </div>
-
-            <button
-              onClick={logout}
-              className="inline-flex items-center gap-2 rounded-lg border border-white/10 px-3 py-1.5 text-sm text-gray-400
-                         transition-colors hover:border-red-500/40 hover:text-red-400 cursor-pointer"
-            >
-              <LogOut aria-hidden="true" size={15} />
-              <span className="hidden sm:inline">Log out</span>
-            </button>
-          </div>
         </header>
 
         {/* Page content injected by router */}
