@@ -13,6 +13,7 @@ const STORAGE_KEYS = {
   expiresAt: 'kc_expires_at',    // Unix timestamp (ms)
   codeVerifier: 'kc_code_verifier', // Temporary – only needed during the callback
   oauthState: 'kc_oauth_state',   // Temporary – CSRF guard
+  userInfo: 'kc_user_info',       // Cached decoded user info (for demo + real tokens)
 } as const;
 
 // ── Token payload shape (what we care about) ─────────────────────────────────
@@ -187,16 +188,18 @@ class KeycloakService {
     const token = this.getAccessToken();
     if (!token) return null;
 
+    // Try cached user info first (works for both demo and real tokens after login)
+    const cached = sessionStorage.getItem(STORAGE_KEYS.userInfo);
+    if (cached) {
+      try {
+        return JSON.parse(cached) as UserInfo;
+      } catch {
+        // Fall through to decode
+      }
+    }
+
     // Demo token doesn't have a real JWT payload
     if (token === 'demo_token') {
-      const userInfoStr = sessionStorage.getItem('kc_user_info');
-      if (userInfoStr) {
-        try {
-          return JSON.parse(userInfoStr) as UserInfo;
-        } catch {
-          return { sub: 'demo-user', preferred_username: 'demo_whale', name: 'Demo Whale' };
-        }
-      }
       return { sub: 'demo-user', preferred_username: 'demo_whale', name: 'Demo Whale' };
     }
 
@@ -212,14 +215,13 @@ class KeycloakService {
   // ── Clear all stored tokens ───────────────────────────────────────────────
   clearTokens(): void {
     Object.values(STORAGE_KEYS).forEach((key) => sessionStorage.removeItem(key));
-    sessionStorage.removeItem('kc_user_info');
   }
 
   // ─── Private ──────────────────────────────────────────────────────────────
   private _storeTokens(tokens: TokenResponse): void {
     sessionStorage.setItem(STORAGE_KEYS.accessToken, tokens.access_token);
     if (tokens.id_token) {
-      sessionStorage.setItem(STORAGE_KEYS.idToken, tokens.id_token); // <-- ADD THIS
+      sessionStorage.setItem(STORAGE_KEYS.idToken, tokens.id_token);
     }
     if (tokens.refresh_token) {
       sessionStorage.setItem(STORAGE_KEYS.refreshToken, tokens.refresh_token);
@@ -227,6 +229,16 @@ class KeycloakService {
     // Convert expires_in (seconds) to an absolute timestamp
     const expiresAt = Date.now() + tokens.expires_in * 1000;
     sessionStorage.setItem(STORAGE_KEYS.expiresAt, String(expiresAt));
+
+    // Decode and cache user info from the ID token (or access token fallback)
+    const idToken = tokens.id_token ?? tokens.access_token;
+    try {
+      const payload = idToken.split('.')[1];
+      const decoded = JSON.parse(atob(payload.replace(/-/g, '+').replace(/_/g, '/')));
+      sessionStorage.setItem(STORAGE_KEYS.userInfo, JSON.stringify(decoded));
+    } catch {
+      // If decode fails, don't cache
+    }
   }
 }
 

@@ -58,6 +58,24 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   // ── Bootstrap: check existing token on first render ───────────────────────
   useEffect(() => {
     const init = async () => {
+      // Check for demo mode first
+      const token = sessionStorage.getItem('kc_access_token');
+      if (token === 'demo_token') {
+        const expiresAt = sessionStorage.getItem('kc_expires_at');
+        if (expiresAt && Date.now() < Number(expiresAt)) {
+          // Demo token is valid - use getUserInfo which reads cached user info
+          const userInfo = keycloakService.getUserInfo();
+          if (userInfo) {
+            setUser(userInfo);
+          }
+          setAccessToken('demo_token');
+          setIsAuthenticated(true);
+          setIsDemo(true);
+          setIsInitialized(true);
+          return;
+        }
+      }
+
       if (keycloakService.isAuthenticated()) {
         // Token is still valid – hydrate state
         _syncState();
@@ -107,18 +125,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const startDemo = useCallback(() => {
     const now = Date.now();
-    sessionStorage.setItem('kc_access_token', 'demo_token');
-    sessionStorage.setItem('kc_id_token', 'demo_id_token');
-    sessionStorage.setItem('kc_expires_at', String(now + 24 * 60 * 60 * 1000)); // 24h
-    sessionStorage.setItem('kc_refresh_token', 'demo_refresh_token');
-    sessionStorage.setItem('kc_user_info', JSON.stringify({
+    const demoUser: UserInfo = {
       sub: 'demo-user',
       preferred_username: 'demo_whale',
       name: 'Demo Whale',
       email: 'demo@whaletracker.app',
-    }));
+    };
+    sessionStorage.setItem('kc_access_token', 'demo_token');
+    sessionStorage.setItem('kc_id_token', 'demo_id_token');
+    sessionStorage.setItem('kc_expires_at', String(now + 24 * 60 * 60 * 1000)); // 24h
+    sessionStorage.setItem('kc_refresh_token', 'demo_refresh_token');
+    sessionStorage.setItem('kc_user_info', JSON.stringify(demoUser));
     setAccessToken('demo_token');
-    setUser({ sub: 'demo-user', preferred_username: 'demo_whale', name: 'Demo Whale', email: 'demo@whaletracker.app' });
+    setUser(demoUser);
     setIsAuthenticated(true);
     setIsDemo(true);
   }, []);

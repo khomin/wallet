@@ -7,5 +7,5 @@ var (
 	ErrorWWalletAlreadyExists = errors.New("Already exists")
 	ErrorWWalletInternalError = errors.New("Internal error")
 	ErrInvalidArgument        = errors.New("Invalid argument")
-	ErrNotAllowedInDemoMode   = errors.New("Cannot work in demo mode")
+	ErrNotAllowedInDemoMode   = errors.New("Not allowed in demo mode")
 )
