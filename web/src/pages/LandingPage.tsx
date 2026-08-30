@@ -7,10 +7,10 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../auth/AuthContext';
 
 export default function LandingPage() {
-  const { login, isAuthenticated, isInitialized } = useAuth();
+  const { login, startDemo, isAuthenticated, isInitialized } = useAuth();
   const navigate = useNavigate();
 
-  // If already logged in, skip the landing page entirely
+  // If already logged in (or demo started), skip the landing page entirely
   useEffect(() => {
     if (isInitialized && isAuthenticated) {
       navigate('/dashboard', { replace: true });
@@ -44,25 +44,39 @@ export default function LandingPage() {
           </div>
           <span className="text-lg font-semibold tracking-tight">WhaleTracker</span>
         </div>
-        <button
-          onClick={login}
-          className="group relative inline-flex items-center gap-2 rounded-lg border border-white/10 bg-white/5 px-4 py-2 text-sm font-medium text-gray-200
-                     hover:border-purple-500/40 hover:bg-purple-500/10 hover:text-purple-200 transition-all cursor-pointer"
-        >
-          Log in
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            className="h-3.5 w-3.5 opacity-60 group-hover:opacity-100 group-hover:translate-x-0.5 transition-all"
-            viewBox="0 0 20 20"
-            fill="currentColor"
+        <div className="flex items-center gap-3">
+          <button
+            onClick={startDemo}
+            className="group relative inline-flex items-center gap-2 rounded-lg border border-amber-500/30 bg-amber-500/10 px-4 py-2 text-sm font-medium text-amber-300
+                       hover:border-amber-500/50 hover:bg-amber-500/15 hover:text-amber-200 transition-all cursor-pointer"
           >
-            <path
-              fillRule="evenodd"
-              d="M10.293 3.293a1 1 0 011.414 0l6 6a1 1 0 010 1.414l-6 6a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-4.293-4.293a1 1 0 010-1.414z"
-              clipRule="evenodd"
-            />
-          </svg>
-        </button>
+            <span className="flex h-4 w-4 items-center justify-center">
+              <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M15 15l-2 5L9 9l11 4-5 2zm0 0l5 5M7.188 2.239l.777 2.897M5.136 7.965l-2.898-.777M13.95 4.05l-2.122 2.122m-5.657 5.656l-2.12 2.122" />
+              </svg>
+            </span>
+            Try Demo
+          </button>
+          <button
+            onClick={login}
+            className="group relative inline-flex items-center gap-2 rounded-lg border border-white/10 bg-white/5 px-4 py-2 text-sm font-medium text-gray-200
+                       hover:border-purple-500/40 hover:bg-purple-500/10 hover:text-purple-200 transition-all cursor-pointer"
+          >
+            Log in
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              className="h-3.5 w-3.5 opacity-60 group-hover:opacity-100 group-hover:translate-x-0.5 transition-all"
+              viewBox="0 0 20 20"
+              fill="currentColor"
+            >
+              <path
+                fillRule="evenodd"
+                d="M10.293 3.293a1 1 0 011.414 0l6 6a1 1 0 010 1.414l-6 6a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-4.293-4.293a1 1 0 010-1.414z"
+                clipRule="evenodd"
+              />
+            </svg>
+          </button>
+        </div>
       </header>
 
       {/* ── Hero ────────────────────────────────────────────────────────── */}
@@ -98,31 +112,59 @@ export default function LandingPage() {
         </p>
 
         {/* CTA */}
-        <button
-          onClick={login}
-          className="group relative mt-4 inline-flex items-center gap-3 rounded-xl bg-white px-8 py-4
-                     text-base font-semibold text-gray-950
-                     shadow-[0_0_40px_-8px_rgba(168,85,247,0.4)]
-                     hover:shadow-[0_0_60px_-8px_rgba(168,85,247,0.6)]
-                     hover:bg-gray-100 active:scale-[0.97] transition-all cursor-pointer"
-        >
-          Get Started
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            className="h-4 w-4 group-hover:translate-x-0.5 transition-transform"
-            viewBox="0 0 20 20"
-            fill="currentColor"
+        <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mt-4">
+          <button
+            onClick={login}
+            className="group relative inline-flex items-center gap-3 rounded-xl bg-white px-8 py-4
+                       text-base font-semibold text-gray-950
+                       shadow-[0_0_40px_-8px_rgba(168,85,247,0.4)]
+                       hover:shadow-[0_0_60px_-8px_rgba(168,85,247,0.6)]
+                       hover:bg-gray-100 active:scale-[0.97] transition-all cursor-pointer"
           >
-            <path
-              fillRule="evenodd"
-              d="M10.293 3.293a1 1 0 011.414 0l6 6a1 1 0 010 1.414l-6 6a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-4.293-4.293a1 1 0 010-1.414z"
-              clipRule="evenodd"
-            />
-          </svg>
-        </button>
+            Get Started
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              className="h-4 w-4 group-hover:translate-x-0.5 transition-transform"
+              viewBox="0 0 20 20"
+              fill="currentColor"
+            >
+              <path
+                fillRule="evenodd"
+                d="M10.293 3.293a1 1 0 011.414 0l6 6a1 1 0 010 1.414l-6 6a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-4.293-4.293a1 1 0 010-1.414z"
+                clipRule="evenodd"
+              />
+            </svg>
+          </button>
+
+          <button
+            onClick={startDemo}
+            className="group relative inline-flex items-center gap-3 rounded-xl border-2 border-amber-500/40 bg-amber-500/10 px-8 py-4
+                       text-base font-semibold text-amber-200
+                       hover:bg-amber-500/20 hover:border-amber-500/60 hover:text-amber-100
+                       hover:shadow-[0_0_40px_-8px_rgba(245,158,11,0.4)]
+                       active:scale-[0.97] transition-all cursor-pointer"
+          >
+            <svg className="h-4 w-4 group-hover:scale-110 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M15 15l-2 5L9 9l11 4-5 2zm0 0l5 5M7.188 2.239l.777 2.897M5.136 7.965l-2.898-.777M13.95 4.05l-2.122 2.122m-5.657 5.656l-2.12 2.122" />
+            </svg>
+            Try Demo Mode
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              className="h-4 w-4 group-hover:translate-x-0.5 transition-transform"
+              viewBox="0 0 20 20"
+              fill="currentColor"
+            >
+              <path
+                fillRule="evenodd"
+                d="M10.293 3.293a1 1 0 011.414 0l6 6a1 1 0 010 1.414l-6 6a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-4.293-4.293a1 1 0 010-1.414z"
+                clipRule="evenodd"
+              />
+            </svg>
+          </button>
+        </div>
 
         {/* Trust line */}
-        <p className="text-xs text-gray-600 flex items-center gap-3">
+        <p className="text-xs text-gray-600 flex items-center gap-3 justify-center">
           <span className="inline-flex items-center gap-1">
             <ShieldIcon className="h-3 w-3" /> Keycloak
           </span>
@@ -130,6 +172,8 @@ export default function LandingPage() {
           <span>PKCE OAuth2</span>
           <span className="h-3 w-px bg-gray-800" />
           <span>No seed phrases stored</span>
+          <span className="h-3 w-px bg-gray-800" />
+          <span className="text-amber-500/70">Demo mode available</span>
         </p>
       </main>
 

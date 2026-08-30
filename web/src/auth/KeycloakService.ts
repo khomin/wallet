@@ -109,6 +109,9 @@ class KeycloakService {
     const refresh = sessionStorage.getItem(STORAGE_KEYS.refreshToken);
     if (!refresh) return false;
 
+    // Don't try to refresh demo tokens
+    if (refresh === 'demo_refresh_token') return false;
+
     const body = new URLSearchParams({
       grant_type: 'refresh_token',
       client_id: KEYCLOAK_CONFIG.clientId,
@@ -139,6 +142,15 @@ class KeycloakService {
   // ── Logout: clear local state + redirect to Keycloak logout ──────────────
   logout(): void {
     const idToken = sessionStorage.getItem(STORAGE_KEYS.idToken);
+    const isDemo = sessionStorage.getItem(STORAGE_KEYS.accessToken) === 'demo_token';
+
+    if (isDemo) {
+      // Demo mode: just clear local storage and redirect to landing
+      this.clearTokens();
+      window.location.href = '/';
+      return;
+    }
+
     const params = new URLSearchParams({
       client_id: KEYCLOAK_CONFIG.clientId,
       post_logout_redirect_uri: window.location.origin,
@@ -155,6 +167,12 @@ class KeycloakService {
     const token = sessionStorage.getItem(STORAGE_KEYS.accessToken);
     const expiresAt = sessionStorage.getItem(STORAGE_KEYS.expiresAt);
     if (!token || !expiresAt) return false;
+
+    // Demo token is always valid until expiry
+    if (token === 'demo_token') {
+      return Date.now() < Number(expiresAt);
+    }
+
     // Give a 30-second buffer before the real expiry
     return Date.now() < Number(expiresAt) - 30_000;
   }
@@ -168,6 +186,20 @@ class KeycloakService {
   getUserInfo(): UserInfo | null {
     const token = this.getAccessToken();
     if (!token) return null;
+
+    // Demo token doesn't have a real JWT payload
+    if (token === 'demo_token') {
+      const userInfoStr = sessionStorage.getItem('kc_user_info');
+      if (userInfoStr) {
+        try {
+          return JSON.parse(userInfoStr) as UserInfo;
+        } catch {
+          return { sub: 'demo-user', preferred_username: 'demo_whale', name: 'Demo Whale' };
+        }
+      }
+      return { sub: 'demo-user', preferred_username: 'demo_whale', name: 'Demo Whale' };
+    }
+
     try {
       const payload = token.split('.')[1];
       const decoded = JSON.parse(atob(payload.replace(/-/g, '+').replace(/_/g, '/')));
@@ -180,6 +212,7 @@ class KeycloakService {
   // ── Clear all stored tokens ───────────────────────────────────────────────
   clearTokens(): void {
     Object.values(STORAGE_KEYS).forEach((key) => sessionStorage.removeItem(key));
+    sessionStorage.removeItem('kc_user_info');
   }
 
   // ─── Private ──────────────────────────────────────────────────────────────
