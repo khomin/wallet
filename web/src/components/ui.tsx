@@ -2,6 +2,7 @@
 // StatCard, Modal, Field – used across Dashboard, Wallets, etc.
 
 import type { ReactNode } from 'react';
+import { AlertTriangle, type LucideIcon } from 'lucide-react';
 
 // ── StatCard ──────────────────────────────────────────────────────────────
 
@@ -107,7 +108,7 @@ export function ErrorBlock({
 }) {
   return (
     <div className="flex flex-col items-center justify-center py-16 text-center">
-      <span className="text-4xl mb-4">⚠️</span>
+      <AlertTriangle className="h-10 w-10 text-amber-500 mb-4" aria-hidden="true" />
       <p className="text-gray-400 text-sm font-medium">{message}</p>
       {onRetry && (
         <button
@@ -124,17 +125,17 @@ export function ErrorBlock({
 // ── EmptyBlock ────────────────────────────────────────────────────────────
 
 export function EmptyBlock({
-  emoji,
+  icon: Icon,
   title,
   subtitle,
 }: {
-  emoji: string;
+  icon: LucideIcon;
   title: string;
   subtitle: string;
 }) {
   return (
     <div className="flex flex-col items-center justify-center py-16 text-center">
-      <span className="text-4xl mb-4">{emoji}</span>
+      <Icon className="h-10 w-10 text-purple-500/60 mb-4" aria-hidden="true" />
       <p className="text-gray-400 text-sm font-medium">{title}</p>
       <p className="text-gray-600 text-xs mt-1">{subtitle}</p>
     </div>

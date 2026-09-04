@@ -7,6 +7,7 @@ import WAValidator from 'multicoin-address-validator';
 import { useWallets, useCreateWallet, useDeleteWallet, useCoins } from '../hooks/useApi';
 import { Modal, Field, Spinner, ErrorBlock, EmptyBlock } from '../components/ui';
 import type { CreateWalletFormState } from '../types/api';
+import { WalletCards, AlertTriangle, Search } from 'lucide-react';
 
 // ─── Formatting helpers ──────────────────────────────────────────────────
 
@@ -139,8 +140,11 @@ export default function WalletsPage() {
 
   // ── Render ────────────────────────────────────────────────────────────
   return (
-    < div className="max-w-6xl mx-auto" >
-      <h1 className="text-xl font-semibold mb-6">👛 Wallets</h1>
+    <div className="max-w-6xl mx-auto">
+      <h1 className="text-xl font-semibold mb-6 flex items-center gap-2">
+        <WalletCards className="h-5 w-5" aria-hidden="true" />
+        Wallets
+      </h1>
 
       {/* Wallets table card */}
       <div className="rounded-xl border border-white/5 bg-white/[0.03] p-6">
@@ -165,7 +169,7 @@ export default function WalletsPage() {
         {/* Empty */}
         {!walletsLoading && !walletsError && wallets.length === 0 && (
           <EmptyBlock
-            emoji="🐋"
+            icon={Search}
             title="No wallets yet"
             subtitle="Add a wallet address to start tracking your portfolio."
           />
@@ -208,9 +212,7 @@ export default function WalletsPage() {
 
                     <td className="py-3 pr-4 font-mono text-xs">
                       {wallet.hasError ? (
-                        <span className="text-amber-500/80 text-3xl" title={wallet.errorMsg}>
-                          ⚠
-                        </span>
+                        <AlertTriangle className="h-5 w-5 text-amber-500" aria-label={wallet.errorMsg} />
                       ) : (
                         <span className="text-gray-200">{fmtUSD(wallet.balanceUsd)}</span>
                       )}
@@ -218,9 +220,7 @@ export default function WalletsPage() {
 
                     <td className="py-3 pr-4 font-mono text-xs">
                       {wallet.hasError ? (
-                        <span className="text-amber-500/80 text-3xl" title={wallet.errorMsg}>
-                          ⚠
-                        </span>
+                        <AlertTriangle className="h-5 w-5 text-amber-500" aria-label={wallet.errorMsg} />
                       ) : (
                         <span className="text-gray-200">{fmtCrypto(wallet.balanceCrypto)}</span>
                       )}
@@ -380,6 +380,6 @@ export default function WalletsPage() {
           </Modal>
         )
       }
-    </div >
+    </div>
   );
 }

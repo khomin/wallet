@@ -16,6 +16,7 @@ import {
   usePrices,
 } from '../hooks/useApi';
 import { EmptyBlock, ErrorBlock, Field, Modal, Spinner } from '../components/ui';
+import { Bell } from 'lucide-react';
 
 const fmtUSD = (value: number) =>
   new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 8 }).format(value);
@@ -150,7 +151,7 @@ export default function AlertsPage() {
         {isLoading && <Spinner />}
         {isError && <ErrorBlock message="Failed to load alerts" onRetry={() => refetch()} />}
         {!isLoading && !isError && alerts.length === 0 && (
-          <EmptyBlock emoji="🔔" title="No price alerts" subtitle="Create an alert to start watching a coin." />
+          <EmptyBlock icon={Bell} title="No price alerts" subtitle="Create an alert to start watching a coin." />
         )}
         {!isLoading && !isError && alerts.length > 0 && (
           <div className="overflow-x-auto">

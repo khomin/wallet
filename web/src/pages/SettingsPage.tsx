@@ -2,6 +2,7 @@
 // Notification preferences, currency, Keycloak profile link.
 
 import { useAuth } from '../auth/AuthContext';
+import { Settings2 } from 'lucide-react';
 
 export default function SettingsPage() {
   const { user, logout } = useAuth();
@@ -11,7 +12,10 @@ export default function SettingsPage() {
 
   return (
     <div className="max-w-6xl mx-auto space-y-6">
-      <h1 className="text-xl font-semibold">⚙️ Settings</h1>
+      <h1 className="text-xl font-semibold flex items-center gap-2">
+        <Settings2 className="h-5 w-5" aria-hidden="true" />
+        Settings
+      </h1>
 
       {/* Profile card */}
       <div className="rounded-xl border border-white/5 bg-white/[0.03] p-6">

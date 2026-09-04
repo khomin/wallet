@@ -4,6 +4,7 @@
 import { useState } from 'react';
 import { useCoins, usePrices } from '../hooks/useApi';
 import { Spinner, ErrorBlock } from '../components/ui';
+import { ChartNoAxesCombined } from 'lucide-react';
 
 // ─── Formatting helpers ──────────────────────────────────────────────────
 
@@ -74,7 +75,10 @@ export default function MarketPage() {
 
   return (
     <div className="max-w-6xl mx-auto space-y-6">
-      <h1 className="text-xl font-semibold">📈 Market</h1>
+      <h1 className="text-xl font-semibold flex items-center gap-2">
+        <ChartNoAxesCombined className="h-5 w-5" aria-hidden="true" />
+        Market
+      </h1>
 
       {/* Search */}
       <div className="relative">

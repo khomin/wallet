@@ -40,7 +40,7 @@ export default function LandingPage() {
       <header className="relative z-10 flex items-center justify-between px-6 sm:px-8 py-4 border-b border-white/[0.06] backdrop-blur-sm">
         <div className="flex items-center gap-2.5">
           <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-purple-500/15 ring-1 ring-purple-500/30">
-            <span className="text-lg">🐋</span>
+            <WhaleIcon className="h-5 w-5" />
           </div>
           <span className="text-lg font-semibold tracking-tight">WhaleTracker</span>
         </div>
@@ -267,6 +267,16 @@ function LockIcon() {
   return (
     <svg className="h-5 w-5 text-purple-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
       <path strokeLinecap="round" strokeLinejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+    </svg>
+  );
+}
+
+function WhaleIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
+      <path strokeLinecap="round" strokeLinejoin="round" d="M21 12c0 1.2-1.8 5.2-5 7.5-3.2-2.3-5-6.3-5-7.5 0-1.3 2.2-3 4.5-3.5.8.2 1.6.5 2.5.5s1.7-.3 2.5-.5C20.8 9 23 10.7 23 12z" />
+      <path strokeLinecap="round" strokeLinejoin="round" d="M16 12c0 1.5-1.2 3-2.5 3.5S11 15 11 13.5s1.2-3 2.5-3.5" />
+      <circle cx="16" cy="10" r="1.5" fill="currentColor" />
     </svg>
   );
 }

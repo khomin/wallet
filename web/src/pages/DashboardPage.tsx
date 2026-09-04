@@ -5,6 +5,7 @@
 import { useNavigate } from 'react-router-dom';
 import { useWallets, usePrices, useCoins } from '../hooks/useApi';
 import { StatCard, Spinner } from '../components/ui';
+import { LayoutDashboard, WalletCards, ChartNoAxesCombined, AlertTriangle } from 'lucide-react';
 
 // ─── Formatting helpers ──────────────────────────────────────────────────
 
@@ -83,7 +84,10 @@ export default function DashboardPage() {
 
   return (
     <div className="max-w-6xl mx-auto space-y-8">
-      <h1 className="text-xl font-semibold">📊 Dashboard</h1>
+      <h1 className="text-xl font-semibold flex items-center gap-2">
+        <LayoutDashboard className="h-5 w-5" aria-hidden="true" />
+        Dashboard
+      </h1>
 
       {/* Stats row */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
@@ -108,8 +112,9 @@ export default function DashboardPage() {
       {/* Wallet Snapshot */}
       <div className="rounded-xl border border-white/5 bg-white/[0.03] p-6">
         <div className="flex items-center justify-between mb-4">
-          <h2 className="text-sm font-semibold text-white">
-            👛 Wallet Snapshot
+          <h2 className="text-sm font-semibold text-white flex items-center gap-2">
+            <WalletCards className="h-4 w-4" aria-hidden="true" />
+            Wallet Snapshot
           </h2>
           <button
             onClick={() => navigate('/wallets')}
@@ -183,9 +188,7 @@ export default function DashboardPage() {
 
                     <td className="py-3 pr-4 font-mono text-xs">
                       {wallet.hasError ? (
-                        <span className="text-amber-500/80 text-3xl" title={wallet.errorMsg}>
-                          ⚠
-                        </span>
+                        <AlertTriangle className="h-5 w-5 text-amber-500" aria-label={wallet.errorMsg} />
                       ) : (
                         <span className="text-gray-200">{fmtUSD(wallet.balanceUsd)}</span>
                       )}
@@ -193,9 +196,7 @@ export default function DashboardPage() {
 
                     <td className="py-3 pr-4 font-mono text-xs">
                       {wallet.hasError ? (
-                        <span className="text-amber-500/80 text-3xl" title={wallet.errorMsg}>
-                          ⚠
-                        </span>
+                        <AlertTriangle className="h-5 w-5 text-amber-500" aria-label={wallet.errorMsg} />
                       ) : (
                         <span className="text-gray-200">{fmtCryptoCompact(wallet.balanceCrypto)}</span>
                       )}
@@ -234,8 +235,9 @@ export default function DashboardPage() {
       {/* Market Overview */}
       <div className="rounded-xl border border-white/5 bg-white/[0.03] p-6">
         <div className="flex items-center justify-between mb-4">
-          <h2 className="text-sm font-semibold text-white">
-            📈 Market Overview
+          <h2 className="text-sm font-semibold text-white flex items-center gap-2">
+            <ChartNoAxesCombined className="h-4 w-4" aria-hidden="true" />
+            Market Overview
           </h2>
           <button
             onClick={() => navigate('/market')}
