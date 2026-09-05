@@ -64,18 +64,6 @@ export default function LandingPage() {
               />
             </svg>
           </button>
-          <button
-            onClick={startDemo}
-            className="group relative inline-flex items-center gap-2 rounded-lg border border-white/10 bg-white/[0.02] px-4 py-2 text-sm font-medium text-gray-300
-                       hover:border-white/15 hover:bg-white/[0.04] hover:text-gray-100 transition-all cursor-pointer"
-          >
-            <span className="flex h-4 w-4 items-center justify-center">
-              <svg className="h-4 w-4 opacity-70" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M15 15l-2 5L9 9l11 4-5 2zm0 0l5 5M7.188 2.239l.777 2.897M5.136 7.965l-2.898-.777M13.95 4.05l-2.122 2.122m-5.657 5.656l-2.12 2.122" />
-              </svg>
-            </span>
-            Try demo
-          </button>
         </div>
       </header>
 
@@ -134,6 +122,20 @@ export default function LandingPage() {
                 clipRule="evenodd"
               />
             </svg>
+          </button>
+
+          <button
+            onClick={startDemo}
+            className="group relative inline-flex items-center gap-2 rounded-xl border border-amber-500/30 bg-amber-500/10 px-5 py-3.5
+                       text-sm font-semibold text-amber-200 shadow-[0_0_30px_-12px_rgba(251,191,36,0.45)]
+                       hover:border-amber-400/60 hover:bg-amber-500/15 hover:text-amber-100 transition-all cursor-pointer"
+          >
+            <span className="flex h-4 w-4 items-center justify-center">
+              <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M15 15l-2 5L9 9l11 4-5 2zm0 0l5 5M7.188 2.239l.777 2.897M5.136 7.965l-2.898-.777M13.95 4.05l-2.122 2.122m-5.657 5.656l-2.12 2.122" />
+              </svg>
+            </span>
+            Try demo
           </button>
         </div>
 
