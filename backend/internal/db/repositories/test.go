@@ -3,10 +3,11 @@ package repositories
 import (
 	"context"
 	"tracker/config"
+	"tracker/internal/core/domain"
 	"tracker/internal/db"
 )
 
-func prepare() (context.Context, *db.DataBase, error) {
+func Prepare() (context.Context, *db.DataBase, error) {
 	ctx := context.Background()
 	cfg := config.Config{
 		Database: config.DatabaseConfig{
@@ -19,4 +20,12 @@ func prepare() (context.Context, *db.DataBase, error) {
 	}
 	db, err := db.NewDatabase(cfg.DSN())
 	return ctx, db, err
+}
+
+func DemoUser() domain.User {
+	return domain.User{
+		ID:    "auth|demo",
+		Name:  "Demo",
+		Email: "test@test.com",
+	}
 }

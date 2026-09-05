@@ -7,7 +7,7 @@ import (
 )
 
 func TestAlertRepo(t *testing.T) {
-	ctx, db, err := prepare()
+	ctx, db, err := Prepare()
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -15,11 +15,7 @@ func TestAlertRepo(t *testing.T) {
 	repo := NewAlertRepository(db)
 	userRepo := NewUserRepo(db)
 
-	expectedUser := domain.User{
-		ID:    "demo",
-		Name:  "Demo",
-		Email: "demo@demo.com",
-	}
+	expectedUser := DemoUser()
 	expectedSymbol := "ETH"
 
 	//

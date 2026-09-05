@@ -162,7 +162,7 @@ func (r *walletRepository) Create(ctx context.Context, userID string, chain stri
 			(SELECT id FROM coins WHERE symbol = $3), 
 			$4, $5
 		)
-		RETURNING id, user_id, address, chain, (SELECT symbol FROM coins WHERE symbol = $3), label, updated_at ;`
+		RETURNING id, user_id, address, chain, (SELECT symbol FROM coins WHERE symbol = $3), label, updated_at`
 	row := r.db.Pool.QueryRow(ctx, query,
 		address,
 		strings.ToUpper(chain),
@@ -190,13 +190,19 @@ func (r *walletRepository) Create(ctx context.Context, userID string, chain stri
 	return &out, nil
 }
 
-func (r *walletRepository) Edit(ctx context.Context, userID string, id uuid.UUID, label string) (*domain.Wallet, error) {
-	query := `UPDATE wallets SET label = $1
-		WHERE user_id = $2 AND id = $3
-		RETURNING id, user_id, address, chain, symbol, label, updated_at;`
+func (r *walletRepository) Update(ctx context.Context, userID string, id uuid.UUID, label string) (*domain.Wallet, error) {
+	query := `
+		UPDATE wallets
+		SET label = $3
+			WHERE id = $1 AND user_id = $2
+		RETURNING 
+			id, user_id, address, chain, 
+			(SELECT coins.symbol FROM coins WHERE coins.id = wallets.coin_id), label, updated_at
+	`
 	row := r.db.Pool.QueryRow(ctx, query,
+		id,
+		userID,
 		label,
-		userID, id,
 	)
 	var wallet models.Wallet
 	if err := row.Scan(

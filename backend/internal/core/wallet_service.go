@@ -13,10 +13,10 @@ import (
 
 type WalletRepository interface {
 	List(ctx context.Context, userID string) ([]domain.WalletBalance, error)
-	Create(ctx context.Context, userID string, chain string, address string, symbol string, label string) (*domain.Wallet, error)
-	Edit(ctx context.Context, userID string, id uuid.UUID, label string) (*domain.Wallet, error)
-	Delete(ctx context.Context, userID string, id uuid.UUID) error
 	Get(ctx context.Context, userID string, id uuid.UUID) (*domain.WalletBalance, error)
+	Create(ctx context.Context, userID string, chain string, address string, symbol string, label string) (*domain.Wallet, error)
+	Update(ctx context.Context, userID string, id uuid.UUID, label string) (*domain.Wallet, error)
+	Delete(ctx context.Context, userID string, id uuid.UUID) error
 	UpdateBalance(ctx context.Context, userID string, id uuid.UUID, balance float64, balanceUSD float64) error
 	ListForSync(ctx context.Context, limit int) ([]domain.Wallet, error)
 }
@@ -106,7 +106,7 @@ func (s *WalletService) EditWallet(ctx context.Context, user *domain.User, id uu
 	if err := s.userRepo.EnsureExists(ctx, user); err != nil {
 		return nil, err
 	}
-	wallet, err := s.walletRepo.Edit(ctx, user.ID, id, label)
+	wallet, err := s.walletRepo.Update(ctx, user.ID, id, label)
 	if err != nil {
 		return nil, err
 	}
