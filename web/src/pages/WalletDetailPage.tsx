@@ -64,9 +64,16 @@ export default function WalletDetailPage() {
 
     return (
         <div className="max-w-6xl mx-auto">
-            <div className="mb-6 flex items-center justify-between">
+            <div className="mb-2 flex items-center justify-between">
                 <div>
-                    <button onClick={() => navigate(-1)} className="text-sm text-gray-400 hover:text-white mr-3">← Back</button>
+                    <button
+                        onClick={() => navigate(-1)}
+                        aria-label="Go back"
+                        title="Go back"
+                        className="inline-flex items-center gap-2 px-4 py-2 h-10 rounded-full bg-white/3 text-sm text-gray-300 hover:bg-white/8 hover:text-white mr-3 mb-2 transition focus:outline-none">
+                        <span className="text-lg leading-none">←</span>
+                        <span className="font-medium">Back</span>
+                    </button>
                     <h1 className="text-xl font-semibold mb-0">{wallet ? `${wallet.tokenSymbol} · ${wallet.label || wallet.address.slice(0, 6)}` : 'Wallet'}</h1>
                     <p className="text-xs text-gray-500 mt-1">{wallet?.address}</p>
                 </div>
