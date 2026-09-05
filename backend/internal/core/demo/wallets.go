@@ -72,39 +72,47 @@ var walletList = []domain.WalletBalance{
 	},
 }
 
-func (d *DemoWallets) GetWalletBalanceSnapshot(id uuid.UUID) ([]domain.WalletBalanceSnapshot, error) {
+func (d *DemoWallets) GetWalletBalanceSnapshot(
+	id uuid.UUID,
+	from time.Time,
+	to time.Time,
+) ([]domain.WalletBalanceSnapshot, error) {
 	_, found := d.Wallets[id.String()]
 	if !found {
 		return nil, domain.ErrorNotFound
 	}
+	now := time.Now()
+	start := now.AddDate(-5, 0, 0)
 	balanceCrypto := 123.0
 	balanceUSD := 456.0
-	balanceTime := time.Now().Add(-24 * time.Hour)
-
-	changesCrypto := []float64{
-		+2, +4, -1, +7, +3, -5, +2, 0, +6, -2,
-		+1, +12, -4, +3, +2, -1, +5, +8, -10, +2,
-		+4, +3, -2, +1, +15, -6, +2, 0, +3, -1,
-		+5, +2, -8, +4, +1, +20, -7, +3, -2, +4,
-		+1, +6, -3, +2, +5, -12, +4, +2, 0, +3,
-		-2, +7, +1, -4, +3, +2, +10, -5, +2, +1,
-		+4, -1, +3, -9, +2, +5, +1, 0, +6, -3,
-		+2, +14, -8, +3, +1, -2, +5, +4, -6, +2,
-		+1, +7, -3, +2, +3, -15, +5, +2, 0, +4,
-		-2, +6, +3, -1, +8, -4, +2, +11, -7, +5,
+	// Deterministic changes: realistic-ish movement without random tests.
+	changes := []float64{
+		+80, -12, +3, -70, +150, -4, +2, +1, -30, +90,
+		-110, +7, -2, +45, -8, +200, -150, +4, +3, -2,
+		+15, -5, -90, +180, -20, +2, -3, +5, +120, -200,
+		+8, +6, -4, -5, +250, -30, -180, +12, +3, +170,
+		-60, +2, -2, +4, -300, +50, +8, +9, -20, +220,
+		-100, +5, -3, +2, +400, -350, +20, -10, +5, +3,
+		-40, +180, -170, +15, +2, -3, +90, -20, +250, -200,
+		+4, +5, -7, +600, -500, +10, -3, +2, +30, -25,
+		+200, -150, +8, -5, +3, -300, +450, -50, +2, -1,
+		+700, -650, +20, -10, +5, +2, -100, +250, -200, +80,
 	}
-	out := make([]domain.WalletBalanceSnapshot, 0, len(changesCrypto))
-	for _, change := range changesCrypto {
+	out := make([]domain.WalletBalanceSnapshot, 0)
+	i := 0
+	for t := start; !t.After(now); t = t.Add(6 * time.Hour) {
+		change := changes[i%len(changes)]
 		balanceCrypto += change
-		// Keep USD somewhat correlated with crypto,
-		// but give it independent movement so the chart isn't perfectly linear.
-		balanceUSD += change*10 + float64(len(out)%5-2)*3
-		out = append(out, domain.WalletBalanceSnapshot{
-			Balance:    balanceCrypto,
-			BalanceUSD: balanceUSD,
-			Time:       balanceTime,
-		})
-		balanceTime = balanceTime.Add(10 * time.Minute)
+		// Some independent USD movement so the two charts aren't identical.
+		balanceUSD += change*10 + float64((i%7)-3)*8
+		if !t.Before(from) && !t.After(to) {
+			out = append(out, domain.WalletBalanceSnapshot{
+				Balance:    balanceCrypto,
+				BalanceUSD: balanceUSD,
+				Time:       t,
+			})
+		}
+		i++
 	}
 	return out, nil
 }

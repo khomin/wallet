@@ -119,7 +119,7 @@ export default function WalletDetailPage() {
                                             itemStyle={{ color: '#a855f7' }}
                                             labelStyle={{ color: '#94a3b8', fontSize: 12 }}
                                             labelFormatter={(t) => new Date(Number(t)).toLocaleString()}
-                                            formatter={(v: any) => fmtUSD(v)}
+                                            formatter={(v: any) => [fmtUSD(v)]}
                                         />
                                         <Area type="monotone" dataKey="value" stroke="#7c3aed" strokeWidth={2.5} dot={false} fillOpacity={1} fill="url(#colorUv)" />
                                     </AreaChart>

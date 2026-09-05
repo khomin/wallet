@@ -142,7 +142,7 @@ func (s *WalletService) FetchBalance(ctx context.Context, wallet domain.Wallet) 
 
 func (s *WalletService) GetBalanceSnapshot(ctx context.Context, user *domain.User, id uuid.UUID, filter BalanceSnapshotFilter) ([]domain.WalletBalanceSnapshot, error) {
 	if user.IsDemo {
-		return s.walletDemo.GetWalletBalanceSnapshot(id)
+		return s.walletDemo.GetWalletBalanceSnapshot(id, filter.From, filter.To)
 	}
 	if err := s.userRepo.EnsureExists(ctx, user); err != nil {
 		return nil, err
