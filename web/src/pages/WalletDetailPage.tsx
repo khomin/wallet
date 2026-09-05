@@ -3,6 +3,15 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { Spinner, ErrorBlock } from '../components/ui';
 import { useWallets, useWalletBalances, useCoins } from '../hooks/useApi';
 import { BalancePeriod } from '../gen/wallet/v1/wallet_pb';
+import {
+    ResponsiveContainer,
+    AreaChart,
+    Area,
+    XAxis,
+    YAxis,
+    Tooltip,
+    CartesianGrid,
+} from 'recharts';
 
 const PERIODS: { key: string; label: string; value: BalancePeriod }[] = [
     { key: '1D', label: '1D', value: BalancePeriod.BALANCE_PERIOD_1D },
@@ -48,18 +57,10 @@ export default function WalletDetailPage() {
         return list;
     }, [balancesData]);
 
-    const chart = useMemo(() => {
-        const width = 700; const height = 220; const pad = 24;
-        if (!points || points.length === 0) return { viewBox: `0 0 ${width} ${height}`, path: '', min: 0, max: 0 };
-        const times = points.map(p => p.t);
-        const vals = points.map(p => p.v);
-        const minT = Math.min(...times); const maxT = Math.max(...times);
-        const minV = Math.min(...vals); const maxV = Math.max(...vals);
-        const x = (t: number) => pad + ((t - minT) / Math.max(1, maxT - minT)) * (width - pad * 2);
-        const y = (v: number) => pad + (1 - (v - minV) / Math.max(1e-6, maxV - minV)) * (height - pad * 2);
-        const path = points.map((p, i) => `${i === 0 ? 'M' : 'L'} ${x(p.t)} ${y(p.v)}`).join(' ');
-        return { viewBox: `0 0 ${width} ${height}`, path, min: minV, max: maxV };
-    }, [points]);
+    const data = useMemo(
+        () => points.map((p) => ({ t: p.t, value: Number((p.v ?? 0).toFixed(6)) })),
+        [points],
+    );
 
     return (
         <div className="max-w-6xl mx-auto">
@@ -70,8 +71,11 @@ export default function WalletDetailPage() {
                     <p className="text-xs text-gray-500 mt-1">{wallet?.address}</p>
                 </div>
                 <div className="flex items-center gap-2">
-                    {PERIODS.map(p => (
-                        <button key={p.key} onClick={() => setPeriod(p.value)} className={`rounded-lg px-3 py-1 text-xs ${period === p.value ? 'bg-purple-600 text-white' : 'text-gray-400 bg-white/5'}`}>
+                    {PERIODS.map((p) => (
+                        <button
+                            key={p.key}
+                            onClick={() => setPeriod(p.value)}
+                            className={`rounded-lg px-3 py-1 text-xs ${period === p.value ? 'bg-purple-600 text-white' : 'text-gray-400 bg-white/5'}`}>
                             {p.label}
                         </button>
                     ))}
@@ -83,28 +87,51 @@ export default function WalletDetailPage() {
                 {isError && <ErrorBlock message="Failed to load balances" onRetry={() => refetch()} />}
                 {!isLoading && !isError && (
                     <div>
-                        <div className="mb-4 flex items-end justify-between">
-                            <div>
-                                <div className="text-2xl font-semibold">{fmtUSD(points[points.length - 1]?.v ?? 0)}</div>
-                                <div className="text-xs text-gray-500">Current balance (USD)</div>
+                        {/* Full-bleed chart wrapper: remove horizontal padding by negating card padding */}
+                        <div className="-mx-6">
+                            <div className="px-6">
+                                <div className="mb-4 flex items-start justify-between">
+                                    <div>
+                                        <div className="text-2xl font-semibold">{fmtUSD(points[points.length - 1]?.v ?? 0)}</div>
+                                        <div className="text-xs text-gray-500">Current balance (USD)</div>
+                                    </div>
+                                    <div className="text-xs text-gray-400">{points.length} points</div>
+                                </div>
                             </div>
-                            <div className="text-xs text-gray-400">{points.length} points</div>
-                        </div>
 
-                        <div className="overflow-x-auto">
-                            <svg viewBox={chart.viewBox} className="w-full h-56">
-                                <defs>
-                                    <linearGradient id="g" x1="0" x2="0" y1="0" y2="1">
-                                        <stop offset="0%" stopColor="#7c3aed" stopOpacity="0.35" />
-                                        <stop offset="100%" stopColor="#7c3aed" stopOpacity="0.03" />
-                                    </linearGradient>
-                                </defs>
-                                <rect x="0" y="0" width="100%" height="100%" fill="transparent" />
-                                {chart.path && <path d={chart.path} fill="none" stroke="#7c3aed" strokeWidth={2} strokeLinejoin="round" strokeLinecap="round" />}
-                                {chart.path && <path d={`${chart.path} L ${700 - 24} ${220 - 24} L ${24} ${220 - 24} Z`} fill="url(#g)" opacity={0.6} />}
-                            </svg>
+                            <div className="w-full">
+                                <ResponsiveContainer width="100%" height={260}>
+                                    <AreaChart data={data} margin={{ top: 0, right: 0, left: 0, bottom: 0 }}>
+                                        <defs>
+                                            <linearGradient id="colorUv" x1="0" x2="0" y1="0" y2="1">
+                                                <stop offset="0%" stopColor="#7c3aed" stopOpacity={0.35} />
+                                                <stop offset="100%" stopColor="#7c3aed" stopOpacity={0.03} />
+                                            </linearGradient>
+                                        </defs>
+                                        <CartesianGrid strokeDasharray="3 3" strokeOpacity={0.03} />
+                                        <XAxis
+                                            dataKey="t"
+                                            type="number"
+                                            scale="time"
+                                            domain={["dataMin", "dataMax"]}
+                                            tickFormatter={(t) => new Date(t).toLocaleDateString()}
+                                            axisLine={false}
+                                            tickLine={false}
+                                            padding={{ left: 0, right: 0 }}
+                                        />
+                                        <YAxis
+                                            dataKey="value"
+                                            domain={["dataMin", "dataMax"]}
+                                            axisLine={false}
+                                            tickLine={false}
+                                            tickFormatter={(v) => fmtUSD(v)}
+                                        />
+                                        <Tooltip labelFormatter={(t) => new Date(Number(t)).toLocaleString()} formatter={(v: any) => fmtUSD(v)} />
+                                        <Area type="monotone" dataKey="value" stroke="#7c3aed" fillOpacity={1} fill="url(#colorUv)" />
+                                    </AreaChart>
+                                </ResponsiveContainer>
+                            </div>
                         </div>
-
                     </div>
                 )}
             </div>
