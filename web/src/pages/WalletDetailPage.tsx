@@ -109,8 +109,8 @@ export default function WalletDetailPage() {
                             </div>
 
                             <div className="w-full">
-                                                <ResponsiveContainer width="100%" height={260}>
-                                                    <AreaChart data={chartData} margin={{ top: 0, right: 0, left: 0, bottom: 0 }}>
+                                <ResponsiveContainer width="100%" height={260}>
+                                    <AreaChart data={chartData} margin={{ top: 0, right: 0, left: 0, bottom: 0 }}>
                                         <defs>
                                             <linearGradient id="colorUv" x1="0" x2="0" y1="0" y2="1">
                                                 <stop offset="0%" stopColor="#7c3aed" stopOpacity={0.35} />
@@ -146,7 +146,7 @@ export default function WalletDetailPage() {
                             </div>
                         </div>
 
-                        <div className="mt-4 flex justify-center gap-2">
+                        <div className="mt-5 flex justify-center gap-4">
                             {PERIODS.map((p) => (
                                 <button
                                     key={p.key}

@@ -5,7 +5,7 @@
 import { useNavigate } from 'react-router-dom';
 import { useWallets, usePrices, useCoins } from '../hooks/useApi';
 import { StatCard, Spinner } from '../components/ui';
-import { LayoutDashboard, WalletCards, ChartNoAxesCombined, AlertTriangle } from 'lucide-react';
+import { LayoutDashboard, WalletCards, ChartNoAxesCombined, LucideCircleQuestionMark } from 'lucide-react';
 
 // ─── Formatting helpers ──────────────────────────────────────────────────
 
@@ -189,7 +189,7 @@ export default function DashboardPage() {
 
                     <td className="py-3 pr-4 font-mono text-xs">
                       {wallet.hasError ? (
-                        <AlertTriangle className="h-5 w-5 text-amber-500" aria-label={wallet.errorMsg} />
+                        <LucideCircleQuestionMark className="h-5 w-5 text-white-500" aria-label={wallet.errorMsg} />
                       ) : (
                         <span className="text-gray-200">{fmtUSD(wallet.balanceUsd)}</span>
                       )}
@@ -197,7 +197,7 @@ export default function DashboardPage() {
 
                     <td className="py-3 pr-4 font-mono text-xs">
                       {wallet.hasError ? (
-                        <AlertTriangle className="h-5 w-5 text-amber-500" aria-label={wallet.errorMsg} />
+                        <LucideCircleQuestionMark className="h-5 w-5 text-white-500" aria-label={wallet.errorMsg} />
                       ) : (
                         <span className="text-gray-200">{fmtCryptoCompact(wallet.balanceCrypto)}</span>
                       )}

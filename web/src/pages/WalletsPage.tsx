@@ -8,7 +8,7 @@ import WAValidator from 'multicoin-address-validator';
 import { useWallets, useCreateWallet, useDeleteWallet, useCoins } from '../hooks/useApi';
 import { Modal, Field, Spinner, ErrorBlock, EmptyBlock } from '../components/ui';
 import type { CreateWalletFormState } from '../types/api';
-import { WalletCards, AlertTriangle, Search } from 'lucide-react';
+import { WalletCards, Search, LucideCircleQuestionMark } from 'lucide-react';
 
 // ─── Formatting helpers ──────────────────────────────────────────────────
 
@@ -216,7 +216,7 @@ export default function WalletsPage() {
 
                     <td className="py-3 pr-4 font-mono text-xs">
                       {wallet.hasError ? (
-                        <AlertTriangle className="h-5 w-5 text-amber-500" aria-label={wallet.errorMsg} />
+                        <LucideCircleQuestionMark className="h-5 w-5 text-white-500" aria-label={wallet.errorMsg} />
                       ) : (
                         <span className="text-gray-200">{fmtUSD(wallet.balanceUsd)}</span>
                       )}
@@ -224,7 +224,7 @@ export default function WalletsPage() {
 
                     <td className="py-3 pr-4 font-mono text-xs">
                       {wallet.hasError ? (
-                        <AlertTriangle className="h-5 w-5 text-amber-500" aria-label={wallet.errorMsg} />
+                        <LucideCircleQuestionMark className="h-5 w-5 text-white-500" aria-label={wallet.errorMsg} />
                       ) : (
                         <span className="text-gray-200">{fmtCrypto(wallet.balanceCrypto)}</span>
                       )}
