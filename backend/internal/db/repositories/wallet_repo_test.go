@@ -70,7 +70,7 @@ func TestWalletRepo(t *testing.T) {
 	balanceUSD := 456.0
 	balanceTime := time.Now().Add(-time.Hour * 24)
 	for i := 0; i < 100; i++ {
-		err = repo.CreateBalanceSnapshot(ctx, expectedUser.ID, id, core.BalanceSnapshot{
+		err = repo.UpdateBalanceSnapshot(ctx, expectedUser.ID, id, core.BalanceSnapshot{
 			Crypto: balanceCrypto,
 			USD:    balanceUSD,
 			Time:   balanceTime,

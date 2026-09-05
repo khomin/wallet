@@ -28,7 +28,7 @@ func (r *walletRepository) List(ctx context.Context, userID string) ([]domain.Wa
 			w.id, w.user_id,  w.address, w.chain, coin.symbol, w.label, w.updated_at,
 			balance.value_crypto,
 			balance.value_usd,
-			balance.created_at,
+			balance.updated_at,
 			coin.id,
 			coin.symbol,
 			coin.coin_name,
@@ -43,12 +43,7 @@ func (r *walletRepository) List(ctx context.Context, userID string) ([]domain.Wa
 		FROM wallets w
 		LEFT JOIN coins coin ON coin.id = w.coin_id
 		LEFT JOIN coin_prices price ON price.id = w.coin_id
-		LEFT JOIN wallet_balances balance
-			ON balance.id = w.id
-			AND balance.created_at = (
-				select MAX(created_at) from wallet_balances
-				WHERE id = w.id
-			)
+		LEFT JOIN wallet_balances balance ON balance.id = w.id
 		ORDER BY w.updated_at ASC
 	`
 	rows, err := r.db.Pool.Query(ctx, query)
@@ -87,7 +82,7 @@ func (r *walletRepository) List(ctx context.Context, userID string) ([]domain.Wa
 		); err != nil {
 			return nil, err
 		}
-		wallets = append(wallets, walletToDomain2(w))
+		wallets = append(wallets, walletToDomainBalance(w))
 	}
 	if err := rows.Err(); err != nil {
 		return nil, err
@@ -99,7 +94,7 @@ func (r *walletRepository) Get(ctx context.Context, userID string, id uuid.UUID)
 	query := `
 		SELECT
 			w.id, w.user_id,  w.address, w.chain, coin.symbol, w.label, w.updated_at,
-			balance.value_crypto, balance.value_usd, balance.created_at,
+			balance.value_crypto, balance.value_usd, balance.updated_at,
 			coin.id, coin.symbol, coin.coin_name,
 			price.price_usd,
 			price.market_cap_usd,
@@ -112,12 +107,7 @@ func (r *walletRepository) Get(ctx context.Context, userID string, id uuid.UUID)
 		FROM wallets w
 		LEFT JOIN coins coin ON coin.id = w.coin_id
 		LEFT JOIN coin_prices price ON price.id = w.coin_id
-		LEFT JOIN wallet_balances balance
-			ON balance.id = w.id
-			AND balance.created_at = (
-				select MAX(created_at) from wallet_balances
-				WHERE id = w.id
-			)
+		LEFT JOIN wallet_balances balance ON balance.id = w.id
 		WHERE w.user_id = $1 AND w.id = $2
 	`
 	rows, err := r.db.Pool.Query(ctx, query,
@@ -158,7 +148,7 @@ func (r *walletRepository) Get(ctx context.Context, userID string, id uuid.UUID)
 		); err != nil {
 			return nil, err
 		}
-		out := walletToDomain2(w)
+		out := walletToDomainBalance(w)
 		return &out, nil
 	}
 	return nil, domain.ErrorNotFound
@@ -241,27 +231,47 @@ func (r *walletRepository) Delete(ctx context.Context, userID string, id uuid.UU
 	return err
 }
 
-func (r *walletRepository) CreateBalanceSnapshot(ctx context.Context, userID string, id uuid.UUID, snapshot core.BalanceSnapshot) error {
+func (r *walletRepository) UpdateBalanceSnapshot(ctx context.Context, userID string, id uuid.UUID, snapshot core.BalanceSnapshot) error {
 	query := `
-		INSERT INTO wallet_balances (
-			id,
+		WITH updated AS (
+			INSERT INTO wallet_balances (
+				id,
+				value_crypto,
+				value_usd,
+				updated_at
+			)
+			VALUES ($1, $2, $3, $4)
+			ON CONFLICT (id) DO UPDATE
+			SET
+				value_crypto = EXCLUDED.value_crypto,
+				value_usd = EXCLUDED.value_usd,
+				updated_at = EXCLUDED.updated_at
+			RETURNING
+				id,
+				value_crypto,
+				value_usd
+		)
+		INSERT INTO wallet_balance_snapshots (
+			wallet_id,
 			value_crypto,
 			value_usd,
 			created_at
 		)
 		SELECT
-			$1,
-			$2,
-			$3,
+			u.id,
+			u.value_crypto,
+			u.value_usd,
 			$4
-		WHERE (
-			SELECT value_crypto
-			FROM wallet_balances
-			WHERE id = $1
-			ORDER BY created_at DESC
+		FROM updated u
+		WHERE NOT EXISTS (
+			SELECT 1
+			FROM wallet_balance_snapshots s
+			WHERE s.wallet_id = u.id
+			AND s.value_crypto IS NOT DISTINCT FROM u.value_crypto
+			AND s.value_usd IS NOT DISTINCT FROM u.value_usd
+			ORDER BY s.created_at DESC
 			LIMIT 1
-		) IS DISTINCT FROM $2
-		RETURNING id, id, value_crypto, value_usd, created_at
+		);
 	`
 	_, err := r.db.Pool.Exec(ctx, query,
 		id,
@@ -287,9 +297,9 @@ func (r *walletRepository) GetBalanceSnapshot(ctx context.Context, userID string
 				wb.created_at,
 				row_number() OVER (ORDER BY wb.created_at) AS rn,
 				count(*) OVER () AS total
-			FROM wallet_balances wb
-			JOIN wallets w ON w.id = wb.id
-			WHERE wb.id = $1
+			FROM wallet_balance_snapshots wb
+			JOIN wallets w ON w.id = wb.wallet_id
+			WHERE wb.wallet_id = $1
 			AND w.user_id = $2
 			AND wb.created_at >= $3
 			AND wb.created_at <= $4
@@ -351,15 +361,12 @@ func (r *walletRepository) ListForSync(ctx context.Context, limit int) ([]domain
 			wallets.label,
 			wallets.updated_at 
 		FROM wallets
-		LEFT JOIN coins ON coins.id = wallets.coin_id
+		LEFT JOIN coins 
+			ON coins.id = wallets.coin_id
 		LEFT JOIN wallet_balances balance
 			ON balance.id = wallets.id
-			AND balance.created_at = (
-				select MAX(created_at) from wallet_balances
-				WHERE id = wallets.id
-			)
-		WHERE balance.created_at IS NULL OR balance.created_at < $1
-		ORDER BY balance.created_at ASC NULLS FIRST
+		WHERE balance.updated_at IS NULL OR balance.updated_at < $1
+		ORDER BY balance.updated_at ASC NULLS FIRST
 		LIMIT $2
 	`
 	rows, err := r.db.Pool.Query(ctx,
@@ -402,7 +409,7 @@ func walletToDomain(in models.Wallet) domain.Wallet {
 	}
 }
 
-func walletToDomain2(in models.WalletBalance) domain.WalletBalance {
+func walletToDomainBalance(in models.WalletBalance) domain.WalletBalance {
 	hasError := false
 	var errorMsg string
 	if !in.BalanceUSD.Valid || !in.Balance.Valid {

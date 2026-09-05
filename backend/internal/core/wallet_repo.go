@@ -15,7 +15,7 @@ type WalletRepository interface {
 	Update(ctx context.Context, userID string, id uuid.UUID, label string) (*domain.Wallet, error)
 	Delete(ctx context.Context, userID string, id uuid.UUID) error
 
-	CreateBalanceSnapshot(ctx context.Context, userID string, id uuid.UUID, snapshot BalanceSnapshot) error
+	UpdateBalanceSnapshot(ctx context.Context, userID string, id uuid.UUID, snapshot BalanceSnapshot) error
 	GetBalanceSnapshot(ctx context.Context, userID string, id uuid.UUID, filter BalanceSnapshotFilter) ([]domain.WalletBalanceSnapshot, error)
 
 	ListForSync(ctx context.Context, limit int) ([]domain.Wallet, error)

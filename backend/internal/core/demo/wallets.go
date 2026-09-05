@@ -79,17 +79,32 @@ func (d *DemoWallets) GetWalletBalanceSnapshot(id uuid.UUID) ([]domain.WalletBal
 	}
 	balanceCrypto := 123.0
 	balanceUSD := 456.0
-	balanceTime := time.Now().Add(-time.Hour * 24)
-	out := []domain.WalletBalanceSnapshot{}
-	for i := 0; i < 100; i++ {
+	balanceTime := time.Now().Add(-24 * time.Hour)
+
+	changesCrypto := []float64{
+		+2, +4, -1, +7, +3, -5, +2, 0, +6, -2,
+		+1, +12, -4, +3, +2, -1, +5, +8, -10, +2,
+		+4, +3, -2, +1, +15, -6, +2, 0, +3, -1,
+		+5, +2, -8, +4, +1, +20, -7, +3, -2, +4,
+		+1, +6, -3, +2, +5, -12, +4, +2, 0, +3,
+		-2, +7, +1, -4, +3, +2, +10, -5, +2, +1,
+		+4, -1, +3, -9, +2, +5, +1, 0, +6, -3,
+		+2, +14, -8, +3, +1, -2, +5, +4, -6, +2,
+		+1, +7, -3, +2, +3, -15, +5, +2, 0, +4,
+		-2, +6, +3, -1, +8, -4, +2, +11, -7, +5,
+	}
+	out := make([]domain.WalletBalanceSnapshot, 0, len(changesCrypto))
+	for _, change := range changesCrypto {
+		balanceCrypto += change
+		// Keep USD somewhat correlated with crypto,
+		// but give it independent movement so the chart isn't perfectly linear.
+		balanceUSD += change*10 + float64(len(out)%5-2)*3
 		out = append(out, domain.WalletBalanceSnapshot{
 			Balance:    balanceCrypto,
 			BalanceUSD: balanceUSD,
 			Time:       balanceTime,
 		})
-		balanceCrypto += 10
-		balanceUSD += 10
-		balanceTime = balanceTime.Add(time.Minute * 10)
+		balanceTime = balanceTime.Add(10 * time.Minute)
 	}
 	return out, nil
 }

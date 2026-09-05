@@ -154,7 +154,7 @@ func (w *WalletWorker) updateBalance(ctx context.Context, wallet domain.Wallet) 
 		}
 		return nil, err
 	}
-	err = w.walletRepo.CreateBalanceSnapshot(ctx, wallet.UserID, uuid, BalanceSnapshot{
+	err = w.walletRepo.UpdateBalanceSnapshot(ctx, wallet.UserID, uuid, BalanceSnapshot{
 		Crypto: balance.Balance,
 		USD:    balance.BalanceUSD,
 		Time:   time.Now(),
