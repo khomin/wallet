@@ -310,39 +310,39 @@
         },
         "priceUsd": {
           "type": "number",
-          "format": "float"
+          "format": "double"
         },
         "marketCap": {
           "type": "number",
-          "format": "float"
+          "format": "double"
         },
         "totalVolume": {
           "type": "number",
-          "format": "float"
+          "format": "double"
         },
         "high24h": {
           "type": "number",
-          "format": "float"
+          "format": "double"
         },
         "low24h": {
           "type": "number",
-          "format": "float"
+          "format": "double"
         },
         "priceChange24h": {
           "type": "number",
-          "format": "float"
+          "format": "double"
         },
         "priceChangePercentage24h": {
           "type": "number",
-          "format": "float"
+          "format": "double"
         },
         "marketCapChange24h": {
           "type": "number",
-          "format": "float"
+          "format": "double"
         },
         "marketCapChangePercentage24h": {
           "type": "number",
-          "format": "float"
+          "format": "double"
         },
         "updatedAt": {
           "type": "string",

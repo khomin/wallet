@@ -97,15 +97,15 @@ message PriceUpdate {
 message Price {
   string                    symbol                           = 1;
   string                    name                             = 2;
-  float                     price_usd                        = 3;
-  float                     market_cap                       = 4;
-  float                     total_volume                     = 5;
-  float                     high_24h                         = 6;
-  float                     low_24h                          = 7;
-  float                     price_change_24h                 = 8;
-  float                     price_change_percentage_24h      = 9;
-  float                     market_cap_change_24h            = 10;
-  float                     market_cap_change_percentage_24h = 11;
+  double                    price_usd                        = 3;
+  double                    market_cap                       = 4;
+  double                    total_volume                     = 5;
+  double                    high_24h                         = 6;
+  double                    low_24h                          = 7;
+  double                    price_change_24h                 = 8;
+  double                    price_change_percentage_24h      = 9;
+  double                    market_cap_change_24h            = 10;
+  double                    market_cap_change_percentage_24h = 11;
   google.protobuf.Timestamp updated_at                       = 12;
 }
 

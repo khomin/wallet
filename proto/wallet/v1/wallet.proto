@@ -116,16 +116,16 @@ message Wallet {
   string         chain          = 3;
   string         token_symbol   = 4;
   string         label          = 5;
-  float          balance_crypto = 6;
-  float          balance_usd    = 7;
+  double         balance_crypto = 6;
+  double         balance_usd    = 7;
   bool           has_error      = 9;
   string         error_msg      = 10;
   price.v1.Price price          = 11;
 }
 
 message WalletBalance {
-  float                     balance_crypto = 1;
-  float                     balance_usd    = 2;
+  double                    balance_crypto = 1;
+  double                    balance_usd    = 2;
   google.protobuf.Timestamp time           = 3;
 }
 

@@ -572,15 +572,15 @@ type Price struct {
 	state                         protoimpl.MessageState `protogen:"open.v1"`
 	Symbol                        string                 `protobuf:"bytes,1,opt,name=symbol,proto3" json:"symbol,omitempty"`
 	Name                          string                 `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`
-	PriceUsd                      float32                `protobuf:"fixed32,3,opt,name=price_usd,json=priceUsd,proto3" json:"price_usd,omitempty"`
-	MarketCap                     float32                `protobuf:"fixed32,4,opt,name=market_cap,json=marketCap,proto3" json:"market_cap,omitempty"`
-	TotalVolume                   float32                `protobuf:"fixed32,5,opt,name=total_volume,json=totalVolume,proto3" json:"total_volume,omitempty"`
-	High_24H                      float32                `protobuf:"fixed32,6,opt,name=high_24h,json=high24h,proto3" json:"high_24h,omitempty"`
-	Low_24H                       float32                `protobuf:"fixed32,7,opt,name=low_24h,json=low24h,proto3" json:"low_24h,omitempty"`
-	PriceChange_24H               float32                `protobuf:"fixed32,8,opt,name=price_change_24h,json=priceChange24h,proto3" json:"price_change_24h,omitempty"`
-	PriceChangePercentage_24H     float32                `protobuf:"fixed32,9,opt,name=price_change_percentage_24h,json=priceChangePercentage24h,proto3" json:"price_change_percentage_24h,omitempty"`
-	MarketCapChange_24H           float32                `protobuf:"fixed32,10,opt,name=market_cap_change_24h,json=marketCapChange24h,proto3" json:"market_cap_change_24h,omitempty"`
-	MarketCapChangePercentage_24H float32                `protobuf:"fixed32,11,opt,name=market_cap_change_percentage_24h,json=marketCapChangePercentage24h,proto3" json:"market_cap_change_percentage_24h,omitempty"`
+	PriceUsd                      float64                `protobuf:"fixed64,3,opt,name=price_usd,json=priceUsd,proto3" json:"price_usd,omitempty"`
+	MarketCap                     float64                `protobuf:"fixed64,4,opt,name=market_cap,json=marketCap,proto3" json:"market_cap,omitempty"`
+	TotalVolume                   float64                `protobuf:"fixed64,5,opt,name=total_volume,json=totalVolume,proto3" json:"total_volume,omitempty"`
+	High_24H                      float64                `protobuf:"fixed64,6,opt,name=high_24h,json=high24h,proto3" json:"high_24h,omitempty"`
+	Low_24H                       float64                `protobuf:"fixed64,7,opt,name=low_24h,json=low24h,proto3" json:"low_24h,omitempty"`
+	PriceChange_24H               float64                `protobuf:"fixed64,8,opt,name=price_change_24h,json=priceChange24h,proto3" json:"price_change_24h,omitempty"`
+	PriceChangePercentage_24H     float64                `protobuf:"fixed64,9,opt,name=price_change_percentage_24h,json=priceChangePercentage24h,proto3" json:"price_change_percentage_24h,omitempty"`
+	MarketCapChange_24H           float64                `protobuf:"fixed64,10,opt,name=market_cap_change_24h,json=marketCapChange24h,proto3" json:"market_cap_change_24h,omitempty"`
+	MarketCapChangePercentage_24H float64                `protobuf:"fixed64,11,opt,name=market_cap_change_percentage_24h,json=marketCapChangePercentage24h,proto3" json:"market_cap_change_percentage_24h,omitempty"`
 	UpdatedAt                     *timestamppb.Timestamp `protobuf:"bytes,12,opt,name=updated_at,json=updatedAt,proto3" json:"updated_at,omitempty"`
 	unknownFields                 protoimpl.UnknownFields
 	sizeCache                     protoimpl.SizeCache
@@ -630,63 +630,63 @@ func (x *Price) GetName() string {
 	return ""
 }
 
-func (x *Price) GetPriceUsd() float32 {
+func (x *Price) GetPriceUsd() float64 {
 	if x != nil {
 		return x.PriceUsd
 	}
 	return 0
 }
 
-func (x *Price) GetMarketCap() float32 {
+func (x *Price) GetMarketCap() float64 {
 	if x != nil {
 		return x.MarketCap
 	}
 	return 0
 }
 
-func (x *Price) GetTotalVolume() float32 {
+func (x *Price) GetTotalVolume() float64 {
 	if x != nil {
 		return x.TotalVolume
 	}
 	return 0
 }
 
-func (x *Price) GetHigh_24H() float32 {
+func (x *Price) GetHigh_24H() float64 {
 	if x != nil {
 		return x.High_24H
 	}
 	return 0
 }
 
-func (x *Price) GetLow_24H() float32 {
+func (x *Price) GetLow_24H() float64 {
 	if x != nil {
 		return x.Low_24H
 	}
 	return 0
 }
 
-func (x *Price) GetPriceChange_24H() float32 {
+func (x *Price) GetPriceChange_24H() float64 {
 	if x != nil {
 		return x.PriceChange_24H
 	}
 	return 0
 }
 
-func (x *Price) GetPriceChangePercentage_24H() float32 {
+func (x *Price) GetPriceChangePercentage_24H() float64 {
 	if x != nil {
 		return x.PriceChangePercentage_24H
 	}
 	return 0
 }
 
-func (x *Price) GetMarketCapChange_24H() float32 {
+func (x *Price) GetMarketCapChange_24H() float64 {
 	if x != nil {
 		return x.MarketCapChange_24H
 	}
 	return 0
 }
 
-func (x *Price) GetMarketCapChangePercentage_24H() float32 {
+func (x *Price) GetMarketCapChangePercentage_24H() float64 {
 	if x != nil {
 		return x.MarketCapChangePercentage_24H
 	}
@@ -878,17 +878,17 @@ const file_price_v1_price_proto_rawDesc = "" +
 	"\x05Price\x12\x16\n" +
 	"\x06symbol\x18\x01 \x01(\tR\x06symbol\x12\x12\n" +
 	"\x04name\x18\x02 \x01(\tR\x04name\x12\x1b\n" +
-	"\tprice_usd\x18\x03 \x01(\x02R\bpriceUsd\x12\x1d\n" +
+	"\tprice_usd\x18\x03 \x01(\x01R\bpriceUsd\x12\x1d\n" +
 	"\n" +
-	"market_cap\x18\x04 \x01(\x02R\tmarketCap\x12!\n" +
-	"\ftotal_volume\x18\x05 \x01(\x02R\vtotalVolume\x12\x19\n" +
-	"\bhigh_24h\x18\x06 \x01(\x02R\ahigh24h\x12\x17\n" +
-	"\alow_24h\x18\a \x01(\x02R\x06low24h\x12(\n" +
-	"\x10price_change_24h\x18\b \x01(\x02R\x0epriceChange24h\x12=\n" +
-	"\x1bprice_change_percentage_24h\x18\t \x01(\x02R\x18priceChangePercentage24h\x121\n" +
+	"market_cap\x18\x04 \x01(\x01R\tmarketCap\x12!\n" +
+	"\ftotal_volume\x18\x05 \x01(\x01R\vtotalVolume\x12\x19\n" +
+	"\bhigh_24h\x18\x06 \x01(\x01R\ahigh24h\x12\x17\n" +
+	"\alow_24h\x18\a \x01(\x01R\x06low24h\x12(\n" +
+	"\x10price_change_24h\x18\b \x01(\x01R\x0epriceChange24h\x12=\n" +
+	"\x1bprice_change_percentage_24h\x18\t \x01(\x01R\x18priceChangePercentage24h\x121\n" +
 	"\x15market_cap_change_24h\x18\n" +
-	" \x01(\x02R\x12marketCapChange24h\x12F\n" +
-	" market_cap_change_percentage_24h\x18\v \x01(\x02R\x1cmarketCapChangePercentage24h\x129\n" +
+	" \x01(\x01R\x12marketCapChange24h\x12F\n" +
+	" market_cap_change_percentage_24h\x18\v \x01(\x01R\x1cmarketCapChangePercentage24h\x129\n" +
 	"\n" +
 	"updated_at\x18\f \x01(\v2\x1a.google.protobuf.TimestampR\tupdatedAt\"\xac\x01\n" +
 	"\x05Token\x12\x16\n" +

@@ -759,8 +759,8 @@ type Wallet struct {
 	Chain         string                 `protobuf:"bytes,3,opt,name=chain,proto3" json:"chain,omitempty"`
 	TokenSymbol   string                 `protobuf:"bytes,4,opt,name=token_symbol,json=tokenSymbol,proto3" json:"token_symbol,omitempty"`
 	Label         string                 `protobuf:"bytes,5,opt,name=label,proto3" json:"label,omitempty"`
-	BalanceCrypto float32                `protobuf:"fixed32,6,opt,name=balance_crypto,json=balanceCrypto,proto3" json:"balance_crypto,omitempty"`
-	BalanceUsd    float32                `protobuf:"fixed32,7,opt,name=balance_usd,json=balanceUsd,proto3" json:"balance_usd,omitempty"`
+	BalanceCrypto float64                `protobuf:"fixed64,6,opt,name=balance_crypto,json=balanceCrypto,proto3" json:"balance_crypto,omitempty"`
+	BalanceUsd    float64                `protobuf:"fixed64,7,opt,name=balance_usd,json=balanceUsd,proto3" json:"balance_usd,omitempty"`
 	HasError      bool                   `protobuf:"varint,9,opt,name=has_error,json=hasError,proto3" json:"has_error,omitempty"`
 	ErrorMsg      string                 `protobuf:"bytes,10,opt,name=error_msg,json=errorMsg,proto3" json:"error_msg,omitempty"`
 	Price         *v1.Price              `protobuf:"bytes,11,opt,name=price,proto3" json:"price,omitempty"`
@@ -833,14 +833,14 @@ func (x *Wallet) GetLabel() string {
 	return ""
 }
 
-func (x *Wallet) GetBalanceCrypto() float32 {
+func (x *Wallet) GetBalanceCrypto() float64 {
 	if x != nil {
 		return x.BalanceCrypto
 	}
 	return 0
 }
 
-func (x *Wallet) GetBalanceUsd() float32 {
+func (x *Wallet) GetBalanceUsd() float64 {
 	if x != nil {
 		return x.BalanceUsd
 	}
@@ -870,8 +870,8 @@ func (x *Wallet) GetPrice() *v1.Price {
 
 type WalletBalance struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	BalanceCrypto float32                `protobuf:"fixed32,1,opt,name=balance_crypto,json=balanceCrypto,proto3" json:"balance_crypto,omitempty"`
-	BalanceUsd    float32                `protobuf:"fixed32,2,opt,name=balance_usd,json=balanceUsd,proto3" json:"balance_usd,omitempty"`
+	BalanceCrypto float64                `protobuf:"fixed64,1,opt,name=balance_crypto,json=balanceCrypto,proto3" json:"balance_crypto,omitempty"`
+	BalanceUsd    float64                `protobuf:"fixed64,2,opt,name=balance_usd,json=balanceUsd,proto3" json:"balance_usd,omitempty"`
 	Time          *timestamppb.Timestamp `protobuf:"bytes,3,opt,name=time,proto3" json:"time,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
@@ -907,14 +907,14 @@ func (*WalletBalance) Descriptor() ([]byte, []int) {
 	return file_wallet_v1_wallet_proto_rawDescGZIP(), []int{15}
 }
 
-func (x *WalletBalance) GetBalanceCrypto() float32 {
+func (x *WalletBalance) GetBalanceCrypto() float64 {
 	if x != nil {
 		return x.BalanceCrypto
 	}
 	return 0
 }
 
-func (x *WalletBalance) GetBalanceUsd() float32 {
+func (x *WalletBalance) GetBalanceUsd() float64 {
 	if x != nil {
 		return x.BalanceUsd
 	}
@@ -974,16 +974,16 @@ const file_wallet_v1_wallet_proto_rawDesc = "" +
 	"\x05chain\x18\x03 \x01(\tR\x05chain\x12!\n" +
 	"\ftoken_symbol\x18\x04 \x01(\tR\vtokenSymbol\x12\x14\n" +
 	"\x05label\x18\x05 \x01(\tR\x05label\x12%\n" +
-	"\x0ebalance_crypto\x18\x06 \x01(\x02R\rbalanceCrypto\x12\x1f\n" +
-	"\vbalance_usd\x18\a \x01(\x02R\n" +
+	"\x0ebalance_crypto\x18\x06 \x01(\x01R\rbalanceCrypto\x12\x1f\n" +
+	"\vbalance_usd\x18\a \x01(\x01R\n" +
 	"balanceUsd\x12\x1b\n" +
 	"\thas_error\x18\t \x01(\bR\bhasError\x12\x1b\n" +
 	"\terror_msg\x18\n" +
 	" \x01(\tR\berrorMsg\x12%\n" +
 	"\x05price\x18\v \x01(\v2\x0f.price.v1.PriceR\x05price\"\x87\x01\n" +
 	"\rWalletBalance\x12%\n" +
-	"\x0ebalance_crypto\x18\x01 \x01(\x02R\rbalanceCrypto\x12\x1f\n" +
-	"\vbalance_usd\x18\x02 \x01(\x02R\n" +
+	"\x0ebalance_crypto\x18\x01 \x01(\x01R\rbalanceCrypto\x12\x1f\n" +
+	"\vbalance_usd\x18\x02 \x01(\x01R\n" +
 	"balanceUsd\x12.\n" +
 	"\x04time\x18\x03 \x01(\v2\x1a.google.protobuf.TimestampR\x04time*\xd1\x01\n" +
 	"\rBalancePeriod\x12\x1e\n" +

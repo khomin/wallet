@@ -13,7 +13,7 @@ import type { Message } from "@bufbuild/protobuf";
  * Describes the file price/v1/price.proto.
  */
 export const file_price_v1_price: GenFile = /*@__PURE__*/
-  fileDesc("ChRwcmljZS92MS9wcmljZS5wcm90bxIIcHJpY2UudjEiEgoQTGlzdENvaW5zUmVxdWVzdCJCChFMaXN0Q29pbnNSZXNwb25zZRINCgV0b3RhbBgBIAEoBRIeCgV0b2tlbhgCIAMoCzIPLnByaWNlLnYxLlRva2VuIhwKDkdldENvaW5SZXF1ZXN0EgoKAmlkGAEgASgJIjEKD0dldENvaW5SZXNwb25zZRIeCgV0b2tlbhgBIAEoCzIPLnByaWNlLnYxLlRva2VuIiMKEEdldFByaWNlc1JlcXVlc3QSDwoHc3ltYm9scxgBIAMoCSJCChFHZXRQcmljZXNSZXNwb25zZRINCgV0b3RhbBgBIAEoBRIeCgVwcmljZRgCIAMoCzIPLnByaWNlLnYxLlByaWNlIiEKD0dldFByaWNlUmVxdWVzdBIOCgZzeW1ib2wYASABKAkiMgoQR2V0UHJpY2VSZXNwb25zZRIeCgVwcmljZRgBIAEoCzIPLnByaWNlLnYxLlByaWNlIiIKElNlYXJjaENvaW5zUmVxdWVzdBIMCgR0ZXh0GAEgASgJIkQKE1NlYXJjaENvaW5zUmVzcG9uc2USDQoFdG90YWwYASABKAUSHgoFdG9rZW4YAiADKAsyDy5wcmljZS52MS5Ub2tlbiImChNTdHJlYW1QcmljZXNSZXF1ZXN0Eg8KB3N5bWJvbHMYASADKAkiLQoLUHJpY2VVcGRhdGUSHgoFcHJpY2UYASADKAsyDy5wcmljZS52MS5QcmljZSK9AgoFUHJpY2USDgoGc3ltYm9sGAEgASgJEgwKBG5hbWUYAiABKAkSEQoJcHJpY2VfdXNkGAMgASgCEhIKCm1hcmtldF9jYXAYBCABKAISFAoMdG90YWxfdm9sdW1lGAUgASgCEhAKCGhpZ2hfMjRoGAYgASgCEg8KB2xvd18yNGgYByABKAISGAoQcHJpY2VfY2hhbmdlXzI0aBgIIAEoAhIjChtwcmljZV9jaGFuZ2VfcGVyY2VudGFnZV8yNGgYCSABKAISHQoVbWFya2V0X2NhcF9jaGFuZ2VfMjRoGAogASgCEigKIG1hcmtldF9jYXBfY2hhbmdlX3BlcmNlbnRhZ2VfMjRoGAsgASgCEi4KCnVwZGF0ZWRfYXQYDCABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wInsKBVRva2VuEg4KBnN5bWJvbBgCIAEoCRIMCgRuYW1lGAMgASgJEh8KBmNoYWlucxgEIAMoCzIPLnByaWNlLnYxLkNoYWluEg0KBWFkZHJzGAUgAygJEhEKCWlzX25hdGl2ZRgGIAEoCBIRCglpbWFnZV91cmwYByABKAkiOAoFQ2hhaW4SDgoGc3ltYm9sGAEgASgJEgwKBG5hbWUYAiABKAkSEQoJaW1hZ2VfdXJsGAMgASgJMsQECgxQcmljZVNlcnZpY2USVwoJTGlzdENvaW5zEhoucHJpY2UudjEuTGlzdENvaW5zUmVxdWVzdBobLnByaWNlLnYxLkxpc3RDb2luc1Jlc3BvbnNlIhGC0+STAgsSCS92MS9jb2lucxJWCgdHZXRDb2luEhgucHJpY2UudjEuR2V0Q29pblJlcXVlc3QaGS5wcmljZS52MS5HZXRDb2luUmVzcG9uc2UiFoLT5JMCEBIOL3YxL2NvaW5zL3tpZH0SZgoKU2VhcmNoQ29pbhIcLnByaWNlLnYxLlNlYXJjaENvaW5zUmVxdWVzdBodLnByaWNlLnYxLlNlYXJjaENvaW5zUmVzcG9uc2UiG4LT5JMCFToBKiIQL3YxL2NvaW5zL3NlYXJjaBJYCglHZXRQcmljZXMSGi5wcmljZS52MS5HZXRQcmljZXNSZXF1ZXN0GhsucHJpY2UudjEuR2V0UHJpY2VzUmVzcG9uc2UiEoLT5JMCDBIKL3YxL3ByaWNlcxJeCghHZXRQcmljZRIZLnByaWNlLnYxLkdldFByaWNlUmVxdWVzdBoaLnByaWNlLnYxLkdldFByaWNlUmVzcG9uc2UiG4LT5JMCFRITL3YxL3ByaWNlcy97c3ltYm9sfRJhCgxTdHJlYW1QcmljZXMSHS5wcmljZS52MS5TdHJlYW1QcmljZXNSZXF1ZXN0GhUucHJpY2UudjEuUHJpY2VVcGRhdGUiGYLT5JMCExIRL3YxL3ByaWNlcy9zdHJlYW0wAUIeWhx0cmFja2VyL2dlbi9wcmljZS92MTtwcmljZXYxYgZwcm90bzM", [file_google_protobuf_empty, file_google_protobuf_timestamp, file_google_api_annotations]);
+  fileDesc("ChRwcmljZS92MS9wcmljZS5wcm90bxIIcHJpY2UudjEiEgoQTGlzdENvaW5zUmVxdWVzdCJCChFMaXN0Q29pbnNSZXNwb25zZRINCgV0b3RhbBgBIAEoBRIeCgV0b2tlbhgCIAMoCzIPLnByaWNlLnYxLlRva2VuIhwKDkdldENvaW5SZXF1ZXN0EgoKAmlkGAEgASgJIjEKD0dldENvaW5SZXNwb25zZRIeCgV0b2tlbhgBIAEoCzIPLnByaWNlLnYxLlRva2VuIiMKEEdldFByaWNlc1JlcXVlc3QSDwoHc3ltYm9scxgBIAMoCSJCChFHZXRQcmljZXNSZXNwb25zZRINCgV0b3RhbBgBIAEoBRIeCgVwcmljZRgCIAMoCzIPLnByaWNlLnYxLlByaWNlIiEKD0dldFByaWNlUmVxdWVzdBIOCgZzeW1ib2wYASABKAkiMgoQR2V0UHJpY2VSZXNwb25zZRIeCgVwcmljZRgBIAEoCzIPLnByaWNlLnYxLlByaWNlIiIKElNlYXJjaENvaW5zUmVxdWVzdBIMCgR0ZXh0GAEgASgJIkQKE1NlYXJjaENvaW5zUmVzcG9uc2USDQoFdG90YWwYASABKAUSHgoFdG9rZW4YAiADKAsyDy5wcmljZS52MS5Ub2tlbiImChNTdHJlYW1QcmljZXNSZXF1ZXN0Eg8KB3N5bWJvbHMYASADKAkiLQoLUHJpY2VVcGRhdGUSHgoFcHJpY2UYASADKAsyDy5wcmljZS52MS5QcmljZSK9AgoFUHJpY2USDgoGc3ltYm9sGAEgASgJEgwKBG5hbWUYAiABKAkSEQoJcHJpY2VfdXNkGAMgASgBEhIKCm1hcmtldF9jYXAYBCABKAESFAoMdG90YWxfdm9sdW1lGAUgASgBEhAKCGhpZ2hfMjRoGAYgASgBEg8KB2xvd18yNGgYByABKAESGAoQcHJpY2VfY2hhbmdlXzI0aBgIIAEoARIjChtwcmljZV9jaGFuZ2VfcGVyY2VudGFnZV8yNGgYCSABKAESHQoVbWFya2V0X2NhcF9jaGFuZ2VfMjRoGAogASgBEigKIG1hcmtldF9jYXBfY2hhbmdlX3BlcmNlbnRhZ2VfMjRoGAsgASgBEi4KCnVwZGF0ZWRfYXQYDCABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wInsKBVRva2VuEg4KBnN5bWJvbBgCIAEoCRIMCgRuYW1lGAMgASgJEh8KBmNoYWlucxgEIAMoCzIPLnByaWNlLnYxLkNoYWluEg0KBWFkZHJzGAUgAygJEhEKCWlzX25hdGl2ZRgGIAEoCBIRCglpbWFnZV91cmwYByABKAkiOAoFQ2hhaW4SDgoGc3ltYm9sGAEgASgJEgwKBG5hbWUYAiABKAkSEQoJaW1hZ2VfdXJsGAMgASgJMsQECgxQcmljZVNlcnZpY2USVwoJTGlzdENvaW5zEhoucHJpY2UudjEuTGlzdENvaW5zUmVxdWVzdBobLnByaWNlLnYxLkxpc3RDb2luc1Jlc3BvbnNlIhGC0+STAgsSCS92MS9jb2lucxJWCgdHZXRDb2luEhgucHJpY2UudjEuR2V0Q29pblJlcXVlc3QaGS5wcmljZS52MS5HZXRDb2luUmVzcG9uc2UiFoLT5JMCEBIOL3YxL2NvaW5zL3tpZH0SZgoKU2VhcmNoQ29pbhIcLnByaWNlLnYxLlNlYXJjaENvaW5zUmVxdWVzdBodLnByaWNlLnYxLlNlYXJjaENvaW5zUmVzcG9uc2UiG4LT5JMCFToBKiIQL3YxL2NvaW5zL3NlYXJjaBJYCglHZXRQcmljZXMSGi5wcmljZS52MS5HZXRQcmljZXNSZXF1ZXN0GhsucHJpY2UudjEuR2V0UHJpY2VzUmVzcG9uc2UiEoLT5JMCDBIKL3YxL3ByaWNlcxJeCghHZXRQcmljZRIZLnByaWNlLnYxLkdldFByaWNlUmVxdWVzdBoaLnByaWNlLnYxLkdldFByaWNlUmVzcG9uc2UiG4LT5JMCFRITL3YxL3ByaWNlcy97c3ltYm9sfRJhCgxTdHJlYW1QcmljZXMSHS5wcmljZS52MS5TdHJlYW1QcmljZXNSZXF1ZXN0GhUucHJpY2UudjEuUHJpY2VVcGRhdGUiGYLT5JMCExIRL3YxL3ByaWNlcy9zdHJlYW0wAUIeWhx0cmFja2VyL2dlbi9wcmljZS92MTtwcmljZXYxYgZwcm90bzM", [file_google_protobuf_empty, file_google_protobuf_timestamp, file_google_api_annotations]);
 
 /**
  * @generated from message price.v1.ListCoinsRequest
@@ -245,47 +245,47 @@ export type Price = Message<"price.v1.Price"> & {
   name: string;
 
   /**
-   * @generated from field: float price_usd = 3;
+   * @generated from field: double price_usd = 3;
    */
   priceUsd: number;
 
   /**
-   * @generated from field: float market_cap = 4;
+   * @generated from field: double market_cap = 4;
    */
   marketCap: number;
 
   /**
-   * @generated from field: float total_volume = 5;
+   * @generated from field: double total_volume = 5;
    */
   totalVolume: number;
 
   /**
-   * @generated from field: float high_24h = 6;
+   * @generated from field: double high_24h = 6;
    */
   high24h: number;
 
   /**
-   * @generated from field: float low_24h = 7;
+   * @generated from field: double low_24h = 7;
    */
   low24h: number;
 
   /**
-   * @generated from field: float price_change_24h = 8;
+   * @generated from field: double price_change_24h = 8;
    */
   priceChange24h: number;
 
   /**
-   * @generated from field: float price_change_percentage_24h = 9;
+   * @generated from field: double price_change_percentage_24h = 9;
    */
   priceChangePercentage24h: number;
 
   /**
-   * @generated from field: float market_cap_change_24h = 10;
+   * @generated from field: double market_cap_change_24h = 10;
    */
   marketCapChange24h: number;
 
   /**
-   * @generated from field: float market_cap_change_percentage_24h = 11;
+   * @generated from field: double market_cap_change_percentage_24h = 11;
    */
   marketCapChangePercentage24h: number;
 

@@ -47,8 +47,8 @@ func (s *WalletGrpcHandler) ListWallets(ctx context.Context, req *walletv1.ListW
 			Chain:         i.Wallet.Chain,
 			TokenSymbol:   i.Wallet.Symbol,
 			Label:         i.Wallet.Label,
-			BalanceCrypto: float32(i.Balance),
-			BalanceUsd:    float32(i.BalanceUSD),
+			BalanceCrypto: i.Balance,
+			BalanceUsd:    i.BalanceUSD,
 			HasError:      i.HasError,
 			ErrorMsg:      i.ErrorMsg,
 			Price:         i.Price.ToGrpc(),
@@ -177,8 +177,8 @@ func (s *WalletGrpcHandler) ListWalletBalances(ctx context.Context, req *walletv
 	balances := make([]*walletv1.WalletBalance, 0, len(snapshots))
 	for _, snapshot := range snapshots {
 		balances = append(balances, &walletv1.WalletBalance{
-			BalanceCrypto: float32(snapshot.Balance),
-			BalanceUsd:    float32(snapshot.BalanceUSD),
+			BalanceCrypto: snapshot.Balance,
+			BalanceUsd:    snapshot.BalanceUSD,
 			Time:          timestamppb.New(snapshot.Time),
 		})
 	}
