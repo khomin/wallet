@@ -62,6 +62,18 @@ export default function WalletDetailPage() {
         [points],
     );
 
+    // If there's only one point, duplicate it with a small time delta so the chart
+    // renders a horizontal line instead of a single dot.
+    const chartData = useMemo(() => {
+        if (!data || data.length !== 1) return data;
+        const single = data[0];
+        const delta = 24 * 60 * 60 * 1000; // 1 day
+        return [
+            { t: single.t - delta, value: single.value },
+            { t: single.t + delta, value: single.value },
+        ];
+    }, [data]);
+
     return (
         <div className="max-w-6xl mx-auto">
             <div className="mb-2 flex items-center justify-between">
@@ -97,8 +109,8 @@ export default function WalletDetailPage() {
                             </div>
 
                             <div className="w-full">
-                                <ResponsiveContainer width="100%" height={260}>
-                                    <AreaChart data={data} margin={{ top: 0, right: 0, left: 0, bottom: 0 }}>
+                                                <ResponsiveContainer width="100%" height={260}>
+                                                    <AreaChart data={chartData} margin={{ top: 0, right: 0, left: 0, bottom: 0 }}>
                                         <defs>
                                             <linearGradient id="colorUv" x1="0" x2="0" y1="0" y2="1">
                                                 <stop offset="0%" stopColor="#7c3aed" stopOpacity={0.35} />
