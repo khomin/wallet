@@ -166,7 +166,8 @@ export default function DashboardPage() {
                 {topWallets.map((wallet) => (
                   <tr
                     key={wallet.id}
-                    className="border-b border-white/[0.02] hover:bg-white/[0.02] transition-colors"
+                    onClick={() => navigate(`/wallets/${wallet.id}`)}
+                    className="border-b border-white/[0.02] hover:bg-white/[0.02] transition-colors cursor-pointer"
                   >
 
                     <td className="py-3 pr-4">

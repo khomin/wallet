@@ -90,7 +90,7 @@ export default function WalletDetailPage() {
                             <div className="px-6">
                                 <div className="mb-4 flex items-start justify-between">
                                     <div>
-                                        <div className="text-xs text-gray-500">Market price</div>
+                                        <div className="text-xs text-gray-500">Balance</div>
                                         <div className="text-2xl font-semibold">{fmtUSD(points[points.length - 1]?.v ?? 0)}</div>
                                     </div>
                                 </div>
