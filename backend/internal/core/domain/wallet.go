@@ -1,6 +1,7 @@
 package domain
 
 import (
+	"time"
 	walletv1 "tracker/gen/wallet/v1"
 )
 
@@ -22,9 +23,10 @@ type WalletBalance struct {
 	Price      TokenPrice
 }
 
-type WalletCreatedEvent struct {
-	ID     string `json:"id"`
-	UserID string `json:"user_id"`
+type WalletBalanceSnapshot struct {
+	Balance    float64
+	BalanceUSD float64
+	Time       time.Time
 }
 
 func (w *WalletBalance) ToGrpc() *walletv1.Wallet {

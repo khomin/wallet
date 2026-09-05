@@ -14,7 +14,6 @@ import (
 )
 
 type PriceGrpcHandler struct {
-	pricev1.UnimplementedPriceServiceServer
 	priceService *core.PriceService
 	priceHub     *core.PriceHub
 	log          *logrus.Entry

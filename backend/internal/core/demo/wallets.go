@@ -1,6 +1,7 @@
 package demo
 
 import (
+	"time"
 	"tracker/internal/core/domain"
 
 	"github.com/google/uuid"
@@ -69,4 +70,26 @@ var walletList = []domain.WalletBalance{
 		BalanceUSD: 67500.00,
 		HasError:   false,
 	},
+}
+
+func (d *DemoWallets) GetWalletBalanceSnapshot(id uuid.UUID) ([]domain.WalletBalanceSnapshot, error) {
+	_, found := d.Wallets[id.String()]
+	if !found {
+		return nil, domain.ErrorNotFound
+	}
+	balanceCrypto := 123.0
+	balanceUSD := 456.0
+	balanceTime := time.Now().Add(-time.Hour * 24)
+	out := []domain.WalletBalanceSnapshot{}
+	for i := 0; i < 100; i++ {
+		out = append(out, domain.WalletBalanceSnapshot{
+			Balance:    balanceCrypto,
+			BalanceUSD: balanceUSD,
+			Time:       balanceTime,
+		})
+		balanceCrypto += 10
+		balanceUSD += 10
+		balanceTime = balanceTime.Add(time.Minute * 10)
+	}
+	return out, nil
 }

@@ -1,7 +1,7 @@
 info:
   name: grpc
   type: grpc
-  seq: 13
+  seq: 14
 
 grpc:
   url: "{{grpcUrl}}"

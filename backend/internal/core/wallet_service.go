@@ -11,16 +11,6 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-type WalletRepository interface {
-	List(ctx context.Context, userID string) ([]domain.WalletBalance, error)
-	Get(ctx context.Context, userID string, id uuid.UUID) (*domain.WalletBalance, error)
-	Create(ctx context.Context, userID string, chain string, address string, symbol string, label string) (*domain.Wallet, error)
-	Update(ctx context.Context, userID string, id uuid.UUID, label string) (*domain.Wallet, error)
-	Delete(ctx context.Context, userID string, id uuid.UUID) error
-	UpdateBalance(ctx context.Context, userID string, id uuid.UUID, balance float64, balanceUSD float64) error
-	ListForSync(ctx context.Context, limit int) ([]domain.Wallet, error)
-}
-
 type WalletService struct {
 	walletRepo        WalletRepository
 	walletDemo        *demo.DemoWallets
@@ -99,7 +89,7 @@ func (s *WalletService) CreateWallet(ctx context.Context, user *domain.User, cha
 	return nil
 }
 
-func (s *WalletService) EditWallet(ctx context.Context, user *domain.User, id uuid.UUID, label string) (*domain.Wallet, error) {
+func (s *WalletService) UpdateWallet(ctx context.Context, user *domain.User, id uuid.UUID, label string) (*domain.Wallet, error) {
 	if user.IsDemo {
 		return nil, domain.ErrNotAllowedInDemoMode
 	}
@@ -148,4 +138,18 @@ func (s *WalletService) FetchBalance(ctx context.Context, wallet domain.Wallet) 
 		BalanceUSD: balance.Balance * price.CurrentPrice,
 		HasError:   false,
 	}, nil
+}
+
+func (s *WalletService) GetBalanceSnapshot(ctx context.Context, user *domain.User, id uuid.UUID, filter BalanceSnapshotFilter) ([]domain.WalletBalanceSnapshot, error) {
+	if user.IsDemo {
+		return s.walletDemo.GetWalletBalanceSnapshot(id)
+	}
+	if err := s.userRepo.EnsureExists(ctx, user); err != nil {
+		return nil, err
+	}
+	wallet, err := s.walletRepo.GetBalanceSnapshot(ctx, user.ID, id, filter)
+	if err != nil {
+		return nil, err
+	}
+	return wallet, nil
 }

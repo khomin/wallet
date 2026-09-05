@@ -169,12 +169,12 @@
         ]
       },
       "patch": {
-        "operationId": "WalletService_EditWallet",
+        "operationId": "WalletService_UpdateWallet",
         "responses": {
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/v1EditWalletResponse"
+              "$ref": "#/definitions/v1UpdateWalletResponse"
             }
           },
           "default": {
@@ -196,8 +196,62 @@
             "in": "body",
             "required": true,
             "schema": {
-              "$ref": "#/definitions/WalletServiceEditWalletBody"
+              "$ref": "#/definitions/WalletServiceUpdateWalletBody"
             }
+          }
+        ],
+        "tags": [
+          "WalletService"
+        ]
+      }
+    },
+    "/v1/wallets/{id}/balances": {
+      "get": {
+        "operationId": "WalletService_ListWalletBalances",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1ListWalletBalancesResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "period",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "enum": [
+              "BALANCE_PERIOD_UNSPECIFIED",
+              "BALANCE_PERIOD_1D",
+              "BALANCE_PERIOD_1W",
+              "BALANCE_PERIOD_1M",
+              "BALANCE_PERIOD_6M",
+              "BALANCE_PERIOD_1Y",
+              "BALANCE_PERIOD_5Y",
+              "BALANCE_PERIOD_ALL"
+            ],
+            "default": "BALANCE_PERIOD_UNSPECIFIED"
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
           }
         ],
         "tags": [
@@ -207,7 +261,7 @@
     }
   },
   "definitions": {
-    "WalletServiceEditWalletBody": {
+    "WalletServiceUpdateWalletBody": {
       "type": "object",
       "properties": {
         "label": {
@@ -243,6 +297,20 @@
         }
       }
     },
+    "v1BalancePeriod": {
+      "type": "string",
+      "enum": [
+        "BALANCE_PERIOD_UNSPECIFIED",
+        "BALANCE_PERIOD_1D",
+        "BALANCE_PERIOD_1W",
+        "BALANCE_PERIOD_1M",
+        "BALANCE_PERIOD_6M",
+        "BALANCE_PERIOD_1Y",
+        "BALANCE_PERIOD_5Y",
+        "BALANCE_PERIOD_ALL"
+      ],
+      "default": "BALANCE_PERIOD_UNSPECIFIED"
+    },
     "v1CreateWalletRequest": {
       "type": "object",
       "properties": {
@@ -271,22 +339,23 @@
         }
       }
     },
-    "v1EditWalletResponse": {
-      "type": "object",
-      "properties": {
-        "id": {
-          "type": "string"
-        },
-        "label": {
-          "type": "string"
-        }
-      }
-    },
     "v1GetWalletResponse": {
       "type": "object",
       "properties": {
         "wallet": {
           "$ref": "#/definitions/v1Wallet"
+        }
+      }
+    },
+    "v1ListWalletBalancesResponse": {
+      "type": "object",
+      "properties": {
+        "balance": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v1WalletBalance"
+          }
         }
       }
     },
@@ -357,6 +426,17 @@
         }
       }
     },
+    "v1UpdateWalletResponse": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "label": {
+          "type": "string"
+        }
+      }
+    },
     "v1Wallet": {
       "type": "object",
       "properties": {
@@ -391,6 +471,23 @@
         },
         "price": {
           "$ref": "#/definitions/v1Price"
+        }
+      }
+    },
+    "v1WalletBalance": {
+      "type": "object",
+      "properties": {
+        "balanceCrypto": {
+          "type": "number",
+          "format": "float"
+        },
+        "balanceUsd": {
+          "type": "number",
+          "format": "float"
+        },
+        "time": {
+          "type": "string",
+          "format": "date-time"
         }
       }
     },

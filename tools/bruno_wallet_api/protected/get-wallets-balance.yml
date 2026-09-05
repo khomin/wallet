@@ -1,0 +1,22 @@
+info:
+  name: get-wallets-balance
+  type: http
+  seq: 9
+
+http:
+  method: GET
+  url: "{{url}}/v1/wallets/efaacdd8-0582-47f2-85e5-8a6863effcfa/balances?limit=10&period=BALANCE_PERIOD_1D"
+  params:
+    - name: limit
+      value: "10"
+      type: query
+    - name: period
+      value: BALANCE_PERIOD_1D
+      type: query
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

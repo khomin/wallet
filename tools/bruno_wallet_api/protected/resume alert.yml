@@ -1,7 +1,7 @@
 info:
   name: resume alert
   type: http
-  seq: 19
+  seq: 20
 
 http:
   method: POST

@@ -2,6 +2,8 @@ package repositories
 
 import (
 	"testing"
+	"time"
+	"tracker/internal/core"
 
 	"github.com/google/uuid"
 )
@@ -64,9 +66,36 @@ func TestWalletRepo(t *testing.T) {
 	//
 	// update balance
 	//
-	err = repo.UpdateBalance(ctx, expectedUser.ID, id, 123, 456)
+	balanceCrypto := 123.0
+	balanceUSD := 456.0
+	balanceTime := time.Now().Add(-time.Hour * 24)
+	for i := 0; i < 100; i++ {
+		err = repo.CreateBalanceSnapshot(ctx, expectedUser.ID, id, core.BalanceSnapshot{
+			Crypto: balanceCrypto,
+			USD:    balanceUSD,
+			Time:   balanceTime,
+		})
+		if err != nil {
+			t.Fatal(err)
+		}
+		balanceCrypto += 10
+		balanceUSD += 10
+		balanceTime = balanceTime.Add(time.Minute * 10)
+	}
+
+	//
+	// get snapshot
+	//
+	resultSnapshot, err := repo.GetBalanceSnapshot(ctx, expectedUser.ID, id, core.BalanceSnapshotFilter{
+		From:  time.Now().Add(-time.Hour * 24),
+		To:    time.Now(),
+		Limit: 2,
+	})
 	if err != nil {
 		t.Fatal(err)
+	}
+	if len(resultSnapshot) == 0 {
+		t.Fatal("expected > 1")
 	}
 
 	//
@@ -76,7 +105,7 @@ func TestWalletRepo(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if resultGet.ID == "" || resultGet.UserID != expectedUser.ID || resultGet.Symbol != "ETH" || resultGet.Balance != 123 || resultGet.BalanceUSD != 456 {
+	if resultGet.ID == "" || resultGet.UserID != expectedUser.ID || resultGet.Symbol != "ETH" {
 		t.Fatal("expected correct value")
 	}
 

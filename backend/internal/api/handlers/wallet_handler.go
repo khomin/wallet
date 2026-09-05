@@ -3,6 +3,7 @@ package handlers
 import (
 	"context"
 	"errors"
+	"time"
 	walletv1 "tracker/gen/wallet/v1"
 	"tracker/internal/api/middleware"
 	"tracker/internal/core"
@@ -14,12 +15,12 @@ import (
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
+	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
 type WalletGrpcHandler struct {
 	walletService *core.WalletService
 	walletWorker  *core.WalletWorker
-	walletv1.UnimplementedWalletServiceServer
 }
 
 func NewWalletGrpcHandler(walletService *core.WalletService, walletWorker *core.WalletWorker) walletv1.WalletServiceServer {
@@ -97,7 +98,7 @@ func (s *WalletGrpcHandler) CreateWallet(ctx context.Context, req *walletv1.Crea
 	return &walletv1.CreateWalletResponse{}, nil
 }
 
-func (s *WalletGrpcHandler) EditWallet(ctx context.Context, req *walletv1.EditWalletRequest) (*walletv1.EditWalletResponse, error) {
+func (s *WalletGrpcHandler) UpdateWallet(ctx context.Context, req *walletv1.UpdateWalletRequest) (*walletv1.UpdateWalletResponse, error) {
 	user, ok := middleware.GetUser(ctx)
 	if !ok {
 		return nil, status.Error(codes.Unauthenticated, "unauthorized")
@@ -106,14 +107,14 @@ func (s *WalletGrpcHandler) EditWallet(ctx context.Context, req *walletv1.EditWa
 	if err != nil {
 		return nil, status.Error(codes.InvalidArgument, "id parameter is required")
 	}
-	wallet, err := s.walletService.EditWallet(ctx, user, uuid, req.Label)
+	wallet, err := s.walletService.UpdateWallet(ctx, user, uuid, req.Label)
 	if err != nil {
 		if errors.Is(err, domain.ErrorNotFound) {
 			return nil, status.Error(codes.NotFound, "wallet not found")
 		}
 		return nil, status.Error(codes.Internal, err.Error())
 	}
-	return &walletv1.EditWalletResponse{
+	return &walletv1.UpdateWalletResponse{
 		Id:    wallet.ID,
 		Label: wallet.Label,
 	}, nil
@@ -140,6 +141,52 @@ func (s *WalletGrpcHandler) DeleteWallet(ctx context.Context, req *walletv1.Dele
 	}, nil
 }
 
+func (s *WalletGrpcHandler) ListWalletBalances(ctx context.Context, req *walletv1.ListWalletBalancesRequest) (*walletv1.ListWalletBalancesResponse, error) {
+	user, ok := middleware.GetUser(ctx)
+	if !ok {
+		return nil, status.Error(codes.Unauthenticated, "unauthorized")
+	}
+	if req.GetId() == "" {
+		return nil, status.Error(codes.InvalidArgument, "id is required")
+	}
+	uuid, err := uuid.Parse(req.GetId())
+	if err != nil {
+		return nil, status.Error(codes.InvalidArgument, "invalid id")
+	}
+	if req.GetLimit() <= 0 {
+		return nil, status.Error(codes.InvalidArgument, "limit must be greater than zero")
+	}
+	now := time.Now()
+	from, err := getBalancePeriodFrom(req.GetPeriod(), now)
+	if err != nil {
+		return nil, status.Error(codes.InvalidArgument, "invalid period")
+	}
+	snapshots, err := s.walletService.GetBalanceSnapshot(
+		ctx,
+		user,
+		uuid,
+		core.BalanceSnapshotFilter{
+			From:  from,
+			To:    now,
+			Limit: int(req.GetLimit()),
+		},
+	)
+	if err != nil {
+		return nil, status.Error(codes.Internal, "failed to get wallet balances")
+	}
+	balances := make([]*walletv1.WalletBalance, 0, len(snapshots))
+	for _, snapshot := range snapshots {
+		balances = append(balances, &walletv1.WalletBalance{
+			BalanceCrypto: float32(snapshot.Balance),
+			BalanceUsd:    float32(snapshot.BalanceUSD),
+			Time:          timestamppb.New(snapshot.Time),
+		})
+	}
+	return &walletv1.ListWalletBalancesResponse{
+		Balance: balances,
+	}, nil
+}
+
 func (s *WalletGrpcHandler) StreamWallet(
 	req *walletv1.StreamWalletRequest,
 	stream grpc.ServerStreamingServer[walletv1.WalletUpdate],
@@ -161,5 +208,26 @@ func (s *WalletGrpcHandler) StreamWallet(
 				return err
 			}
 		}
+	}
+}
+
+func getBalancePeriodFrom(period walletv1.BalancePeriod, now time.Time) (time.Time, error) {
+	switch period {
+	case walletv1.BalancePeriod_BALANCE_PERIOD_1D:
+		return now.Add(-24 * time.Hour), nil
+	case walletv1.BalancePeriod_BALANCE_PERIOD_1W:
+		return now.AddDate(0, 0, -7), nil
+	case walletv1.BalancePeriod_BALANCE_PERIOD_1M:
+		return now.AddDate(0, -1, 0), nil
+	case walletv1.BalancePeriod_BALANCE_PERIOD_6M:
+		return now.AddDate(0, -6, 0), nil
+	case walletv1.BalancePeriod_BALANCE_PERIOD_1Y:
+		return now.AddDate(-1, 0, 0), nil
+	case walletv1.BalancePeriod_BALANCE_PERIOD_5Y:
+		return now.AddDate(-5, 0, 0), nil
+	case walletv1.BalancePeriod_BALANCE_PERIOD_ALL:
+		return time.Time{}, nil
+	default:
+		return time.Time{}, errors.New("invalid balance period")
 	}
 }

@@ -3,7 +3,7 @@
 /* eslint-disable */
 // @ts-nocheck
 
-import { CreateWalletRequest, CreateWalletResponse, DeleteWalletRequest, DeleteWalletResponse, EditWalletRequest, EditWalletResponse, GetWalletRequest, GetWalletResponse, ListWalletsRequest, ListWalletsResponse, StreamWalletRequest, WalletUpdate } from "./wallet_pb.js";
+import { CreateWalletRequest, CreateWalletResponse, DeleteWalletRequest, DeleteWalletResponse, GetWalletRequest, GetWalletResponse, ListWalletBalancesRequest, ListWalletBalancesResponse, ListWalletsRequest, ListWalletsResponse, StreamWalletRequest, UpdateWalletRequest, UpdateWalletResponse, WalletUpdate } from "./wallet_pb.js";
 import { MethodKind } from "@bufbuild/protobuf";
 
 /**
@@ -31,12 +31,12 @@ export const WalletService = {
       kind: MethodKind.Unary,
     },
     /**
-     * @generated from rpc wallet.v1.WalletService.EditWallet
+     * @generated from rpc wallet.v1.WalletService.UpdateWallet
      */
-    editWallet: {
-      name: "EditWallet",
-      I: EditWalletRequest,
-      O: EditWalletResponse,
+    updateWallet: {
+      name: "UpdateWallet",
+      I: UpdateWalletRequest,
+      O: UpdateWalletResponse,
       kind: MethodKind.Unary,
     },
     /**
@@ -55,6 +55,15 @@ export const WalletService = {
       name: "CreateWallet",
       I: CreateWalletRequest,
       O: CreateWalletResponse,
+      kind: MethodKind.Unary,
+    },
+    /**
+     * @generated from rpc wallet.v1.WalletService.ListWalletBalances
+     */
+    listWalletBalances: {
+      name: "ListWalletBalances",
+      I: ListWalletBalancesRequest,
+      O: ListWalletBalancesResponse,
       kind: MethodKind.Unary,
     },
     /**

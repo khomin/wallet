@@ -1,7 +1,7 @@
 info:
   name: update alert
   type: http
-  seq: 17
+  seq: 18
 
 http:
   method: PATCH

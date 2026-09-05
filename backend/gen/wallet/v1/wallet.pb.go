@@ -10,7 +10,7 @@ import (
 	_ "google.golang.org/genproto/googleapis/api/annotations"
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
-	_ "google.golang.org/protobuf/types/known/emptypb"
+	timestamppb "google.golang.org/protobuf/types/known/timestamppb"
 	reflect "reflect"
 	sync "sync"
 	v1 "tracker/gen/price/v1"
@@ -23,6 +23,70 @@ const (
 	// Verify that runtime/protoimpl is sufficiently up-to-date.
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
+
+type BalancePeriod int32
+
+const (
+	BalancePeriod_BALANCE_PERIOD_UNSPECIFIED BalancePeriod = 0
+	BalancePeriod_BALANCE_PERIOD_1D          BalancePeriod = 1
+	BalancePeriod_BALANCE_PERIOD_1W          BalancePeriod = 2
+	BalancePeriod_BALANCE_PERIOD_1M          BalancePeriod = 3
+	BalancePeriod_BALANCE_PERIOD_6M          BalancePeriod = 4
+	BalancePeriod_BALANCE_PERIOD_1Y          BalancePeriod = 5
+	BalancePeriod_BALANCE_PERIOD_5Y          BalancePeriod = 6
+	BalancePeriod_BALANCE_PERIOD_ALL         BalancePeriod = 7
+)
+
+// Enum value maps for BalancePeriod.
+var (
+	BalancePeriod_name = map[int32]string{
+		0: "BALANCE_PERIOD_UNSPECIFIED",
+		1: "BALANCE_PERIOD_1D",
+		2: "BALANCE_PERIOD_1W",
+		3: "BALANCE_PERIOD_1M",
+		4: "BALANCE_PERIOD_6M",
+		5: "BALANCE_PERIOD_1Y",
+		6: "BALANCE_PERIOD_5Y",
+		7: "BALANCE_PERIOD_ALL",
+	}
+	BalancePeriod_value = map[string]int32{
+		"BALANCE_PERIOD_UNSPECIFIED": 0,
+		"BALANCE_PERIOD_1D":          1,
+		"BALANCE_PERIOD_1W":          2,
+		"BALANCE_PERIOD_1M":          3,
+		"BALANCE_PERIOD_6M":          4,
+		"BALANCE_PERIOD_1Y":          5,
+		"BALANCE_PERIOD_5Y":          6,
+		"BALANCE_PERIOD_ALL":         7,
+	}
+)
+
+func (x BalancePeriod) Enum() *BalancePeriod {
+	p := new(BalancePeriod)
+	*p = x
+	return p
+}
+
+func (x BalancePeriod) String() string {
+	return protoimpl.X.EnumStringOf(x.Descriptor(), protoreflect.EnumNumber(x))
+}
+
+func (BalancePeriod) Descriptor() protoreflect.EnumDescriptor {
+	return file_wallet_v1_wallet_proto_enumTypes[0].Descriptor()
+}
+
+func (BalancePeriod) Type() protoreflect.EnumType {
+	return &file_wallet_v1_wallet_proto_enumTypes[0]
+}
+
+func (x BalancePeriod) Number() protoreflect.EnumNumber {
+	return protoreflect.EnumNumber(x)
+}
+
+// Deprecated: Use BalancePeriod.Descriptor instead.
+func (BalancePeriod) EnumDescriptor() ([]byte, []int) {
+	return file_wallet_v1_wallet_proto_rawDescGZIP(), []int{0}
+}
 
 type ListWalletsRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
@@ -200,7 +264,7 @@ func (x *GetWalletResponse) GetWallet() *Wallet {
 	return nil
 }
 
-type EditWalletRequest struct {
+type UpdateWalletRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Id            string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
 	Label         string                 `protobuf:"bytes,2,opt,name=label,proto3" json:"label,omitempty"`
@@ -208,20 +272,20 @@ type EditWalletRequest struct {
 	sizeCache     protoimpl.SizeCache
 }
 
-func (x *EditWalletRequest) Reset() {
-	*x = EditWalletRequest{}
+func (x *UpdateWalletRequest) Reset() {
+	*x = UpdateWalletRequest{}
 	mi := &file_wallet_v1_wallet_proto_msgTypes[4]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
 
-func (x *EditWalletRequest) String() string {
+func (x *UpdateWalletRequest) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*EditWalletRequest) ProtoMessage() {}
+func (*UpdateWalletRequest) ProtoMessage() {}
 
-func (x *EditWalletRequest) ProtoReflect() protoreflect.Message {
+func (x *UpdateWalletRequest) ProtoReflect() protoreflect.Message {
 	mi := &file_wallet_v1_wallet_proto_msgTypes[4]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -233,26 +297,26 @@ func (x *EditWalletRequest) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use EditWalletRequest.ProtoReflect.Descriptor instead.
-func (*EditWalletRequest) Descriptor() ([]byte, []int) {
+// Deprecated: Use UpdateWalletRequest.ProtoReflect.Descriptor instead.
+func (*UpdateWalletRequest) Descriptor() ([]byte, []int) {
 	return file_wallet_v1_wallet_proto_rawDescGZIP(), []int{4}
 }
 
-func (x *EditWalletRequest) GetId() string {
+func (x *UpdateWalletRequest) GetId() string {
 	if x != nil {
 		return x.Id
 	}
 	return ""
 }
 
-func (x *EditWalletRequest) GetLabel() string {
+func (x *UpdateWalletRequest) GetLabel() string {
 	if x != nil {
 		return x.Label
 	}
 	return ""
 }
 
-type EditWalletResponse struct {
+type UpdateWalletResponse struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Id            string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
 	Label         string                 `protobuf:"bytes,2,opt,name=label,proto3" json:"label,omitempty"`
@@ -260,20 +324,20 @@ type EditWalletResponse struct {
 	sizeCache     protoimpl.SizeCache
 }
 
-func (x *EditWalletResponse) Reset() {
-	*x = EditWalletResponse{}
+func (x *UpdateWalletResponse) Reset() {
+	*x = UpdateWalletResponse{}
 	mi := &file_wallet_v1_wallet_proto_msgTypes[5]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
 
-func (x *EditWalletResponse) String() string {
+func (x *UpdateWalletResponse) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*EditWalletResponse) ProtoMessage() {}
+func (*UpdateWalletResponse) ProtoMessage() {}
 
-func (x *EditWalletResponse) ProtoReflect() protoreflect.Message {
+func (x *UpdateWalletResponse) ProtoReflect() protoreflect.Message {
 	mi := &file_wallet_v1_wallet_proto_msgTypes[5]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -285,19 +349,19 @@ func (x *EditWalletResponse) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use EditWalletResponse.ProtoReflect.Descriptor instead.
-func (*EditWalletResponse) Descriptor() ([]byte, []int) {
+// Deprecated: Use UpdateWalletResponse.ProtoReflect.Descriptor instead.
+func (*UpdateWalletResponse) Descriptor() ([]byte, []int) {
 	return file_wallet_v1_wallet_proto_rawDescGZIP(), []int{5}
 }
 
-func (x *EditWalletResponse) GetId() string {
+func (x *UpdateWalletResponse) GetId() string {
 	if x != nil {
 		return x.Id
 	}
 	return ""
 }
 
-func (x *EditWalletResponse) GetLabel() string {
+func (x *UpdateWalletResponse) GetLabel() string {
 	if x != nil {
 		return x.Label
 	}
@@ -496,6 +560,110 @@ func (*CreateWalletResponse) Descriptor() ([]byte, []int) {
 	return file_wallet_v1_wallet_proto_rawDescGZIP(), []int{9}
 }
 
+type ListWalletBalancesRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Id            string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
+	Period        BalancePeriod          `protobuf:"varint,2,opt,name=period,proto3,enum=wallet.v1.BalancePeriod" json:"period,omitempty"`
+	Limit         int32                  `protobuf:"varint,3,opt,name=limit,proto3" json:"limit,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ListWalletBalancesRequest) Reset() {
+	*x = ListWalletBalancesRequest{}
+	mi := &file_wallet_v1_wallet_proto_msgTypes[10]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ListWalletBalancesRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ListWalletBalancesRequest) ProtoMessage() {}
+
+func (x *ListWalletBalancesRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_wallet_v1_wallet_proto_msgTypes[10]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ListWalletBalancesRequest.ProtoReflect.Descriptor instead.
+func (*ListWalletBalancesRequest) Descriptor() ([]byte, []int) {
+	return file_wallet_v1_wallet_proto_rawDescGZIP(), []int{10}
+}
+
+func (x *ListWalletBalancesRequest) GetId() string {
+	if x != nil {
+		return x.Id
+	}
+	return ""
+}
+
+func (x *ListWalletBalancesRequest) GetPeriod() BalancePeriod {
+	if x != nil {
+		return x.Period
+	}
+	return BalancePeriod_BALANCE_PERIOD_UNSPECIFIED
+}
+
+func (x *ListWalletBalancesRequest) GetLimit() int32 {
+	if x != nil {
+		return x.Limit
+	}
+	return 0
+}
+
+type ListWalletBalancesResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Balance       []*WalletBalance       `protobuf:"bytes,1,rep,name=balance,proto3" json:"balance,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ListWalletBalancesResponse) Reset() {
+	*x = ListWalletBalancesResponse{}
+	mi := &file_wallet_v1_wallet_proto_msgTypes[11]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ListWalletBalancesResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ListWalletBalancesResponse) ProtoMessage() {}
+
+func (x *ListWalletBalancesResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_wallet_v1_wallet_proto_msgTypes[11]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ListWalletBalancesResponse.ProtoReflect.Descriptor instead.
+func (*ListWalletBalancesResponse) Descriptor() ([]byte, []int) {
+	return file_wallet_v1_wallet_proto_rawDescGZIP(), []int{11}
+}
+
+func (x *ListWalletBalancesResponse) GetBalance() []*WalletBalance {
+	if x != nil {
+		return x.Balance
+	}
+	return nil
+}
+
 type StreamWalletRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Symbols       []string               `protobuf:"bytes,1,rep,name=symbols,proto3" json:"symbols,omitempty"`
@@ -505,7 +673,7 @@ type StreamWalletRequest struct {
 
 func (x *StreamWalletRequest) Reset() {
 	*x = StreamWalletRequest{}
-	mi := &file_wallet_v1_wallet_proto_msgTypes[10]
+	mi := &file_wallet_v1_wallet_proto_msgTypes[12]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -517,7 +685,7 @@ func (x *StreamWalletRequest) String() string {
 func (*StreamWalletRequest) ProtoMessage() {}
 
 func (x *StreamWalletRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_wallet_v1_wallet_proto_msgTypes[10]
+	mi := &file_wallet_v1_wallet_proto_msgTypes[12]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -530,7 +698,7 @@ func (x *StreamWalletRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use StreamWalletRequest.ProtoReflect.Descriptor instead.
 func (*StreamWalletRequest) Descriptor() ([]byte, []int) {
-	return file_wallet_v1_wallet_proto_rawDescGZIP(), []int{10}
+	return file_wallet_v1_wallet_proto_rawDescGZIP(), []int{12}
 }
 
 func (x *StreamWalletRequest) GetSymbols() []string {
@@ -549,7 +717,7 @@ type WalletUpdate struct {
 
 func (x *WalletUpdate) Reset() {
 	*x = WalletUpdate{}
-	mi := &file_wallet_v1_wallet_proto_msgTypes[11]
+	mi := &file_wallet_v1_wallet_proto_msgTypes[13]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -561,7 +729,7 @@ func (x *WalletUpdate) String() string {
 func (*WalletUpdate) ProtoMessage() {}
 
 func (x *WalletUpdate) ProtoReflect() protoreflect.Message {
-	mi := &file_wallet_v1_wallet_proto_msgTypes[11]
+	mi := &file_wallet_v1_wallet_proto_msgTypes[13]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -574,7 +742,7 @@ func (x *WalletUpdate) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use WalletUpdate.ProtoReflect.Descriptor instead.
 func (*WalletUpdate) Descriptor() ([]byte, []int) {
-	return file_wallet_v1_wallet_proto_rawDescGZIP(), []int{11}
+	return file_wallet_v1_wallet_proto_rawDescGZIP(), []int{13}
 }
 
 func (x *WalletUpdate) GetWallet() *Wallet {
@@ -602,7 +770,7 @@ type Wallet struct {
 
 func (x *Wallet) Reset() {
 	*x = Wallet{}
-	mi := &file_wallet_v1_wallet_proto_msgTypes[12]
+	mi := &file_wallet_v1_wallet_proto_msgTypes[14]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -614,7 +782,7 @@ func (x *Wallet) String() string {
 func (*Wallet) ProtoMessage() {}
 
 func (x *Wallet) ProtoReflect() protoreflect.Message {
-	mi := &file_wallet_v1_wallet_proto_msgTypes[12]
+	mi := &file_wallet_v1_wallet_proto_msgTypes[14]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -627,7 +795,7 @@ func (x *Wallet) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Wallet.ProtoReflect.Descriptor instead.
 func (*Wallet) Descriptor() ([]byte, []int) {
-	return file_wallet_v1_wallet_proto_rawDescGZIP(), []int{12}
+	return file_wallet_v1_wallet_proto_rawDescGZIP(), []int{14}
 }
 
 func (x *Wallet) GetId() string {
@@ -700,11 +868,71 @@ func (x *Wallet) GetPrice() *v1.Price {
 	return nil
 }
 
+type WalletBalance struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	BalanceCrypto float32                `protobuf:"fixed32,1,opt,name=balance_crypto,json=balanceCrypto,proto3" json:"balance_crypto,omitempty"`
+	BalanceUsd    float32                `protobuf:"fixed32,2,opt,name=balance_usd,json=balanceUsd,proto3" json:"balance_usd,omitempty"`
+	Time          *timestamppb.Timestamp `protobuf:"bytes,3,opt,name=time,proto3" json:"time,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *WalletBalance) Reset() {
+	*x = WalletBalance{}
+	mi := &file_wallet_v1_wallet_proto_msgTypes[15]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *WalletBalance) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*WalletBalance) ProtoMessage() {}
+
+func (x *WalletBalance) ProtoReflect() protoreflect.Message {
+	mi := &file_wallet_v1_wallet_proto_msgTypes[15]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use WalletBalance.ProtoReflect.Descriptor instead.
+func (*WalletBalance) Descriptor() ([]byte, []int) {
+	return file_wallet_v1_wallet_proto_rawDescGZIP(), []int{15}
+}
+
+func (x *WalletBalance) GetBalanceCrypto() float32 {
+	if x != nil {
+		return x.BalanceCrypto
+	}
+	return 0
+}
+
+func (x *WalletBalance) GetBalanceUsd() float32 {
+	if x != nil {
+		return x.BalanceUsd
+	}
+	return 0
+}
+
+func (x *WalletBalance) GetTime() *timestamppb.Timestamp {
+	if x != nil {
+		return x.Time
+	}
+	return nil
+}
+
 var File_wallet_v1_wallet_proto protoreflect.FileDescriptor
 
 const file_wallet_v1_wallet_proto_rawDesc = "" +
 	"\n" +
-	"\x16wallet/v1/wallet.proto\x12\twallet.v1\x1a\x1bgoogle/protobuf/empty.proto\x1a\x14price/v1/price.proto\x1a\x1cgoogle/api/annotations.proto\"\x14\n" +
+	"\x16wallet/v1/wallet.proto\x12\twallet.v1\x1a\x14price/v1/price.proto\x1a\x1fgoogle/protobuf/timestamp.proto\x1a\x1cgoogle/api/annotations.proto\"\x14\n" +
 	"\x12ListWalletsRequest\"V\n" +
 	"\x13ListWalletsResponse\x12\x14\n" +
 	"\x05total\x18\x01 \x01(\x05R\x05total\x12)\n" +
@@ -712,11 +940,11 @@ const file_wallet_v1_wallet_proto_rawDesc = "" +
 	"\x10GetWalletRequest\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\">\n" +
 	"\x11GetWalletResponse\x12)\n" +
-	"\x06wallet\x18\x01 \x01(\v2\x11.wallet.v1.WalletR\x06wallet\"9\n" +
-	"\x11EditWalletRequest\x12\x0e\n" +
+	"\x06wallet\x18\x01 \x01(\v2\x11.wallet.v1.WalletR\x06wallet\";\n" +
+	"\x13UpdateWalletRequest\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12\x14\n" +
-	"\x05label\x18\x02 \x01(\tR\x05label\":\n" +
-	"\x12EditWalletResponse\x12\x0e\n" +
+	"\x05label\x18\x02 \x01(\tR\x05label\"<\n" +
+	"\x14UpdateWalletResponse\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12\x14\n" +
 	"\x05label\x18\x02 \x01(\tR\x05label\"%\n" +
 	"\x13DeleteWalletRequest\x12\x0e\n" +
@@ -729,7 +957,13 @@ const file_wallet_v1_wallet_proto_rawDesc = "" +
 	"\x05chain\x18\x02 \x01(\tR\x05chain\x12!\n" +
 	"\ftoken_symbol\x18\x03 \x01(\tR\vtokenSymbol\x12\x14\n" +
 	"\x05label\x18\x04 \x01(\tR\x05label\"\x16\n" +
-	"\x14CreateWalletResponse\"/\n" +
+	"\x14CreateWalletResponse\"s\n" +
+	"\x19ListWalletBalancesRequest\x12\x0e\n" +
+	"\x02id\x18\x01 \x01(\tR\x02id\x120\n" +
+	"\x06period\x18\x02 \x01(\x0e2\x18.wallet.v1.BalancePeriodR\x06period\x12\x14\n" +
+	"\x05limit\x18\x03 \x01(\x05R\x05limit\"P\n" +
+	"\x1aListWalletBalancesResponse\x122\n" +
+	"\abalance\x18\x01 \x03(\v2\x18.wallet.v1.WalletBalanceR\abalance\"/\n" +
 	"\x13StreamWalletRequest\x12\x18\n" +
 	"\asymbols\x18\x01 \x03(\tR\asymbols\"9\n" +
 	"\fWalletUpdate\x12)\n" +
@@ -746,14 +980,28 @@ const file_wallet_v1_wallet_proto_rawDesc = "" +
 	"\thas_error\x18\t \x01(\bR\bhasError\x12\x1b\n" +
 	"\terror_msg\x18\n" +
 	" \x01(\tR\berrorMsg\x12%\n" +
-	"\x05price\x18\v \x01(\v2\x0f.price.v1.PriceR\x05price2\xf7\x04\n" +
+	"\x05price\x18\v \x01(\v2\x0f.price.v1.PriceR\x05price\"\x87\x01\n" +
+	"\rWalletBalance\x12%\n" +
+	"\x0ebalance_crypto\x18\x01 \x01(\x02R\rbalanceCrypto\x12\x1f\n" +
+	"\vbalance_usd\x18\x02 \x01(\x02R\n" +
+	"balanceUsd\x12.\n" +
+	"\x04time\x18\x03 \x01(\v2\x1a.google.protobuf.TimestampR\x04time*\xd1\x01\n" +
+	"\rBalancePeriod\x12\x1e\n" +
+	"\x1aBALANCE_PERIOD_UNSPECIFIED\x10\x00\x12\x15\n" +
+	"\x11BALANCE_PERIOD_1D\x10\x01\x12\x15\n" +
+	"\x11BALANCE_PERIOD_1W\x10\x02\x12\x15\n" +
+	"\x11BALANCE_PERIOD_1M\x10\x03\x12\x15\n" +
+	"\x11BALANCE_PERIOD_6M\x10\x04\x12\x15\n" +
+	"\x11BALANCE_PERIOD_1Y\x10\x05\x12\x15\n" +
+	"\x11BALANCE_PERIOD_5Y\x10\x06\x12\x16\n" +
+	"\x12BALANCE_PERIOD_ALL\x10\a2\x84\x06\n" +
 	"\rWalletService\x12a\n" +
 	"\vListWallets\x12\x1d.wallet.v1.ListWalletsRequest\x1a\x1e.wallet.v1.ListWalletsResponse\"\x13\x82\xd3\xe4\x93\x02\r\x12\v/v1/wallets\x12`\n" +
-	"\tGetWallet\x12\x1b.wallet.v1.GetWalletRequest\x1a\x1c.wallet.v1.GetWalletResponse\"\x18\x82\xd3\xe4\x93\x02\x12\x12\x10/v1/wallets/{id}\x12f\n" +
-	"\n" +
-	"EditWallet\x12\x1c.wallet.v1.EditWalletRequest\x1a\x1d.wallet.v1.EditWalletResponse\"\x1b\x82\xd3\xe4\x93\x02\x15:\x01*2\x10/v1/wallets/{id}\x12i\n" +
+	"\tGetWallet\x12\x1b.wallet.v1.GetWalletRequest\x1a\x1c.wallet.v1.GetWalletResponse\"\x18\x82\xd3\xe4\x93\x02\x12\x12\x10/v1/wallets/{id}\x12l\n" +
+	"\fUpdateWallet\x12\x1e.wallet.v1.UpdateWalletRequest\x1a\x1f.wallet.v1.UpdateWalletResponse\"\x1b\x82\xd3\xe4\x93\x02\x15:\x01*2\x10/v1/wallets/{id}\x12i\n" +
 	"\fDeleteWallet\x12\x1e.wallet.v1.DeleteWalletRequest\x1a\x1f.wallet.v1.DeleteWalletResponse\"\x18\x82\xd3\xe4\x93\x02\x12*\x10/v1/wallets/{id}\x12g\n" +
-	"\fCreateWallet\x12\x1e.wallet.v1.CreateWalletRequest\x1a\x1f.wallet.v1.CreateWalletResponse\"\x16\x82\xd3\xe4\x93\x02\x10:\x01*\"\v/v1/wallets\x12e\n" +
+	"\fCreateWallet\x12\x1e.wallet.v1.CreateWalletRequest\x1a\x1f.wallet.v1.CreateWalletResponse\"\x16\x82\xd3\xe4\x93\x02\x10:\x01*\"\v/v1/wallets\x12\x84\x01\n" +
+	"\x12ListWalletBalances\x12$.wallet.v1.ListWalletBalancesRequest\x1a%.wallet.v1.ListWalletBalancesResponse\"!\x82\xd3\xe4\x93\x02\x1b\x12\x19/v1/wallets/{id}/balances\x12e\n" +
 	"\fStreamWallet\x12\x1e.wallet.v1.StreamWalletRequest\x1a\x17.wallet.v1.WalletUpdate\"\x1a\x82\xd3\xe4\x93\x02\x14\x12\x12/v1/wallets/stream0\x01B Z\x1etracker/gen/wallet/v1;walletv1b\x06proto3"
 
 var (
@@ -768,45 +1016,56 @@ func file_wallet_v1_wallet_proto_rawDescGZIP() []byte {
 	return file_wallet_v1_wallet_proto_rawDescData
 }
 
-var file_wallet_v1_wallet_proto_msgTypes = make([]protoimpl.MessageInfo, 13)
+var file_wallet_v1_wallet_proto_enumTypes = make([]protoimpl.EnumInfo, 1)
+var file_wallet_v1_wallet_proto_msgTypes = make([]protoimpl.MessageInfo, 16)
 var file_wallet_v1_wallet_proto_goTypes = []any{
-	(*ListWalletsRequest)(nil),   // 0: wallet.v1.ListWalletsRequest
-	(*ListWalletsResponse)(nil),  // 1: wallet.v1.ListWalletsResponse
-	(*GetWalletRequest)(nil),     // 2: wallet.v1.GetWalletRequest
-	(*GetWalletResponse)(nil),    // 3: wallet.v1.GetWalletResponse
-	(*EditWalletRequest)(nil),    // 4: wallet.v1.EditWalletRequest
-	(*EditWalletResponse)(nil),   // 5: wallet.v1.EditWalletResponse
-	(*DeleteWalletRequest)(nil),  // 6: wallet.v1.DeleteWalletRequest
-	(*DeleteWalletResponse)(nil), // 7: wallet.v1.DeleteWalletResponse
-	(*CreateWalletRequest)(nil),  // 8: wallet.v1.CreateWalletRequest
-	(*CreateWalletResponse)(nil), // 9: wallet.v1.CreateWalletResponse
-	(*StreamWalletRequest)(nil),  // 10: wallet.v1.StreamWalletRequest
-	(*WalletUpdate)(nil),         // 11: wallet.v1.WalletUpdate
-	(*Wallet)(nil),               // 12: wallet.v1.Wallet
-	(*v1.Price)(nil),             // 13: price.v1.Price
+	(BalancePeriod)(0),                 // 0: wallet.v1.BalancePeriod
+	(*ListWalletsRequest)(nil),         // 1: wallet.v1.ListWalletsRequest
+	(*ListWalletsResponse)(nil),        // 2: wallet.v1.ListWalletsResponse
+	(*GetWalletRequest)(nil),           // 3: wallet.v1.GetWalletRequest
+	(*GetWalletResponse)(nil),          // 4: wallet.v1.GetWalletResponse
+	(*UpdateWalletRequest)(nil),        // 5: wallet.v1.UpdateWalletRequest
+	(*UpdateWalletResponse)(nil),       // 6: wallet.v1.UpdateWalletResponse
+	(*DeleteWalletRequest)(nil),        // 7: wallet.v1.DeleteWalletRequest
+	(*DeleteWalletResponse)(nil),       // 8: wallet.v1.DeleteWalletResponse
+	(*CreateWalletRequest)(nil),        // 9: wallet.v1.CreateWalletRequest
+	(*CreateWalletResponse)(nil),       // 10: wallet.v1.CreateWalletResponse
+	(*ListWalletBalancesRequest)(nil),  // 11: wallet.v1.ListWalletBalancesRequest
+	(*ListWalletBalancesResponse)(nil), // 12: wallet.v1.ListWalletBalancesResponse
+	(*StreamWalletRequest)(nil),        // 13: wallet.v1.StreamWalletRequest
+	(*WalletUpdate)(nil),               // 14: wallet.v1.WalletUpdate
+	(*Wallet)(nil),                     // 15: wallet.v1.Wallet
+	(*WalletBalance)(nil),              // 16: wallet.v1.WalletBalance
+	(*v1.Price)(nil),                   // 17: price.v1.Price
+	(*timestamppb.Timestamp)(nil),      // 18: google.protobuf.Timestamp
 }
 var file_wallet_v1_wallet_proto_depIdxs = []int32{
-	12, // 0: wallet.v1.ListWalletsResponse.wallet:type_name -> wallet.v1.Wallet
-	12, // 1: wallet.v1.GetWalletResponse.wallet:type_name -> wallet.v1.Wallet
-	12, // 2: wallet.v1.WalletUpdate.wallet:type_name -> wallet.v1.Wallet
-	13, // 3: wallet.v1.Wallet.price:type_name -> price.v1.Price
-	0,  // 4: wallet.v1.WalletService.ListWallets:input_type -> wallet.v1.ListWalletsRequest
-	2,  // 5: wallet.v1.WalletService.GetWallet:input_type -> wallet.v1.GetWalletRequest
-	4,  // 6: wallet.v1.WalletService.EditWallet:input_type -> wallet.v1.EditWalletRequest
-	6,  // 7: wallet.v1.WalletService.DeleteWallet:input_type -> wallet.v1.DeleteWalletRequest
-	8,  // 8: wallet.v1.WalletService.CreateWallet:input_type -> wallet.v1.CreateWalletRequest
-	10, // 9: wallet.v1.WalletService.StreamWallet:input_type -> wallet.v1.StreamWalletRequest
-	1,  // 10: wallet.v1.WalletService.ListWallets:output_type -> wallet.v1.ListWalletsResponse
-	3,  // 11: wallet.v1.WalletService.GetWallet:output_type -> wallet.v1.GetWalletResponse
-	5,  // 12: wallet.v1.WalletService.EditWallet:output_type -> wallet.v1.EditWalletResponse
-	7,  // 13: wallet.v1.WalletService.DeleteWallet:output_type -> wallet.v1.DeleteWalletResponse
-	9,  // 14: wallet.v1.WalletService.CreateWallet:output_type -> wallet.v1.CreateWalletResponse
-	11, // 15: wallet.v1.WalletService.StreamWallet:output_type -> wallet.v1.WalletUpdate
-	10, // [10:16] is the sub-list for method output_type
-	4,  // [4:10] is the sub-list for method input_type
-	4,  // [4:4] is the sub-list for extension type_name
-	4,  // [4:4] is the sub-list for extension extendee
-	0,  // [0:4] is the sub-list for field type_name
+	15, // 0: wallet.v1.ListWalletsResponse.wallet:type_name -> wallet.v1.Wallet
+	15, // 1: wallet.v1.GetWalletResponse.wallet:type_name -> wallet.v1.Wallet
+	0,  // 2: wallet.v1.ListWalletBalancesRequest.period:type_name -> wallet.v1.BalancePeriod
+	16, // 3: wallet.v1.ListWalletBalancesResponse.balance:type_name -> wallet.v1.WalletBalance
+	15, // 4: wallet.v1.WalletUpdate.wallet:type_name -> wallet.v1.Wallet
+	17, // 5: wallet.v1.Wallet.price:type_name -> price.v1.Price
+	18, // 6: wallet.v1.WalletBalance.time:type_name -> google.protobuf.Timestamp
+	1,  // 7: wallet.v1.WalletService.ListWallets:input_type -> wallet.v1.ListWalletsRequest
+	3,  // 8: wallet.v1.WalletService.GetWallet:input_type -> wallet.v1.GetWalletRequest
+	5,  // 9: wallet.v1.WalletService.UpdateWallet:input_type -> wallet.v1.UpdateWalletRequest
+	7,  // 10: wallet.v1.WalletService.DeleteWallet:input_type -> wallet.v1.DeleteWalletRequest
+	9,  // 11: wallet.v1.WalletService.CreateWallet:input_type -> wallet.v1.CreateWalletRequest
+	11, // 12: wallet.v1.WalletService.ListWalletBalances:input_type -> wallet.v1.ListWalletBalancesRequest
+	13, // 13: wallet.v1.WalletService.StreamWallet:input_type -> wallet.v1.StreamWalletRequest
+	2,  // 14: wallet.v1.WalletService.ListWallets:output_type -> wallet.v1.ListWalletsResponse
+	4,  // 15: wallet.v1.WalletService.GetWallet:output_type -> wallet.v1.GetWalletResponse
+	6,  // 16: wallet.v1.WalletService.UpdateWallet:output_type -> wallet.v1.UpdateWalletResponse
+	8,  // 17: wallet.v1.WalletService.DeleteWallet:output_type -> wallet.v1.DeleteWalletResponse
+	10, // 18: wallet.v1.WalletService.CreateWallet:output_type -> wallet.v1.CreateWalletResponse
+	12, // 19: wallet.v1.WalletService.ListWalletBalances:output_type -> wallet.v1.ListWalletBalancesResponse
+	14, // 20: wallet.v1.WalletService.StreamWallet:output_type -> wallet.v1.WalletUpdate
+	14, // [14:21] is the sub-list for method output_type
+	7,  // [7:14] is the sub-list for method input_type
+	7,  // [7:7] is the sub-list for extension type_name
+	7,  // [7:7] is the sub-list for extension extendee
+	0,  // [0:7] is the sub-list for field type_name
 }
 
 func init() { file_wallet_v1_wallet_proto_init() }
@@ -819,13 +1078,14 @@ func file_wallet_v1_wallet_proto_init() {
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_wallet_v1_wallet_proto_rawDesc), len(file_wallet_v1_wallet_proto_rawDesc)),
-			NumEnums:      0,
-			NumMessages:   13,
+			NumEnums:      1,
+			NumMessages:   16,
 			NumExtensions: 0,
 			NumServices:   1,
 		},
 		GoTypes:           file_wallet_v1_wallet_proto_goTypes,
 		DependencyIndexes: file_wallet_v1_wallet_proto_depIdxs,
+		EnumInfos:         file_wallet_v1_wallet_proto_enumTypes,
 		MessageInfos:      file_wallet_v1_wallet_proto_msgTypes,
 	}.Build()
 	File_wallet_v1_wallet_proto = out.File
