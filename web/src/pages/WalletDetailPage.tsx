@@ -70,16 +70,7 @@ export default function WalletDetailPage() {
                     <h1 className="text-xl font-semibold mb-0">{wallet ? `${wallet.tokenSymbol} · ${wallet.label || wallet.address.slice(0, 6)}` : 'Wallet'}</h1>
                     <p className="text-xs text-gray-500 mt-1">{wallet?.address}</p>
                 </div>
-                <div className="flex items-center gap-2">
-                    {PERIODS.map((p) => (
-                        <button
-                            key={p.key}
-                            onClick={() => setPeriod(p.value)}
-                            className={`rounded-lg px-3 py-1 text-xs ${period === p.value ? 'bg-purple-600 text-white' : 'text-gray-400 bg-white/5'}`}>
-                            {p.label}
-                        </button>
-                    ))}
-                </div>
+
             </div>
 
             <div className="rounded-xl border border-white/5 bg-white/[0.03] p-6">
@@ -92,8 +83,8 @@ export default function WalletDetailPage() {
                             <div className="px-6">
                                 <div className="mb-4 flex items-start justify-between">
                                     <div>
+                                        <div className="text-xs text-gray-500">Market price</div>
                                         <div className="text-2xl font-semibold">{fmtUSD(points[points.length - 1]?.v ?? 0)}</div>
-                                        <div className="text-xs text-gray-500">Current balance (USD)</div>
                                     </div>
                                 </div>
                             </div>
@@ -113,10 +104,7 @@ export default function WalletDetailPage() {
                                             type="number"
                                             scale="time"
                                             domain={["dataMin", "dataMax"]}
-                                            tickFormatter={(t) => new Date(t).toLocaleDateString()}
-                                            axisLine={false}
-                                            tickLine={false}
-                                            padding={{ left: 0, right: 0 }}
+                                            hide
                                         />
                                         {/* hide Y axis labels/lines to remove left/right legend */}
                                         <YAxis hide />
@@ -137,6 +125,17 @@ export default function WalletDetailPage() {
                                     </AreaChart>
                                 </ResponsiveContainer>
                             </div>
+                        </div>
+
+                        <div className="mt-4 flex justify-center gap-2">
+                            {PERIODS.map((p) => (
+                                <button
+                                    key={p.key}
+                                    onClick={() => setPeriod(p.value)}
+                                    className={`rounded-lg px-3 py-1 text-xs ${period === p.value ? 'bg-purple-600 text-white' : 'text-gray-400 bg-white/5'}`}>
+                                    {p.label}
+                                </button>
+                            ))}
                         </div>
                     </div>
                 )}
