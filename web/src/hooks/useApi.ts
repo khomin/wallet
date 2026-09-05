@@ -10,7 +10,7 @@ import { useEffect, useRef } from 'react';
 import { create } from '@bufbuild/protobuf';
 import type { MessageInitShape } from '@bufbuild/protobuf';
 import { walletService, priceService, alertService } from '../services/grpcGateway';
-import { CreateWalletRequestSchema } from '../gen/wallet/v1/wallet_pb';
+import { CreateWalletRequestSchema, ListWalletBalancesResponseSchema } from '../gen/wallet/v1/wallet_pb';
 import {
   CreateAlertRequestSchema,
   UpdateAlertRequestSchema,
@@ -25,6 +25,7 @@ import type {
   ListAlertsResponse,
   Alert,
   DeleteAlertResponse,
+  ListWalletBalancesResponse,
 } from '../services/grpcGateway';
 
 // ─── Query key factory ─────────────────────────────────────────────────────
@@ -288,5 +289,17 @@ export function useDeleteAlert() {
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: queryKeys.alerts });
     },
+  });
+}
+
+/** Fetch historical balances for a single wallet */
+export function useWalletBalances(id?: string, period?: number, limit?: number) {
+  return useQuery<ListWalletBalancesResponse>({
+    queryKey: ['walletBalances', id, period, limit],
+    queryFn: () => {
+      if (!id) return Promise.resolve(create(ListWalletBalancesResponseSchema, { total: 0, balance: [] }));
+      return walletService.listWalletBalances(id, period, limit);
+    },
+    enabled: !!id,
   });
 }

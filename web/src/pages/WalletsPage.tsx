@@ -2,6 +2,7 @@
 // Full wallet management: stats row, wallet table, add/delete modals.
 
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import type { Token } from '../gen/price/v1/price_pb';
 import WAValidator from 'multicoin-address-validator';
 import { useWallets, useCreateWallet, useDeleteWallet, useCoins } from '../hooks/useApi';
@@ -133,6 +134,8 @@ export default function WalletsPage() {
     }
   };
 
+  const navigate = useNavigate();
+
   const chain = form.chains[0] || '';
   const isValidAddress = isAddressValid(form.address, chain);
   const isAddressStep = selectedAsset?.isNative ? addStep === 2 : addStep === 3;
@@ -194,7 +197,8 @@ export default function WalletsPage() {
                 {wallets.map((wallet) => (
                   <tr
                     key={wallet.id}
-                    className="border-b border-white/[0.02] hover:bg-white/[0.02] transition-colors"
+                    onClick={() => navigate(`/wallets/${wallet.id}`)}
+                    className="border-b border-white/[0.02] hover:bg-white/[0.02] transition-colors cursor-pointer"
                   >
                     <td className="py-3 pr-4">
                       <div className="flex items-center gap-2 ml-2">
@@ -251,7 +255,7 @@ export default function WalletsPage() {
 
                     <td className="py-3 pr-3 text-right">
                       <button
-                        onClick={() => setDeleteConfirmId(wallet.id)}
+                        onClick={(e) => { e.stopPropagation(); setDeleteConfirmId(wallet.id); }}
                         className="text-gray-600 hover:text-red-400 transition-colors cursor-pointer"
                         title="Delete wallet"
                       >

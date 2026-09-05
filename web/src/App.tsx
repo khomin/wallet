@@ -14,6 +14,7 @@ import LandingPage from './pages/LandingPage';
 import CallbackPage from './pages/CallbackPage';
 import DashboardPage from './pages/DashboardPage';
 import WalletsPage from './pages/WalletsPage';
+import WalletDetailPage from './pages/WalletDetailPage';
 import AlertsPage from './pages/AlertsPage';
 import MarketPage from './pages/MarketPage';
 import SettingsPage from './pages/SettingsPage';
@@ -40,6 +41,7 @@ export default function App() {
         >
           <Route path="/dashboard" element={<DashboardPage />} />
           <Route path="/wallets" element={<WalletsPage />} />
+          <Route path="/wallets/:id" element={<WalletDetailPage />} />
           <Route path="/alerts" element={<AlertsPage />} />
           <Route path="/market" element={<MarketPage />} />
           <Route path="/settings" element={<SettingsPage />} />

@@ -20,6 +20,8 @@ import {
   CreateWalletRequestSchema,
   CreateWalletResponseSchema,
   DeleteWalletResponseSchema,
+  ListWalletBalancesResponseSchema,
+  type ListWalletBalancesResponse,
   type ListWalletsResponse,
   type WalletUpdate,
   type CreateWalletRequest,
@@ -242,6 +244,13 @@ export const walletService = {
       CreateWalletResponseSchema,
     ),
 
+  listWalletBalances: (id: string, period?: number, limit?: number) => {
+    const query = new URLSearchParams();
+    if (typeof period !== 'undefined') query.append('period', String(period));
+    if (typeof limit !== 'undefined') query.append('limit', String(limit));
+    return requestJson('GET', `v1/wallets/${encodeURIComponent(id)}/balances`, ListWalletBalancesResponseSchema, query);
+  },
+
   deleteWallet: (id: string) =>
     requestJson(
       'DELETE',
@@ -366,6 +375,7 @@ export const alertService = {
 
 export type {
   ListWalletsResponse,
+  ListWalletBalancesResponse,
   CreateWalletRequest,
   CreateWalletResponse,
   DeleteWalletResponse,
