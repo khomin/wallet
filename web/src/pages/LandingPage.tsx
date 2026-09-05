@@ -46,26 +46,14 @@ export default function LandingPage() {
         </div>
         <div className="flex items-center gap-3">
           <button
-            onClick={startDemo}
-            className="group relative inline-flex items-center gap-2 rounded-lg border border-amber-500/30 bg-amber-500/10 px-4 py-2 text-sm font-medium text-amber-300
-                       hover:border-amber-500/50 hover:bg-amber-500/15 hover:text-amber-200 transition-all cursor-pointer"
-          >
-            <span className="flex h-4 w-4 items-center justify-center">
-              <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M15 15l-2 5L9 9l11 4-5 2zm0 0l5 5M7.188 2.239l.777 2.897M5.136 7.965l-2.898-.777M13.95 4.05l-2.122 2.122m-5.657 5.656l-2.12 2.122" />
-              </svg>
-            </span>
-            Try Demo
-          </button>
-          <button
             onClick={login}
-            className="group relative inline-flex items-center gap-2 rounded-lg border border-white/10 bg-white/5 px-4 py-2 text-sm font-medium text-gray-200
-                       hover:border-purple-500/40 hover:bg-purple-500/10 hover:text-purple-200 transition-all cursor-pointer"
+            className="group relative inline-flex items-center gap-2 rounded-lg border border-purple-500/30 bg-purple-500/10 px-4 py-2 text-sm font-medium text-purple-100
+                       hover:border-purple-500/50 hover:bg-purple-500/15 hover:text-white transition-all cursor-pointer"
           >
             Log in
             <svg
               xmlns="http://www.w3.org/2000/svg"
-              className="h-3.5 w-3.5 opacity-60 group-hover:opacity-100 group-hover:translate-x-0.5 transition-all"
+              className="h-3.5 w-3.5 opacity-80 group-hover:opacity-100 group-hover:translate-x-0.5 transition-all"
               viewBox="0 0 20 20"
               fill="currentColor"
             >
@@ -75,6 +63,18 @@ export default function LandingPage() {
                 clipRule="evenodd"
               />
             </svg>
+          </button>
+          <button
+            onClick={startDemo}
+            className="group relative inline-flex items-center gap-2 rounded-lg border border-white/10 bg-white/[0.02] px-4 py-2 text-sm font-medium text-gray-300
+                       hover:border-white/15 hover:bg-white/[0.04] hover:text-gray-100 transition-all cursor-pointer"
+          >
+            <span className="flex h-4 w-4 items-center justify-center">
+              <svg className="h-4 w-4 opacity-70" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M15 15l-2 5L9 9l11 4-5 2zm0 0l5 5M7.188 2.239l.777 2.897M5.136 7.965l-2.898-.777M13.95 4.05l-2.122 2.122m-5.657 5.656l-2.12 2.122" />
+              </svg>
+            </span>
+            Try demo
           </button>
         </div>
       </header>
