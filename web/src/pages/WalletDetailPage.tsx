@@ -95,7 +95,6 @@ export default function WalletDetailPage() {
                                         <div className="text-2xl font-semibold">{fmtUSD(points[points.length - 1]?.v ?? 0)}</div>
                                         <div className="text-xs text-gray-500">Current balance (USD)</div>
                                     </div>
-                                    <div className="text-xs text-gray-400">{points.length} points</div>
                                 </div>
                             </div>
 
@@ -119,15 +118,22 @@ export default function WalletDetailPage() {
                                             tickLine={false}
                                             padding={{ left: 0, right: 0 }}
                                         />
-                                        <YAxis
-                                            dataKey="value"
-                                            domain={["dataMin", "dataMax"]}
-                                            axisLine={false}
-                                            tickLine={false}
-                                            tickFormatter={(v) => fmtUSD(v)}
+                                        {/* hide Y axis labels/lines to remove left/right legend */}
+                                        <YAxis hide />
+                                        <Tooltip
+                                            contentStyle={{
+                                                backgroundColor: '#0f172a',
+                                                borderColor: '#ffffff15',
+                                                borderRadius: 8,
+                                                color: '#fff',
+                                                boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.5)',
+                                            }}
+                                            itemStyle={{ color: '#a855f7' }}
+                                            labelStyle={{ color: '#94a3b8', fontSize: 12 }}
+                                            labelFormatter={(t) => new Date(Number(t)).toLocaleString()}
+                                            formatter={(v: any) => fmtUSD(v)}
                                         />
-                                        <Tooltip labelFormatter={(t) => new Date(Number(t)).toLocaleString()} formatter={(v: any) => fmtUSD(v)} />
-                                        <Area type="monotone" dataKey="value" stroke="#7c3aed" fillOpacity={1} fill="url(#colorUv)" />
+                                        <Area type="monotone" dataKey="value" stroke="#7c3aed" strokeWidth={2.5} dot={false} fillOpacity={1} fill="url(#colorUv)" />
                                     </AreaChart>
                                 </ResponsiveContainer>
                             </div>
