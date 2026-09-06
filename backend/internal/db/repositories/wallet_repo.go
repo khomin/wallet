@@ -45,9 +45,10 @@ func (r *walletRepository) List(ctx context.Context, userID string) ([]domain.Wa
 		LEFT JOIN coins coin ON coin.id = w.coin_id
 		LEFT JOIN coin_prices price ON price.id = w.coin_id
 		LEFT JOIN wallet_balances balance ON balance.id = w.id
+		WHERE w.user_id = $1
 		ORDER BY w.updated_at ASC
 	`
-	rows, err := r.db.Pool.Query(ctx, query)
+	rows, err := r.db.Pool.Query(ctx, query, userID)
 	if err != nil {
 		return nil, err
 	}

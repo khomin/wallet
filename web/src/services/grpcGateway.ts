@@ -21,6 +21,8 @@ import {
   CreateWalletResponseSchema,
   DeleteWalletResponseSchema,
   ListWalletBalancesResponseSchema,
+  UpdateWalletRequestSchema,
+  UpdateWalletResponseSchema,
   type ListWalletBalancesResponse,
   type ListWalletsResponse,
   type WalletUpdate,
@@ -250,6 +252,15 @@ export const walletService = {
     if (typeof limit !== 'undefined') query.append('limit', String(limit));
     return requestJson('GET', `v1/wallets/${encodeURIComponent(id)}/balances`, ListWalletBalancesResponseSchema, query);
   },
+
+  updateWallet: (req: MessageShape<typeof UpdateWalletRequestSchema>) =>
+    requestJsonWithBody(
+      'PATCH',
+      `v1/wallets/${encodeURIComponent((req as any).id)}`,
+      UpdateWalletRequestSchema,
+      req,
+      UpdateWalletResponseSchema,
+    ),
 
   deleteWallet: (id: string) =>
     requestJson(

@@ -10,7 +10,7 @@ import { useEffect, useRef } from 'react';
 import { create } from '@bufbuild/protobuf';
 import type { MessageInitShape } from '@bufbuild/protobuf';
 import { walletService, priceService, alertService } from '../services/grpcGateway';
-import { CreateWalletRequestSchema, ListWalletBalancesResponseSchema } from '../gen/wallet/v1/wallet_pb';
+import { CreateWalletRequestSchema, ListWalletBalancesResponseSchema, UpdateWalletRequestSchema } from '../gen/wallet/v1/wallet_pb';
 import {
   CreateAlertRequestSchema,
   UpdateAlertRequestSchema,
@@ -301,5 +301,22 @@ export function useWalletBalances(id?: string, period?: number, limit?: number) 
       return walletService.listWalletBalances(id, period, limit);
     },
     enabled: !!id,
+  });
+}
+
+/** Update a wallet (label/notify) */
+export function useUpdateWallet() {
+  const qc = useQueryClient();
+  return useMutation<any, Error, MessageInitShape<typeof UpdateWalletRequestSchema>>({
+    mutationFn: async (req) => {
+      const message = create(UpdateWalletRequestSchema, req);
+      return walletService.updateWallet(message);
+    },
+    onError(error) {
+      return error;
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: queryKeys.wallets });
+    },
   });
 }

@@ -1,7 +1,7 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Spinner, ErrorBlock } from '../components/ui';
-import { useWallets, useWalletBalances, useCoins } from '../hooks/useApi';
+import { useWallets, useWalletBalances, useUpdateWallet } from '../hooks/useApi';
 import { BalancePeriod } from '../gen/wallet/v1/wallet_pb';
 import {
     ResponsiveContainer,
@@ -41,9 +41,19 @@ export default function WalletDetailPage() {
     const { id } = useParams();
     const navigate = useNavigate();
     const { data: walletsData } = useWallets();
-    const { data: coinsData } = useCoins();
 
     const wallet = walletsData?.wallet.find((w) => w.id === id);
+
+    const updateWallet = useUpdateWallet();
+
+    const [notify, setNotify] = useState<boolean>(wallet?.notify ?? false);
+    useEffect(() => setNotify(wallet?.notify ?? false), [wallet?.notify]);
+
+    const toggleNotify = (next: boolean) => {
+        setNotify(next);
+        if (!wallet) return;
+        updateWallet.mutate({ id: wallet.id, label: wallet.label ?? '', notify: next });
+    };
 
     const [period, setPeriod] = useState<BalancePeriod>(BalancePeriod.BALANCE_PERIOD_1W);
     const { data: balancesData, isLoading, isError, refetch } = useWalletBalances(id, period, 100);
@@ -210,6 +220,22 @@ export default function WalletDetailPage() {
                     </div>
                 )}
             </div>
+
+            <div className="mt-8">
+                <label className="inline-flex items-center cursor-pointer">
+                    <input
+                        type="checkbox"
+                        checked={notify}
+                        onChange={(e) => toggleNotify(e.target.checked)}
+                        className="sr-only"
+                    />
+                    <span className={`w-10 h-6 flex items-center rounded-full p-1 transition-colors ${notify ? 'bg-purple-600' : 'bg-white/8'}`}>
+                        <span className={`bg-white w-4 h-4 rounded-full shadow transform transition-transform ${notify ? 'translate-x-4' : ''}`} />
+                    </span>
+                    <span className="ml-3 text-sm text-gray-300">Notify on balance changes</span>
+                </label>
+            </div>
+
         </div>
     );
 }

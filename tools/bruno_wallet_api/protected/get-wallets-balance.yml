@@ -5,13 +5,13 @@ info:
 
 http:
   method: GET
-  url: "{{url}}/v1/wallets/efaacdd8-0582-47f2-85e5-8a6863effcfa/balances?limit=10&period=BALANCE_PERIOD_1M"
+  url: "{{url}}/v1/wallets/ed0953ef-d8c5-4f3a-97c4-fd08dce89a1b/balances?limit=100&period=BALANCE_PERIOD_1D"
   params:
     - name: limit
-      value: "10"
+      value: "100"
       type: query
     - name: period
-      value: BALANCE_PERIOD_1M
+      value: BALANCE_PERIOD_1D
       type: query
   auth: inherit
 
