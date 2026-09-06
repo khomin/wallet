@@ -51,3 +51,21 @@ func (r *userRepo) EnsureExists(ctx context.Context, user *domain.User) error {
 	)
 	return err
 }
+
+func (r *userRepo) GetByID(ctx context.Context, userID string) (*domain.User, error) {
+	query := `
+		SELECT id, name, email FROM users
+		WHERE id = $1
+	`
+	row := r.db.Pool.QueryRow(ctx, query, userID)
+	var i domain.User
+	err := row.Scan(
+		&i.ID,
+		&i.Name,
+		&i.Email,
+	)
+	if err != nil {
+		return nil, err
+	}
+	return &i, nil
+}

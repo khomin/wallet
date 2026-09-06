@@ -1,11 +1,9 @@
 package notification
 
 import (
-	"bytes"
 	"context"
 	"encoding/json"
 	"fmt"
-	"strings"
 	"tracker/internal/core/domain"
 	"tracker/internal/messaging"
 
@@ -51,47 +49,71 @@ func (h *EmailWorker) Start(ctx context.Context) {
 					_ = d.Nack(false, false)
 					continue
 				}
-				subject := h.subject(cmd.CoinSymbol, cmd.Price)
-				htmlBody, err := h.renderAlertTemplate(cmd.UserName, cmd.CoinSymbol, cmd.Price)
-				if err != nil {
-					log.WithError(err).Error("failed format template")
-					return
-				}
-				err = h.sender.Send(ctx, cmd.Email, subject, htmlBody)
-				if err != nil {
-					log.WithError(err).Error("failed to send email")
-					continue
-				} else {
-					_ = d.Ack(false)
+				switch cmd.Type {
+				case domain.NotificationPriceAlert:
+					var event domain.PriceAlertNotification
+					err := json.Unmarshal(cmd.Payload, &event)
+					if err != nil {
+						log.WithError(err).Error("failed to unmarshal event")
+						return
+					}
+					subject := SubjectPrice(event.CoinSymbol, event.Price)
+					htmlBody, err := RenderAlertTemplate(cmd.UserName, event.CoinSymbol, event.Price)
+					if err != nil {
+						log.WithError(err).Error("failed format template")
+						return
+					}
+					err = h.sender.Send(ctx, cmd.Email, subject, htmlBody)
+					if err != nil {
+						log.WithError(err).Error("failed to send email")
+						continue
+					} else {
+						_ = d.Ack(false)
+					}
+				case domain.NotificationBalanceAlert:
+					var event domain.BalanceAlertNotification
+					err := json.Unmarshal(cmd.Payload, &event)
+					if err != nil {
+						log.WithError(err).Error("failed to unmarshal event")
+						return
+					}
+					subject := SubjectBalance(event.WalletName, event.Current)
+					formattedDelta := fmt.Sprintf("%+.4f", event.Delta)
+					formattedBalance := fmt.Sprintf("%.4f", event.Current)
+
+					htmlBody, err := RenderBalanceEmail(BalanceTemplateData{
+						UserName:         cmd.UserName,
+						WalletName:       event.WalletName,
+						CoinSymbol:       event.CoinSymbol,
+						FormattedBalance: formattedBalance,
+						FormattedDelta:   formattedDelta,
+						IsDeposit:        event.Delta > 0,
+					})
+					if err != nil {
+						log.WithError(err).Error("failed format template")
+						return
+					}
+					err = h.sender.Send(ctx, cmd.Email, subject, htmlBody)
+					if err != nil {
+						log.WithError(err).Error("failed to send email")
+						continue
+					} else {
+						_ = d.Ack(false)
+					}
 				}
 			}
 		}
 	}
 }
 
-func (w *EmailWorker) renderAlertTemplate(userName, coinSymbol string, price float64) (string, error) {
-	cleanName := strings.TrimSpace(userName)
-	if cleanName == "" {
-		cleanName = "there"
-	}
-	data := alertTemplateData{
-		UserName:       cleanName,
-		CoinSymbol:     strings.ToUpper(strings.TrimSpace(coinSymbol)),
-		FormattedPrice: fmt.Sprintf("%.2f", price),
-	}
-	var buf bytes.Buffer
-	if err := alertEmailTmpl.Execute(&buf, data); err != nil {
-		return "", fmt.Errorf("failed to execute email template: %w", err)
-	}
-	return buf.String(), nil
-}
-
-func (h *EmailWorker) subject(name string, price float64) string {
-	return fmt.Sprintf("🚨 %s Price Alert Triggered (%v)", name, price)
-}
-
 type alertTemplateData struct {
 	UserName       string
 	CoinSymbol     string
 	FormattedPrice string
+}
+
+type balanceTemplateData struct {
+	UserName         string
+	WalletName       string
+	FormattedBalance string
 }

@@ -1,7 +1,10 @@
 package notification
 
 import (
+	"bytes"
+	"fmt"
 	"html/template"
+	"strings"
 )
 
 // Pre-parse template at package init level to catch syntax errors early and keep execution fast
@@ -50,3 +53,24 @@ var alertEmailTmpl = template.Must(template.New("alertEmail").Parse(`
 	</body>
 	</html>
 `))
+
+func SubjectPrice(name string, price float64) string {
+	return fmt.Sprintf("%s Price Alert Triggered (%v)", name, price)
+}
+
+func RenderAlertTemplate(userName, coinSymbol string, price float64) (string, error) {
+	userName = strings.TrimSpace(userName)
+	if userName == "" {
+		userName = "User"
+	}
+	data := alertTemplateData{
+		UserName:       userName,
+		CoinSymbol:     strings.ToUpper(strings.TrimSpace(coinSymbol)),
+		FormattedPrice: fmt.Sprintf("%.2f", price),
+	}
+	var buf bytes.Buffer
+	if err := alertEmailTmpl.Execute(&buf, data); err != nil {
+		return "", fmt.Errorf("failed to execute email template: %w", err)
+	}
+	return buf.String(), nil
+}

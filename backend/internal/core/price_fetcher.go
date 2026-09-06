@@ -18,7 +18,7 @@ type PriceFetcherDeps struct {
 	FetchCoinsInterval time.Duration
 	AlertRepo          AlertRepository
 	UserRepo           UserRepo
-	AlertService       *AlertService
+	AlertService       *NotificationService
 	OnPriceChanged     func(context.Context, []domain.TokenPrice)
 }
 
@@ -30,7 +30,7 @@ type PriceFetcher struct {
 	alertRepo          AlertRepository
 	userRepo           UserRepo
 	fetchCoinsInterval time.Duration
-	alertService       *AlertService
+	alertService       *NotificationService
 	onPriceChanged     func(context.Context, []domain.TokenPrice)
 	log                *logrus.Entry
 }

@@ -30,6 +30,14 @@ type WalletBalanceSnapshot struct {
 	Time       time.Time
 }
 
+type WalletBalanceChange struct {
+	Wallet
+	CurrentBalance    float64
+	CurrentBalanceUSD float64
+	OldBalance        float64
+	OldBalanceUSD     float64
+}
+
 func (w *WalletBalance) ToGrpc() *walletv1.Wallet {
 	return &walletv1.Wallet{
 		Id:            w.Wallet.ID,

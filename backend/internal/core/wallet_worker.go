@@ -18,19 +18,22 @@ import (
 type WalletWorker struct {
 	walletService     *WalletService
 	walletRepo        WalletRepository
+	onBalanceChanged  func(context.Context, domain.WalletBalanceChange)
 	streamSubscribers map[string]map[string]chan *walletv1.WalletUpdate
 	lock              sync.RWMutex
 }
 
 type NewWalletDeps struct {
-	WalletService *WalletService
-	WalletRepo    WalletRepository
+	WalletService    *WalletService
+	WalletRepo       WalletRepository
+	OnBalanceChanged func(context.Context, domain.WalletBalanceChange)
 }
 
 func NewWalletWorker(deps *NewWalletDeps) *WalletWorker {
 	return &WalletWorker{
 		walletRepo:        deps.WalletRepo,
 		walletService:     deps.WalletService,
+		onBalanceChanged:  deps.OnBalanceChanged,
 		streamSubscribers: make(map[string]map[string]chan *walletv1.WalletUpdate),
 		lock:              sync.RWMutex{},
 	}
@@ -110,7 +113,7 @@ func (w *WalletWorker) synchronizeWallets(ctx context.Context) error {
 			var failedCount int
 
 			for _, wallet := range group {
-				balance, changed, err := w.updateBalance(ctx, wallet)
+				result, err := w.updateBalance(ctx, wallet)
 				if err != nil {
 					failedCount++
 					log.Errorf("failed to sync wallet balance: %s %s", wallet.Chain, wallet.ID)
@@ -122,13 +125,19 @@ func (w *WalletWorker) synchronizeWallets(ctx context.Context) error {
 				if ok {
 					for _, v := range streams {
 						v <- &walletv1.WalletUpdate{
-							Wallet: balance.ToGrpc(),
+							Wallet: result.newBalance.ToGrpc(),
 						}
 					}
 				}
-				/
-				/
-				changed
+				if result.changed {
+					w.onBalanceChanged(ctx, domain.WalletBalanceChange{
+						Wallet:            wallet,
+						CurrentBalance:    result.newBalance.Balance,
+						CurrentBalanceUSD: result.newBalance.BalanceUSD,
+						OldBalance:        result.oldBalance.Balance,
+						OldBalanceUSD:     result.oldBalance.BalanceUSD,
+					})
+				}
 			}
 			if failedCount > 0 {
 				log.Warnf("chain synchronization finished with errors: %s %d, %d", chain, len(group), failedCount)
@@ -143,20 +152,20 @@ func (w *WalletWorker) synchronizeWallets(ctx context.Context) error {
 	return nil
 }
 
-func (w *WalletWorker) updateBalance(ctx context.Context, wallet domain.Wallet) (*domain.WalletBalance, bool, error) {
+func (w *WalletWorker) updateBalance(ctx context.Context, wallet domain.Wallet) (*updateBalanceResult, error) {
 	uuid, err := uuid.Parse(wallet.ID)
 	if err != nil {
-		return nil, false, err
+		return nil, err
 	}
 	balance, err := w.walletService.FetchBalance(ctx, wallet)
 	if err != nil {
 		if errors.Is(err, ErrProviderTimeout) {
-			return nil, false, err
+			return nil, err
 		}
 		if errors.Is(err, ErrProviderRateLimit) {
-			return nil, false, err
+			return nil, err
 		}
-		return nil, false, err
+		return nil, err
 	}
 	oldBalance, _ := w.walletRepo.Get(ctx, wallet.UserID, uuid)
 	err = w.walletRepo.UpdateBalanceSnapshot(ctx, wallet.UserID, uuid, BalanceSnapshot{
@@ -165,15 +174,26 @@ func (w *WalletWorker) updateBalance(ctx context.Context, wallet domain.Wallet) 
 		Time:   time.Now(),
 	})
 	if err != nil {
-		return nil, false, err
+		return nil, err
 	}
-
-	balanceChanged := false
 	if oldBalance != nil {
 		delta := balance.Balance - oldBalance.Balance
 		if math.Abs(delta) >= 0.000001 {
-			balanceChanged = true
+			return &updateBalanceResult{
+				newBalance: balance,
+				oldBalance: oldBalance,
+				changed:    true,
+			}, nil
 		}
 	}
-	return balance, balanceChanged, nil
+	return &updateBalanceResult{
+		newBalance: balance,
+		changed:    false,
+	}, nil
+}
+
+type updateBalanceResult struct {
+	newBalance *domain.WalletBalance
+	oldBalance *domain.WalletBalance
+	changed    bool
 }

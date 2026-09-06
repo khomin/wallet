@@ -100,7 +100,7 @@ func main() {
 	if err != nil {
 		logrus.Fatalf("failed to init alert consumer: %v", err)
 	}
-	alertService := core.NewAlertService(alertRepo, userRepo, priceCache, func(cmd domain.NotificationCommand) error {
+	notificationService := core.NewNotificationService(alertRepo, userRepo, priceCache, func(cmd domain.NotificationCommand) error {
 		bytes, err := json.Marshal(cmd)
 		if err != nil {
 			return fmt.Errorf("marshal notification cmd: %w", err)
@@ -138,10 +138,10 @@ func main() {
 		PriceRepo:          priceRepo,
 		AlertRepo:          alertRepo,
 		UserRepo:           userRepo,
-		AlertService:       alertService,
+		AlertService:       notificationService,
 		FetchCoinsInterval: app.Cfg.CoinGecko.PriceFetcher,
 		OnPriceChanged: func(ctx context.Context, prices []domain.TokenPrice) {
-			go alertService.ProcessAlerts(ctx)
+			go notificationService.ProcessAlerts(ctx)
 			if bytes, err := json.Marshal(prices); err == nil {
 				priceEventPublisher.Publish(bytes)
 			}
@@ -181,6 +181,9 @@ func main() {
 	walletWorker := core.NewWalletWorker(&core.NewWalletDeps{
 		WalletService: walletService,
 		WalletRepo:    walletRepo,
+		OnBalanceChanged: func(ctx context.Context, balance domain.WalletBalanceChange) {
+			notificationService.WalletBalanceChanged(ctx, balance)
+		},
 	})
 
 	priceFetcher.LoadCache(ctx)
