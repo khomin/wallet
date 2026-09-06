@@ -249,7 +249,7 @@ export default function AlertsPage() {
         <form onSubmit={(event) => { event.preventDefault(); void handleUpdate(); }}>
           <div className="mb-5 rounded-xl border border-purple-500/20 bg-purple-500/[0.06] px-4 py-3">
             <p className="text-xs text-gray-500">Watching</p>
-            <p className="mt-1 font-medium text-white">{editingAlert.coinSymbol.toUpperCase()} <span className="font-normal text-gray-500">price alert</span></p>
+            <p className="mt-1 font-medium text-white">{editingAlert.coinSymbol.toUpperCase()}</p>
           </div>
           <Field label="Notify me when price">
             <div className="flex gap-2">

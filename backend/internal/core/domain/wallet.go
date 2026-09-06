@@ -19,6 +19,7 @@ type WalletBalance struct {
 	Wallet
 	Balance    float64
 	BalanceUSD float64
+	UpdatedAt  time.Time
 	HasError   bool
 	ErrorMsg   string
 	Price      TokenPrice

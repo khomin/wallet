@@ -309,7 +309,7 @@ func (r *walletRepository) GetBalanceSnapshot(ctx context.Context, userID string
 	return out, nil
 }
 
-func (r *walletRepository) ListForSync(ctx context.Context, limit int) ([]domain.Wallet, error) {
+func (r *walletRepository) ListForSync(ctx context.Context, updatedAt time.Time, limit int) ([]domain.Wallet, error) {
 	query := `
 		SELECT 
 			wallets.id, 
@@ -328,9 +328,8 @@ func (r *walletRepository) ListForSync(ctx context.Context, limit int) ([]domain
 		ORDER BY balance.updated_at ASC NULLS FIRST
 		LIMIT $2
 	`
-	rows, err := r.db.Pool.Query(ctx,
-		query,
-		time.Now().Add(-5*time.Minute),
+	rows, err := r.db.Pool.Query(ctx, query,
+		updatedAt,
 		limit,
 	)
 	if err != nil {
@@ -371,7 +370,7 @@ func scanWalletBalance(rows pgx.Rows) (*models.WalletBalance, error) {
 		//
 		&i.Balance,
 		&i.BalanceUSD,
-		&i.BalanceUpdatedAt,
+		&i.UpdatedAt,
 		//
 		&i.Price.ID,
 		&i.Price.Symbol,
@@ -435,6 +434,7 @@ func walletToDomainBalance(in *models.WalletBalance) domain.WalletBalance {
 		},
 		Balance:    in.Balance.Float64,
 		BalanceUSD: in.BalanceUSD.Float64,
+		UpdatedAt:  in.UpdatedAt.Time,
 		HasError:   hasError,
 		ErrorMsg:   errorMsg,
 	}

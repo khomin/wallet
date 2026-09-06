@@ -48,7 +48,9 @@ func (s *NotificationService) WalletBalanceChanged(ctx context.Context, balance 
 		s.log.WithError(err).Error("failed to fetch user")
 		return
 	}
-	s.triggerBalanceAlert(ctx, user, balance)
+	if balance.Wallet.Notify {
+		s.triggerBalanceAlert(ctx, user, balance)
+	}
 }
 
 func (s *NotificationService) processUserAlerts(ctx context.Context, user domain.User) {

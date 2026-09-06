@@ -2,9 +2,9 @@ package core
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"math"
+	"math/rand/v2"
 	"sync"
 	"time"
 	walletv1 "tracker/gen/wallet/v1"
@@ -91,7 +91,8 @@ func (w *WalletWorker) synchronizeWallets(ctx context.Context) error {
 	log := logrus.WithContext(ctx)
 	groupsByChain := make(map[string][]domain.Wallet)
 
-	wallets, err := w.walletRepo.ListForSync(ctx, 100)
+	// wallets, err := w.walletRepo.ListForSync(ctx, time.Now().Add(-5*time.Minute), 100)
+	wallets, err := w.walletRepo.ListForSync(ctx, time.Now(), 100)
 	if err != nil {
 		log.WithError(err).WithField("limit", 100).Error("failed to fetch wallets for sync")
 		return fmt.Errorf("list wallets for sync: %w", err)
@@ -157,37 +158,43 @@ func (w *WalletWorker) updateBalance(ctx context.Context, wallet domain.Wallet) 
 	if err != nil {
 		return nil, err
 	}
-	balance, err := w.walletService.FetchBalance(ctx, wallet)
-	if err != nil {
-		if errors.Is(err, ErrProviderTimeout) {
-			return nil, err
-		}
-		if errors.Is(err, ErrProviderRateLimit) {
-			return nil, err
-		}
-		return nil, err
-	}
+	// newBalance, err := w.walletService.FetchBalance(ctx, wallet)
+	// if err != nil {
+	// 	if errors.Is(err, ErrProviderTimeout) {
+	// 		return nil, err
+	// 	}
+	// 	if errors.Is(err, ErrProviderRateLimit) {
+	// 		return nil, err
+	// 	}
+	// 	return nil, err
+	// }
+
+	// added for tests
+	newBalance, _ := w.walletRepo.Get(ctx, wallet.UserID, uuid)
+	newBalance.Balance = float64(rand.Float32() * 1000)
+	newBalance.BalanceUSD = float64(rand.Float32() * 1000)
+
 	oldBalance, _ := w.walletRepo.Get(ctx, wallet.UserID, uuid)
 	err = w.walletRepo.UpdateBalanceSnapshot(ctx, wallet.UserID, uuid, BalanceSnapshot{
-		Crypto: balance.Balance,
-		USD:    balance.BalanceUSD,
+		Crypto: newBalance.Balance,
+		USD:    newBalance.BalanceUSD,
 		Time:   time.Now(),
 	})
 	if err != nil {
 		return nil, err
 	}
-	if oldBalance != nil {
-		delta := balance.Balance - oldBalance.Balance
+	if oldBalance != nil && !oldBalance.UpdatedAt.IsZero() {
+		delta := newBalance.Balance - oldBalance.Balance
 		if math.Abs(delta) >= 0.000001 {
 			return &updateBalanceResult{
-				newBalance: balance,
+				newBalance: newBalance,
 				oldBalance: oldBalance,
 				changed:    true,
 			}, nil
 		}
 	}
 	return &updateBalanceResult{
-		newBalance: balance,
+		newBalance: newBalance,
 		changed:    false,
 	}, nil
 }

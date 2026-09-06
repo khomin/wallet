@@ -80,15 +80,32 @@ export default function WalletDetailPage() {
 
     // If there's only one point, duplicate it with a small time delta so the chart
     // renders a horizontal line instead of a single dot.
+    // Merge live wallet current balance (from stream) into historical data so chart updates in real-time
+    const mergedData = useMemo(() => {
+        const arr = [...(data ?? [])];
+        if (wallet) {
+            const live = { t: Date.now(), usd: wallet.balanceUsd ?? 0, crypto: wallet.balanceCrypto ?? 0 };
+            // If last point is very recent (within 5 seconds), replace it; otherwise append
+            const last = arr.length ? arr[arr.length - 1] : undefined;
+            if (last && Math.abs(last.t - live.t) < 5_000) {
+                arr[arr.length - 1] = live;
+            } else {
+                arr.push(live);
+            }
+        }
+        arr.sort((a, b) => a.t - b.t);
+        return arr;
+    }, [data, wallet]);
+
     const chartData = useMemo(() => {
-        if (!data || data.length !== 1) return data;
-        const single = data[0];
+        if (!mergedData || mergedData.length !== 1) return mergedData;
+        const single = mergedData[0];
         const delta = 24 * 60 * 60 * 1000; // 1 day
         return [
             { t: single.t - delta, usd: single.usd, crypto: single.crypto },
             { t: single.t + delta, usd: single.usd, crypto: single.crypto },
         ];
-    }, [data]);
+    }, [mergedData]);
 
     function formatCompactNumber(n: number) {
         try {
@@ -99,9 +116,9 @@ export default function WalletDetailPage() {
     }
 
     const dataRangeMs = useMemo(() => {
-        if (!data || data.length < 2) return 0;
-        return data[data.length - 1].t - data[0].t;
-    }, [data]);
+        if (!mergedData || mergedData.length < 2) return 0;
+        return mergedData[mergedData.length - 1].t - mergedData[0].t;
+    }, [mergedData]);
 
     function formatXAxisTick(t: number) {
         const d = new Date(Number(t));
@@ -172,8 +189,8 @@ export default function WalletDetailPage() {
                             <div className="mb-4 flex items-start justify-between">
                                 <div>
                                     <div className="text-xs text-gray-500">Balance</div>
-                                    <div className="text-2xl font-semibold">{fmtUSD(lastBalance?.balanceUsd ?? points[points.length - 1]?.usd ?? 0)}</div>
-                                    <div className="text-sm text-gray-400 mt-1">{(lastBalance?.balanceCrypto ?? points[points.length - 1]?.crypto ?? 0).toFixed(6)} {wallet?.tokenSymbol ?? ''}</div>
+                                    <div className="text-2xl font-semibold">{fmtUSD(wallet?.balanceUsd ?? lastBalance?.balanceUsd ?? points[points.length - 1]?.usd ?? 0)}</div>
+                                    <div className="text-sm text-gray-400 mt-1">{(wallet?.balanceCrypto ?? lastBalance?.balanceCrypto ?? points[points.length - 1]?.crypto ?? 0).toFixed(6)} {wallet?.tokenSymbol ?? ''}</div>
                                 </div>
                             </div>
                         </div>

@@ -126,7 +126,7 @@ func TestWalletRepo(t *testing.T) {
 	//
 	// list for sync
 	//
-	_, err = repo.ListForSync(ctx, 100)
+	_, err = repo.ListForSync(ctx, time.Now().Add(-5*time.Minute), 100)
 	if err != nil {
 		t.Fatal(err)
 	}

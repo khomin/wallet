@@ -16,11 +16,11 @@ type Wallet struct {
 }
 
 type WalletBalance struct {
-	Wallet           Wallet
-	Price            Price
-	Balance          pgtype.Float8
-	BalanceUSD       pgtype.Float8
-	BalanceUpdatedAt pgtype.Timestamptz
-	HasError         bool
-	ErrorMsg         string
+	Wallet     Wallet
+	Price      Price
+	Balance    pgtype.Float8
+	BalanceUSD pgtype.Float8
+	UpdatedAt  pgtype.Timestamptz
+	HasError   bool
+	ErrorMsg   string
 }
