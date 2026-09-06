@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"math"
 	"sync"
 	"time"
 	walletv1 "tracker/gen/wallet/v1"
@@ -109,7 +110,7 @@ func (w *WalletWorker) synchronizeWallets(ctx context.Context) error {
 			var failedCount int
 
 			for _, wallet := range group {
-				balance, err := w.updateBalance(ctx, wallet)
+				balance, changed, err := w.updateBalance(ctx, wallet)
 				if err != nil {
 					failedCount++
 					log.Errorf("failed to sync wallet balance: %s %s", wallet.Chain, wallet.ID)
@@ -125,6 +126,9 @@ func (w *WalletWorker) synchronizeWallets(ctx context.Context) error {
 						}
 					}
 				}
+				/
+				/
+				changed
 			}
 			if failedCount > 0 {
 				log.Warnf("chain synchronization finished with errors: %s %d, %d", chain, len(group), failedCount)
@@ -139,28 +143,37 @@ func (w *WalletWorker) synchronizeWallets(ctx context.Context) error {
 	return nil
 }
 
-func (w *WalletWorker) updateBalance(ctx context.Context, wallet domain.Wallet) (*domain.WalletBalance, error) {
+func (w *WalletWorker) updateBalance(ctx context.Context, wallet domain.Wallet) (*domain.WalletBalance, bool, error) {
 	uuid, err := uuid.Parse(wallet.ID)
 	if err != nil {
-		return nil, err
+		return nil, false, err
 	}
 	balance, err := w.walletService.FetchBalance(ctx, wallet)
 	if err != nil {
 		if errors.Is(err, ErrProviderTimeout) {
-			return nil, err
+			return nil, false, err
 		}
 		if errors.Is(err, ErrProviderRateLimit) {
-			return nil, err
+			return nil, false, err
 		}
-		return nil, err
+		return nil, false, err
 	}
+	oldBalance, _ := w.walletRepo.Get(ctx, wallet.UserID, uuid)
 	err = w.walletRepo.UpdateBalanceSnapshot(ctx, wallet.UserID, uuid, BalanceSnapshot{
 		Crypto: balance.Balance,
 		USD:    balance.BalanceUSD,
 		Time:   time.Now(),
 	})
 	if err != nil {
-		return nil, err
+		return nil, false, err
 	}
-	return balance, nil
+
+	balanceChanged := false
+	if oldBalance != nil {
+		delta := balance.Balance - oldBalance.Balance
+		if math.Abs(delta) >= 0.000001 {
+			balanceChanged = true
+		}
+	}
+	return balance, balanceChanged, nil
 }

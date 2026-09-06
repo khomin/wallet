@@ -165,24 +165,22 @@ export default function WalletDetailPage() {
             </div>
 
             <div className="rounded-xl border border-white/5 bg-white/[0.03] p-6">
-                {isLoading && <Spinner />}
-                {isError && <ErrorBlock message="Failed to load balances" onRetry={() => refetch()} />}
-                {!isLoading && !isError && (
-                    <div>
-                        {/* Full-bleed chart wrapper: remove horizontal padding by negating card padding */}
-                        <div className="-mx-6">
-                            <div className="px-6">
-                                <div className="mb-4 flex items-start justify-between">
-                                    <div>
-                                        <div className="text-xs text-gray-500">Balance</div>
-                                        <div className="text-2xl font-semibold">{fmtUSD(lastBalance?.balanceUsd ?? points[points.length - 1]?.usd ?? 0)}</div>
-                                        <div className="text-sm text-gray-400 mt-1">{(lastBalance?.balanceCrypto ?? points[points.length - 1]?.crypto ?? 0).toFixed(6)} {wallet?.tokenSymbol ?? ''}</div>
-                                    </div>
+                <div>
+                    {/* Full-bleed chart wrapper: remove horizontal padding by negating card padding */}
+                    <div className="-mx-6">
+                        <div className="px-6">
+                            <div className="mb-4 flex items-start justify-between">
+                                <div>
+                                    <div className="text-xs text-gray-500">Balance</div>
+                                    <div className="text-2xl font-semibold">{fmtUSD(lastBalance?.balanceUsd ?? points[points.length - 1]?.usd ?? 0)}</div>
+                                    <div className="text-sm text-gray-400 mt-1">{(lastBalance?.balanceCrypto ?? points[points.length - 1]?.crypto ?? 0).toFixed(6)} {wallet?.tokenSymbol ?? ''}</div>
                                 </div>
                             </div>
+                        </div>
 
-                            <div className="w-full">
-                                <ResponsiveContainer width="100%" height={260}>
+                        <div className="w-full">
+                            <div className="relative w-full h-64 sm:h-72 md:h-80">
+                                <ResponsiveContainer width="100%" height="100%">
                                     <AreaChart data={chartData} margin={{ top: 0, right: 0, left: 0, bottom: 0 }}>
                                         <defs>
                                             <linearGradient id="colorUv" x1="0" x2="0" y1="0" y2="1">
@@ -204,21 +202,33 @@ export default function WalletDetailPage() {
                                         <Area type="monotone" dataKey="usd" stroke="#7c3aed" strokeWidth={2.5} dot={false} fillOpacity={1} fill="url(#colorUv)" />
                                     </AreaChart>
                                 </ResponsiveContainer>
+
+                                {isLoading && (
+                                    <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                                        <Spinner />
+                                    </div>
+                                )}
+
+                                {isError && (
+                                    <div className="absolute inset-0 flex items-center justify-center p-4">
+                                        <ErrorBlock message="Failed to load balances" onRetry={() => refetch()} />
+                                    </div>
+                                )}
                             </div>
                         </div>
-
-                        <div className="mt-5 flex justify-center gap-4">
-                            {PERIODS.map((p) => (
-                                <button
-                                    key={p.key}
-                                    onClick={() => setPeriod(p.value)}
-                                    className={`rounded-lg px-3 py-1 text-xs ${period === p.value ? 'bg-purple-600 text-white' : 'text-gray-400 bg-white/5'}`}>
-                                    {p.label}
-                                </button>
-                            ))}
-                        </div>
                     </div>
-                )}
+
+                    <div className="mt-5 flex justify-center gap-4">
+                        {PERIODS.map((p) => (
+                            <button
+                                key={p.key}
+                                onClick={() => setPeriod(p.value)}
+                                className={`rounded-lg px-3 py-1 text-xs ${period === p.value ? 'bg-purple-600 text-white' : 'text-gray-400 bg-white/5'}`}>
+                                {p.label}
+                            </button>
+                        ))}
+                    </div>
+                </div>
             </div>
 
             <div className="mt-8">
