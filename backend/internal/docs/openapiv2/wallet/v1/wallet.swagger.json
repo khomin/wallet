@@ -437,6 +437,9 @@
         },
         "label": {
           "type": "string"
+        },
+        "notify": {
+          "type": "boolean"
         }
       }
     },

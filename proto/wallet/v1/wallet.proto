@@ -72,8 +72,9 @@ message UpdateWalletRequest {
 }
 
 message UpdateWalletResponse {
-  string id    = 1;
-  string label = 2;
+  string id     = 1;
+  string label  = 2;
+  bool   notify = 3;
 }
 
 message DeleteWalletRequest {

@@ -11,6 +11,7 @@ import (
 	"tracker/internal/db/models"
 
 	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgconn"
 )
 
@@ -25,7 +26,7 @@ func NewWalletRepository(db *db.DataBase) core.WalletRepository {
 func (r *walletRepository) List(ctx context.Context, userID string) ([]domain.WalletBalance, error) {
 	query := `
 		SELECT
-			w.id, w.user_id,  w.address, w.chain, coin.symbol, w.label, w.updated_at,
+			w.id, w.user_id,  w.address, w.chain, coin.symbol, w.label, w.notify, w.updated_at,
 			balance.value_crypto,
 			balance.value_usd,
 			balance.updated_at,
@@ -54,32 +55,8 @@ func (r *walletRepository) List(ctx context.Context, userID string) ([]domain.Wa
 
 	var wallets []domain.WalletBalance
 	for rows.Next() {
-		var w models.WalletBalance
-		if err := rows.Scan(
-			&w.Wallet.ID,
-			&w.Wallet.UserID,
-			&w.Wallet.Address,
-			&w.Wallet.Chain,
-			&w.Wallet.Symbol,
-			&w.Wallet.Label,
-			&w.Wallet.UpdatedAt,
-			//
-			&w.Balance,
-			&w.BalanceUSD,
-			&w.BalanceUpdatedAt,
-			//
-			&w.Price.ID,
-			&w.Price.Symbol,
-			&w.Price.Name,
-			&w.Price.CurrentPrice,
-			&w.Price.MarketCap,
-			&w.Price.TotalVolume,
-			&w.Price.Change_24h,
-			&w.Price.PriceChangePercentage_24h,
-			&w.Price.MarketCapChange_24h,
-			&w.Price.MarketCapChange_percentage_24h,
-			&w.Price.UpdatedAt,
-		); err != nil {
+		w, err := scanWalletBalance(rows)
+		if err != nil {
 			return nil, err
 		}
 		wallets = append(wallets, walletToDomainBalance(w))
@@ -93,7 +70,7 @@ func (r *walletRepository) List(ctx context.Context, userID string) ([]domain.Wa
 func (r *walletRepository) Get(ctx context.Context, userID string, id uuid.UUID) (*domain.WalletBalance, error) {
 	query := `
 		SELECT
-			w.id, w.user_id,  w.address, w.chain, coin.symbol, w.label, w.updated_at,
+			w.id, w.user_id,  w.address, w.chain, coin.symbol, w.label, w.notify, w.updated_at,
 			balance.value_crypto, balance.value_usd, balance.updated_at,
 			coin.id, coin.symbol, coin.coin_name,
 			price.price_usd,
@@ -120,32 +97,8 @@ func (r *walletRepository) Get(ctx context.Context, userID string, id uuid.UUID)
 	defer rows.Close()
 
 	if rows.Next() {
-		var w models.WalletBalance
-		if err := rows.Scan(
-			&w.Wallet.ID,
-			&w.Wallet.UserID,
-			&w.Wallet.Address,
-			&w.Wallet.Chain,
-			&w.Wallet.Symbol,
-			&w.Wallet.Label,
-			&w.Wallet.UpdatedAt,
-			//
-			&w.Balance,
-			&w.BalanceUSD,
-			&w.BalanceUpdatedAt,
-			//
-			&w.Price.ID,
-			&w.Price.Symbol,
-			&w.Price.Name,
-			&w.Price.CurrentPrice,
-			&w.Price.MarketCap,
-			&w.Price.TotalVolume,
-			&w.Price.Change_24h,
-			&w.Price.PriceChangePercentage_24h,
-			&w.Price.MarketCapChange_24h,
-			&w.Price.MarketCapChange_percentage_24h,
-			&w.Price.UpdatedAt,
-		); err != nil {
+		w, err := scanWalletBalance(rows)
+		if err != nil {
 			return nil, err
 		}
 		out := walletToDomainBalance(w)
@@ -403,6 +356,37 @@ func (r *walletRepository) ListForSync(ctx context.Context, limit int) ([]domain
 	return out, nil
 }
 
+func scanWalletBalance(rows pgx.Rows) (*models.WalletBalance, error) {
+	var i models.WalletBalance
+	err := rows.Scan(
+		&i.Wallet.ID,
+		&i.Wallet.UserID,
+		&i.Wallet.Address,
+		&i.Wallet.Chain,
+		&i.Wallet.Symbol,
+		&i.Wallet.Label,
+		&i.Wallet.Notify,
+		&i.Wallet.UpdatedAt,
+		//
+		&i.Balance,
+		&i.BalanceUSD,
+		&i.BalanceUpdatedAt,
+		//
+		&i.Price.ID,
+		&i.Price.Symbol,
+		&i.Price.Name,
+		&i.Price.CurrentPrice,
+		&i.Price.MarketCap,
+		&i.Price.TotalVolume,
+		&i.Price.Change_24h,
+		&i.Price.PriceChangePercentage_24h,
+		&i.Price.MarketCapChange_24h,
+		&i.Price.MarketCapChange_percentage_24h,
+		&i.Price.UpdatedAt,
+	)
+	return &i, err
+}
+
 func walletToDomain(in models.Wallet) domain.Wallet {
 	return domain.Wallet{
 		ID:      in.ID.String(),
@@ -415,7 +399,7 @@ func walletToDomain(in models.Wallet) domain.Wallet {
 	}
 }
 
-func walletToDomainBalance(in models.WalletBalance) domain.WalletBalance {
+func walletToDomainBalance(in *models.WalletBalance) domain.WalletBalance {
 	hasError := false
 	var errorMsg string
 	if !in.BalanceUSD.Valid || !in.Balance.Valid {

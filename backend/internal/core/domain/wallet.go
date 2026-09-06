@@ -37,6 +37,7 @@ func (w *WalletBalance) ToGrpc() *walletv1.Wallet {
 		Chain:         w.Wallet.Chain,
 		TokenSymbol:   w.Wallet.Symbol,
 		Label:         w.Wallet.Label,
+		Notify:        w.Wallet.Notify,
 		BalanceCrypto: w.Balance,
 		BalanceUsd:    w.BalanceUSD,
 		HasError:      w.HasError,

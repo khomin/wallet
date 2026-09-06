@@ -47,6 +47,7 @@ func (s *WalletGrpcHandler) ListWallets(ctx context.Context, req *walletv1.ListW
 			Chain:         i.Wallet.Chain,
 			TokenSymbol:   i.Wallet.Symbol,
 			Label:         i.Wallet.Label,
+			Notify:        i.Wallet.Notify,
 			BalanceCrypto: i.Balance,
 			BalanceUsd:    i.BalanceUSD,
 			HasError:      i.HasError,
@@ -118,8 +119,9 @@ func (s *WalletGrpcHandler) UpdateWallet(ctx context.Context, req *walletv1.Upda
 		return nil, status.Error(codes.Internal, err.Error())
 	}
 	return &walletv1.UpdateWalletResponse{
-		Id:    wallet.ID,
-		Label: wallet.Label,
+		Id:     wallet.ID,
+		Label:  wallet.Label,
+		Notify: wallet.Notify,
 	}, nil
 }
 

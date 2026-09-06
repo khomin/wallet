@@ -5,12 +5,13 @@ info:
 
 http:
   method: PATCH
-  url: "{{url}}/v1/wallets/9e7dbb28-e257-40b2-88ed-8db5816269e8"
+  url: "{{url}}/v1/wallets/1e5eb5a8-1062-42c0-b413-a0200a9ce52d"
   body:
     type: json
     data: |-
       {
-        "label": "some-edit-5"
+        "label": "some-edit-5",
+        "notify": true
       }
   auth: inherit
 

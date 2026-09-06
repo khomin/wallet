@@ -328,6 +328,7 @@ type UpdateWalletResponse struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Id            string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
 	Label         string                 `protobuf:"bytes,2,opt,name=label,proto3" json:"label,omitempty"`
+	Notify        bool                   `protobuf:"varint,3,opt,name=notify,proto3" json:"notify,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -374,6 +375,13 @@ func (x *UpdateWalletResponse) GetLabel() string {
 		return x.Label
 	}
 	return ""
+}
+
+func (x *UpdateWalletResponse) GetNotify() bool {
+	if x != nil {
+		return x.Notify
+	}
+	return false
 }
 
 type DeleteWalletRequest struct {
@@ -960,10 +968,11 @@ const file_wallet_v1_wallet_proto_rawDesc = "" +
 	"\x13UpdateWalletRequest\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12\x14\n" +
 	"\x05label\x18\x02 \x01(\tR\x05label\x12\x16\n" +
-	"\x06notify\x18\x03 \x01(\bR\x06notify\"<\n" +
+	"\x06notify\x18\x03 \x01(\bR\x06notify\"T\n" +
 	"\x14UpdateWalletResponse\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12\x14\n" +
-	"\x05label\x18\x02 \x01(\tR\x05label\"%\n" +
+	"\x05label\x18\x02 \x01(\tR\x05label\x12\x16\n" +
+	"\x06notify\x18\x03 \x01(\bR\x06notify\"%\n" +
 	"\x13DeleteWalletRequest\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\"5\n" +
 	"\x14DeleteWalletResponse\x12\x1d\n" +
