@@ -107,7 +107,10 @@ func (s *WalletGrpcHandler) UpdateWallet(ctx context.Context, req *walletv1.Upda
 	if err != nil {
 		return nil, status.Error(codes.InvalidArgument, "id parameter is required")
 	}
-	wallet, err := s.walletService.UpdateWallet(ctx, user, uuid, req.Label)
+	wallet, err := s.walletService.UpdateWallet(ctx, user, uuid, core.UpdateWallet{
+		Label:  req.Label,
+		Notify: req.Notify,
+	})
 	if err != nil {
 		if errors.Is(err, domain.ErrorNotFound) {
 			return nil, status.Error(codes.NotFound, "wallet not found")

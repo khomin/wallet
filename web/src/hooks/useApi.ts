@@ -297,7 +297,7 @@ export function useWalletBalances(id?: string, period?: number, limit?: number) 
   return useQuery<ListWalletBalancesResponse>({
     queryKey: ['walletBalances', id, period, limit],
     queryFn: () => {
-      if (!id) return Promise.resolve(create(ListWalletBalancesResponseSchema, { total: 0, balance: [] }));
+      if (!id) return Promise.resolve(create(ListWalletBalancesResponseSchema, { balance: [] }));
       return walletService.listWalletBalances(id, period, limit);
     },
     enabled: !!id,

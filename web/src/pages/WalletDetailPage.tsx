@@ -46,21 +46,27 @@ export default function WalletDetailPage() {
     const wallet = walletsData?.wallet.find((w) => w.id === id);
 
     const [period, setPeriod] = useState<BalancePeriod>(BalancePeriod.BALANCE_PERIOD_1W);
-    const { data: balancesData, isLoading, isError, refetch } = useWalletBalances(id, period, 1000);
+    const { data: balancesData, isLoading, isError, refetch } = useWalletBalances(id, period, 100);
 
     const points = useMemo(() => {
         const list = (balancesData?.balance ?? []).map((b) => ({
             t: timeToMs((b as any).time),
-            v: b.balanceUsd ?? b.balanceCrypto ?? 0,
+            usd: (b as any).balanceUsd ?? 0,
+            crypto: (b as any).balanceCrypto ?? 0,
         }));
         list.sort((a, b) => a.t - b.t);
         return list;
     }, [balancesData]);
 
     const data = useMemo(
-        () => points.map((p) => ({ t: p.t, value: Number((p.v ?? 0).toFixed(6)) })),
+        () => points.map((p) => ({ t: p.t, usd: Number((p.usd ?? 0).toFixed(6)), crypto: Number((p.crypto ?? 0).toFixed(6)) })),
         [points],
     );
+
+    const lastBalance = useMemo(() => {
+        const arr = balancesData?.balance ?? [];
+        return arr.length ? arr[arr.length - 1] : undefined;
+    }, [balancesData]);
 
     // If there's only one point, duplicate it with a small time delta so the chart
     // renders a horizontal line instead of a single dot.
@@ -69,10 +75,66 @@ export default function WalletDetailPage() {
         const single = data[0];
         const delta = 24 * 60 * 60 * 1000; // 1 day
         return [
-            { t: single.t - delta, value: single.value },
-            { t: single.t + delta, value: single.value },
+            { t: single.t - delta, usd: single.usd, crypto: single.crypto },
+            { t: single.t + delta, usd: single.usd, crypto: single.crypto },
         ];
     }, [data]);
+
+    function formatCompactNumber(n: number) {
+        try {
+            return new Intl.NumberFormat('en-US', { notation: 'compact', maximumFractionDigits: 1 }).format(n);
+        } catch {
+            return String(n);
+        }
+    }
+
+    const dataRangeMs = useMemo(() => {
+        if (!data || data.length < 2) return 0;
+        return data[data.length - 1].t - data[0].t;
+    }, [data]);
+
+    function formatXAxisTick(t: number) {
+        const d = new Date(Number(t));
+        const days = dataRangeMs ? dataRangeMs / (24 * 60 * 60 * 1000) : 0;
+
+        // If data spans only a day or two, show times
+        if (days <= 1.5) {
+            return d.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
+        }
+
+        // If data spans up to ~2 months, show month + day (Sep 6)
+        if (days <= 60) {
+            return d.toLocaleDateString([], { month: 'short', day: 'numeric' });
+        }
+
+        // For longer ranges, show month + full year to avoid ambiguity (Sep 2026)
+        return d.toLocaleDateString([], { month: 'short', year: 'numeric' });
+    }
+
+    function formatTooltipDate(t: number) {
+        const d = new Date(Number(t));
+        return d.toLocaleDateString();
+    }
+
+    function formatTooltipTime(t: number) {
+        const d = new Date(Number(t));
+        return d.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
+    }
+
+    function CustomTooltip({ active, payload, label, tokenSymbol }: any) {
+        if (!active || !payload || !payload.length) return null;
+        const p = payload[0].payload || {};
+        const usd = typeof p.usd !== 'undefined' ? p.usd : payload[0].value;
+        const crypto = typeof p.crypto !== 'undefined' ? p.crypto : p.crypto;
+        return (
+            <div style={{ backgroundColor: '#0f172a', border: '1px solid #ffffff15', padding: 10, borderRadius: 8, color: '#fff', boxShadow: '0 10px 15px -3px rgba(0,0,0,0.5)' }}>
+                <div style={{ color: '#a855f7', fontWeight: 600, marginBottom: 6 }}>{fmtUSD(usd)}</div>
+                <div style={{ color: '#94a3b8', marginBottom: 6 }}>{(crypto ?? 0).toFixed(3)} {tokenSymbol ?? ''}</div>
+                <div style={{ color: '#94a3b8', fontSize: 12 }}>{formatTooltipDate(label)}</div>
+                <div style={{ color: '#64748b', fontSize: 12 }}>{formatTooltipTime(label)}</div>
+            </div>
+        );
+    }
 
     return (
         <div className="max-w-6xl mx-auto">
@@ -103,7 +165,8 @@ export default function WalletDetailPage() {
                                 <div className="mb-4 flex items-start justify-between">
                                     <div>
                                         <div className="text-xs text-gray-500">Balance</div>
-                                        <div className="text-2xl font-semibold">{fmtUSD(points[points.length - 1]?.v ?? 0)}</div>
+                                        <div className="text-2xl font-semibold">{fmtUSD(lastBalance?.balanceUsd ?? points[points.length - 1]?.usd ?? 0)}</div>
+                                        <div className="text-sm text-gray-400 mt-1">{(lastBalance?.balanceCrypto ?? points[points.length - 1]?.crypto ?? 0).toFixed(6)} {wallet?.tokenSymbol ?? ''}</div>
                                     </div>
                                 </div>
                             </div>
@@ -123,24 +186,12 @@ export default function WalletDetailPage() {
                                             type="number"
                                             scale="time"
                                             domain={["dataMin", "dataMax"]}
-                                            hide
+                                            tickFormatter={formatXAxisTick}
+                                            tick={{ fill: '#94a3b8', fontSize: 12 }}
                                         />
-                                        {/* hide Y axis labels/lines to remove left/right legend */}
-                                        <YAxis hide />
-                                        <Tooltip
-                                            contentStyle={{
-                                                backgroundColor: '#0f172a',
-                                                borderColor: '#ffffff15',
-                                                borderRadius: 8,
-                                                color: '#fff',
-                                                boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.5)',
-                                            }}
-                                            itemStyle={{ color: '#a855f7' }}
-                                            labelStyle={{ color: '#94a3b8', fontSize: 12 }}
-                                            labelFormatter={(t) => new Date(Number(t)).toLocaleString()}
-                                            formatter={(v: any) => [fmtUSD(v)]}
-                                        />
-                                        <Area type="monotone" dataKey="value" stroke="#7c3aed" strokeWidth={2.5} dot={false} fillOpacity={1} fill="url(#colorUv)" />
+                                        <YAxis tickFormatter={(v) => formatCompactNumber(Number(v))} tick={{ fill: '#94a3b8', fontSize: 12 }} />
+                                        <Tooltip content={<CustomTooltip tokenSymbol={wallet?.tokenSymbol} />} />
+                                        <Area type="monotone" dataKey="usd" stroke="#7c3aed" strokeWidth={2.5} dot={false} fillOpacity={1} fill="url(#colorUv)" />
                                     </AreaChart>
                                 </ResponsiveContainer>
                             </div>

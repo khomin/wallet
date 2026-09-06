@@ -10,6 +10,7 @@ type Wallet struct {
 	Address string `json:"address" `
 	Chain   string `json:"chain" `
 	Label   string `json:"label"`
+	Notify  bool   `json:"notify"`
 	Symbol  string `json:"symbol"`
 	UserID  string `json:"user_id"`
 }

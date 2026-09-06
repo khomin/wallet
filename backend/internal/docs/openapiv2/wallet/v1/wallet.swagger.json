@@ -266,6 +266,9 @@
       "properties": {
         "label": {
           "type": "string"
+        },
+        "notify": {
+          "type": "boolean"
         }
       }
     },
@@ -468,6 +471,9 @@
         },
         "errorMsg": {
           "type": "string"
+        },
+        "notify": {
+          "type": "boolean"
         },
         "price": {
           "$ref": "#/definitions/v1Price"

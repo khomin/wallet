@@ -55,11 +55,14 @@ func TestWalletRepo(t *testing.T) {
 	//
 	// update
 	//
-	resultUpdate, err := repo.Update(ctx, expectedUser.ID, id, "Test updated")
+	resultUpdate, err := repo.Update(ctx, expectedUser.ID, id, core.UpdateWallet{
+		Label:  "Test updated",
+		Notify: false,
+	})
 	if err != nil {
 		t.Fatal(err)
 	}
-	if resultUpdate.ID == "" || resultUpdate.UserID != expectedUser.ID || resultUpdate.Symbol != "ETH" || resultUpdate.Address != "0xEC2dFb47E5AA06da508D816D83b4833f6eBE9532" || resultUpdate.Label != "Test updated" {
+	if resultUpdate.ID == "" || resultUpdate.UserID != expectedUser.ID || resultUpdate.Symbol != "ETH" || resultUpdate.Address != "0xEC2dFb47E5AA06da508D816D83b4833f6eBE9532" || resultUpdate.Label != "Test updated" || resultUpdate.Notify != false {
 		t.Fatal("expected correct value")
 	}
 
@@ -89,7 +92,7 @@ func TestWalletRepo(t *testing.T) {
 	resultSnapshot, err := repo.GetBalanceSnapshot(ctx, expectedUser.ID, id, core.BalanceSnapshotFilter{
 		From:  time.Now().Add(-time.Hour * 24),
 		To:    time.Now(),
-		Limit: 2,
+		Limit: 10,
 	})
 	if err != nil {
 		t.Fatal(err)

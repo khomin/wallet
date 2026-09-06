@@ -89,14 +89,14 @@ func (s *WalletService) CreateWallet(ctx context.Context, user *domain.User, cha
 	return nil
 }
 
-func (s *WalletService) UpdateWallet(ctx context.Context, user *domain.User, id uuid.UUID, label string) (*domain.Wallet, error) {
+func (s *WalletService) UpdateWallet(ctx context.Context, user *domain.User, id uuid.UUID, req UpdateWallet) (*domain.Wallet, error) {
 	if user.IsDemo {
 		return nil, domain.ErrNotAllowedInDemoMode
 	}
 	if err := s.userRepo.EnsureExists(ctx, user); err != nil {
 		return nil, err
 	}
-	wallet, err := s.walletRepo.Update(ctx, user.ID, id, label)
+	wallet, err := s.walletRepo.Update(ctx, user.ID, id, req)
 	if err != nil {
 		return nil, err
 	}

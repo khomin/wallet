@@ -9,6 +9,7 @@ type Wallet struct {
 	Address   string
 	Chain     string
 	Label     string
+	Notify    bool
 	Symbol    string
 	UserID    string
 	UpdatedAt pgtype.Timestamptz

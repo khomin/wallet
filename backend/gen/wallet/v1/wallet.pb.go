@@ -268,6 +268,7 @@ type UpdateWalletRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Id            string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
 	Label         string                 `protobuf:"bytes,2,opt,name=label,proto3" json:"label,omitempty"`
+	Notify        bool                   `protobuf:"varint,3,opt,name=notify,proto3" json:"notify,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -314,6 +315,13 @@ func (x *UpdateWalletRequest) GetLabel() string {
 		return x.Label
 	}
 	return ""
+}
+
+func (x *UpdateWalletRequest) GetNotify() bool {
+	if x != nil {
+		return x.Notify
+	}
+	return false
 }
 
 type UpdateWalletResponse struct {
@@ -761,8 +769,9 @@ type Wallet struct {
 	Label         string                 `protobuf:"bytes,5,opt,name=label,proto3" json:"label,omitempty"`
 	BalanceCrypto float64                `protobuf:"fixed64,6,opt,name=balance_crypto,json=balanceCrypto,proto3" json:"balance_crypto,omitempty"`
 	BalanceUsd    float64                `protobuf:"fixed64,7,opt,name=balance_usd,json=balanceUsd,proto3" json:"balance_usd,omitempty"`
-	HasError      bool                   `protobuf:"varint,9,opt,name=has_error,json=hasError,proto3" json:"has_error,omitempty"`
-	ErrorMsg      string                 `protobuf:"bytes,10,opt,name=error_msg,json=errorMsg,proto3" json:"error_msg,omitempty"`
+	HasError      bool                   `protobuf:"varint,8,opt,name=has_error,json=hasError,proto3" json:"has_error,omitempty"`
+	ErrorMsg      string                 `protobuf:"bytes,9,opt,name=error_msg,json=errorMsg,proto3" json:"error_msg,omitempty"`
+	Notify        bool                   `protobuf:"varint,10,opt,name=notify,proto3" json:"notify,omitempty"`
 	Price         *v1.Price              `protobuf:"bytes,11,opt,name=price,proto3" json:"price,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
@@ -861,6 +870,13 @@ func (x *Wallet) GetErrorMsg() string {
 	return ""
 }
 
+func (x *Wallet) GetNotify() bool {
+	if x != nil {
+		return x.Notify
+	}
+	return false
+}
+
 func (x *Wallet) GetPrice() *v1.Price {
 	if x != nil {
 		return x.Price
@@ -940,10 +956,11 @@ const file_wallet_v1_wallet_proto_rawDesc = "" +
 	"\x10GetWalletRequest\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\">\n" +
 	"\x11GetWalletResponse\x12)\n" +
-	"\x06wallet\x18\x01 \x01(\v2\x11.wallet.v1.WalletR\x06wallet\";\n" +
+	"\x06wallet\x18\x01 \x01(\v2\x11.wallet.v1.WalletR\x06wallet\"S\n" +
 	"\x13UpdateWalletRequest\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12\x14\n" +
-	"\x05label\x18\x02 \x01(\tR\x05label\"<\n" +
+	"\x05label\x18\x02 \x01(\tR\x05label\x12\x16\n" +
+	"\x06notify\x18\x03 \x01(\bR\x06notify\"<\n" +
 	"\x14UpdateWalletResponse\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12\x14\n" +
 	"\x05label\x18\x02 \x01(\tR\x05label\"%\n" +
@@ -967,7 +984,7 @@ const file_wallet_v1_wallet_proto_rawDesc = "" +
 	"\x13StreamWalletRequest\x12\x18\n" +
 	"\asymbols\x18\x01 \x03(\tR\asymbols\"9\n" +
 	"\fWalletUpdate\x12)\n" +
-	"\x06wallet\x18\x01 \x01(\v2\x11.wallet.v1.WalletR\x06wallet\"\xaa\x02\n" +
+	"\x06wallet\x18\x01 \x01(\v2\x11.wallet.v1.WalletR\x06wallet\"\xc2\x02\n" +
 	"\x06Wallet\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12\x18\n" +
 	"\aaddress\x18\x02 \x01(\tR\aaddress\x12\x14\n" +
@@ -977,9 +994,10 @@ const file_wallet_v1_wallet_proto_rawDesc = "" +
 	"\x0ebalance_crypto\x18\x06 \x01(\x01R\rbalanceCrypto\x12\x1f\n" +
 	"\vbalance_usd\x18\a \x01(\x01R\n" +
 	"balanceUsd\x12\x1b\n" +
-	"\thas_error\x18\t \x01(\bR\bhasError\x12\x1b\n" +
-	"\terror_msg\x18\n" +
-	" \x01(\tR\berrorMsg\x12%\n" +
+	"\thas_error\x18\b \x01(\bR\bhasError\x12\x1b\n" +
+	"\terror_msg\x18\t \x01(\tR\berrorMsg\x12\x16\n" +
+	"\x06notify\x18\n" +
+	" \x01(\bR\x06notify\x12%\n" +
 	"\x05price\x18\v \x01(\v2\x0f.price.v1.PriceR\x05price\"\x87\x01\n" +
 	"\rWalletBalance\x12%\n" +
 	"\x0ebalance_crypto\x18\x01 \x01(\x01R\rbalanceCrypto\x12\x1f\n" +

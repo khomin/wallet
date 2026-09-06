@@ -31,25 +31,6 @@ export default function SettingsPage() {
         </div>
       </div>
 
-      {/* Preferences */}
-      <div className="rounded-xl border border-white/5 bg-white/[0.03] p-6">
-        <h2 className="text-sm font-semibold text-white mb-4">Preferences</h2>
-
-        <div className="space-y-4">
-          {/* Wallet alerts */}
-          <div className="flex items-center justify-between pt-4 border-t border-white/5">
-            <div>
-              <p className="text-sm text-white">Wallet movement alerts</p>
-              <p className="text-xs text-gray-500">Notify on transactions</p>
-            </div>
-            <label className="relative inline-flex items-center cursor-pointer">
-              <input type="checkbox" className="sr-only peer" checked />
-              <div className="w-9 h-5 bg-gray-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-purple-600 opacity-50" />
-            </label>
-          </div>
-        </div>
-      </div>
-
       {/* Danger zone */}
       <div className="rounded-xl border border-red-500/10 bg-red-500/[0.02] p-6">
         <p className="text-xs text-gray-500 mb-4">

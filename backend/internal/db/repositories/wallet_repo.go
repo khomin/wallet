@@ -192,19 +192,23 @@ func (r *walletRepository) Create(ctx context.Context, userID string, chain stri
 	return &out, nil
 }
 
-func (r *walletRepository) Update(ctx context.Context, userID string, id uuid.UUID, label string) (*domain.Wallet, error) {
+func (r *walletRepository) Update(ctx context.Context, userID string, id uuid.UUID, req core.UpdateWallet) (*domain.Wallet, error) {
 	query := `
 		UPDATE wallets
-		SET label = $3
+		SET 
+			label = $3,
+			notify = $4
 			WHERE id = $1 AND user_id = $2
 		RETURNING 
 			id, user_id, address, chain, 
-			(SELECT coins.symbol FROM coins WHERE coins.id = wallets.coin_id), label, updated_at
+			(SELECT coins.symbol FROM coins WHERE coins.id = wallets.coin_id),
+			label, notify, updated_at
 	`
 	row := r.db.Pool.QueryRow(ctx, query,
 		id,
 		userID,
-		label,
+		req.Label,
+		req.Notify,
 	)
 	var wallet models.Wallet
 	if err := row.Scan(
@@ -214,6 +218,7 @@ func (r *walletRepository) Update(ctx context.Context, userID string, id uuid.UU
 		&wallet.Chain,
 		&wallet.Symbol,
 		&wallet.Label,
+		&wallet.Notify,
 		&wallet.UpdatedAt,
 	); err != nil {
 		return nil, domain.ErrorNotFound
@@ -401,11 +406,12 @@ func (r *walletRepository) ListForSync(ctx context.Context, limit int) ([]domain
 func walletToDomain(in models.Wallet) domain.Wallet {
 	return domain.Wallet{
 		ID:      in.ID.String(),
+		UserID:  in.UserID,
 		Address: in.Address,
 		Chain:   in.Chain,
-		Label:   in.Label,
 		Symbol:  in.Symbol,
-		UserID:  in.UserID,
+		Label:   in.Label,
+		Notify:  in.Notify,
 	}
 }
 
@@ -419,11 +425,12 @@ func walletToDomainBalance(in models.WalletBalance) domain.WalletBalance {
 	return domain.WalletBalance{
 		Wallet: domain.Wallet{
 			ID:      in.Wallet.ID.String(),
+			UserID:  in.Wallet.UserID,
 			Address: in.Wallet.Address,
 			Chain:   in.Wallet.Chain,
-			Label:   in.Wallet.Label,
 			Symbol:  in.Wallet.Symbol,
-			UserID:  in.Wallet.UserID,
+			Label:   in.Wallet.Label,
+			Notify:  in.Wallet.Notify,
 		},
 		Price: domain.TokenPrice{
 			ID:                             in.Price.ID,

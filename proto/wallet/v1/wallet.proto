@@ -66,8 +66,9 @@ message GetWalletResponse {
 }
 
 message UpdateWalletRequest {
-  string id    = 1;
-  string label = 2;
+  string id     = 1;
+  string label  = 2;
+  bool   notify = 3;
 }
 
 message UpdateWalletResponse {
@@ -118,8 +119,9 @@ message Wallet {
   string         label          = 5;
   double         balance_crypto = 6;
   double         balance_usd    = 7;
-  bool           has_error      = 9;
-  string         error_msg      = 10;
+  bool           has_error      = 8;
+  string         error_msg      = 9;
+  bool           notify         = 10;
   price.v1.Price price          = 11;
 }
 

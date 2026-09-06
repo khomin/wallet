@@ -5,6 +5,7 @@ CREATE TABLE IF NOT EXISTS wallets (
     chain TEXT NOT NULL,
     coin_id TEXT NOT NULL REFERENCES coins(id) ON DELETE CASCADE,
     label TEXT,
+    notify BOOLEAN DEFAULT TRUE,
     updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
