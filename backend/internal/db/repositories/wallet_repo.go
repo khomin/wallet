@@ -222,15 +222,13 @@ func (r *walletRepository) UpdateBalanceSnapshot(ctx context.Context, userID str
 			u.value_usd,
 			$4
 		FROM updated u
-		WHERE NOT EXISTS (
-			SELECT 1
+		WHERE (
+			SELECT ROW(s.value_crypto, s.value_usd)
 			FROM wallet_balance_snapshots s
 			WHERE s.wallet_id = u.id
-			AND s.value_crypto IS NOT DISTINCT FROM u.value_crypto
-			AND s.value_usd IS NOT DISTINCT FROM u.value_usd
 			ORDER BY s.created_at DESC
 			LIMIT 1
-		);
+		) IS DISTINCT FROM ROW(u.value_crypto, u.value_usd);
 	`
 	_, err := r.db.Pool.Exec(ctx, query,
 		id,
@@ -249,42 +247,23 @@ func (r *walletRepository) GetBalanceSnapshot(ctx context.Context, userID string
 		return nil, errors.New("limit must be greater than zero")
 	}
 	query := `
-		WITH snapshots AS (
-			SELECT
-				wb.value_crypto,
-				wb.value_usd,
-				wb.created_at,
-				row_number() OVER (ORDER BY wb.created_at) AS rn,
-				count(*) OVER () AS total
-			FROM wallet_balance_snapshots wb
-			JOIN wallets w ON w.id = wb.wallet_id
-			WHERE wb.wallet_id = $1
-			AND w.user_id = $2
-			AND wb.created_at >= $3
-			AND wb.created_at <= $4
-		),
-		positions AS (
-			SELECT DISTINCT
-				ROUND(
-					i * (total - 1)::numeric / ($5 - 1)
-				) + 1 AS rn
-			FROM snapshots
-			CROSS JOIN generate_series(0, $5 - 1) AS i
-		)
 		SELECT
-			s.value_crypto,
-			s.value_usd,
-			s.created_at
-		FROM snapshots s
-		JOIN positions p ON p.rn = s.rn
-		ORDER BY s.created_at;
+			wb.value_crypto,
+			wb.value_usd,
+			wb.created_at
+		FROM wallet_balance_snapshots wb
+		JOIN wallets w ON w.id = wb.wallet_id
+		WHERE wb.wallet_id = $1
+		AND w.user_id = $2
+		AND wb.created_at >= $3
+		AND wb.created_at <= $4
 	`
 	rows, err := r.db.Pool.Query(ctx, query,
 		id,
 		userID,
 		filter.From,
 		filter.To,
-		filter.Limit,
+		// filter.Limit,
 	)
 	if err != nil {
 		return nil, err

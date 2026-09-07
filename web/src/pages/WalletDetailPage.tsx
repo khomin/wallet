@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Spinner, ErrorBlock } from '../components/ui';
 import { useWallets, useWalletBalances, useUpdateWallet } from '../hooks/useApi';
@@ -57,6 +57,30 @@ export default function WalletDetailPage() {
 
     const [period, setPeriod] = useState<BalancePeriod>(BalancePeriod.BALANCE_PERIOD_1W);
     const { data: balancesData, isLoading, isError, refetch } = useWalletBalances(id, period, 100);
+
+    // Refetch balances when the streamed wallet updates its current balance.
+    // Debounce to avoid spamming the backend on rapid stream events.
+    const refetchDebounceRef = useRef<number | null>(null);
+    useEffect(() => {
+        if (!wallet || !refetch) return;
+        if (wallet.id !== id) return;
+
+        // coalesce rapid updates
+        if (refetchDebounceRef.current) {
+            clearTimeout(refetchDebounceRef.current);
+        }
+        refetchDebounceRef.current = window.setTimeout(() => {
+            void refetch();
+            refetchDebounceRef.current = null;
+        }, 500);
+
+        return () => {
+            if (refetchDebounceRef.current) {
+                clearTimeout(refetchDebounceRef.current);
+                refetchDebounceRef.current = null;
+            }
+        };
+    }, [wallet?.balanceUsd, wallet?.balanceCrypto, wallet?.id, id, period, refetch]);
 
     const points = useMemo(() => {
         const list = (balancesData?.balance ?? []).map((b) => ({
