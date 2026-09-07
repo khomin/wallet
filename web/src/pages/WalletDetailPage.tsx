@@ -1,7 +1,7 @@
 import { useState, useMemo, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Spinner, ErrorBlock } from '../components/ui';
-import { useWallets, useWalletBalances, useUpdateWallet } from '../hooks/useApi';
+import { Spinner, ErrorBlock, Modal } from '../components/ui';
+import { useWallets, useWalletBalances, useUpdateWallet, useDeleteWallet } from '../hooks/useApi';
 import { BalancePeriod } from '../gen/wallet/v1/wallet_pb';
 import {
     ResponsiveContainer,
@@ -45,6 +45,7 @@ export default function WalletDetailPage() {
     const wallet = walletsData?.wallet.find((w) => w.id === id);
 
     const updateWallet = useUpdateWallet();
+    const deleteWallet = useDeleteWallet();
 
     const [notify, setNotify] = useState<boolean>(wallet?.notify ?? false);
     useEffect(() => setNotify(wallet?.notify ?? false), [wallet?.notify]);
@@ -53,6 +54,17 @@ export default function WalletDetailPage() {
         setNotify(next);
         if (!wallet) return;
         updateWallet.mutate({ id: wallet.id, label: wallet.label ?? '', notify: next });
+    };
+
+    const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+    const handleDeleteWallet = async () => {
+        if (!wallet) return;
+        try {
+            await deleteWallet.mutateAsync(wallet.id);
+            navigate('/wallets');
+        } catch {
+            // error shown inline via mutation state
+        }
     };
 
     const [period, setPeriod] = useState<BalancePeriod>(BalancePeriod.BALANCE_PERIOD_1W);
@@ -203,6 +215,18 @@ export default function WalletDetailPage() {
                     <p className="text-xs text-gray-500 mt-1">{wallet?.address}</p>
                 </div>
 
+                <div className="flex items-center gap-2">
+                    <button
+                        onClick={() => setShowDeleteConfirm(true)}
+                        title="Delete wallet"
+                        className="rounded-lg text-gray-400 hover:text-red-400 p-2 transition-colors"
+                    >
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                        </svg>
+                    </button>
+                </div>
+
             </div>
 
             <div className="rounded-xl border border-white/5 bg-white/[0.03] p-6">
@@ -286,6 +310,30 @@ export default function WalletDetailPage() {
                     <span className="ml-3 text-sm text-gray-300">Notify on balance changes</span>
                 </label>
             </div>
+
+            {showDeleteConfirm && (
+                <Modal onClose={() => setShowDeleteConfirm(false)} title="Delete Wallet">
+                    <p className="text-sm text-gray-400">Are you sure you want to delete this wallet? This action cannot be undone.</p>
+                    {deleteWallet.isError && (
+                        <p className="mt-2 text-xs text-red-400">{(deleteWallet.error as Error)?.message || 'Failed to delete wallet'}</p>
+                    )}
+                    <div className="flex items-center justify-end gap-3 mt-6">
+                        <button
+                            onClick={() => setShowDeleteConfirm(false)}
+                            className="rounded-lg border border-white/10 px-4 py-2 text-sm text-gray-400 hover:text-white transition-colors"
+                        >
+                            Cancel
+                        </button>
+                        <button
+                            onClick={() => handleDeleteWallet()}
+                            disabled={deleteWallet.status === 'pending'}
+                            className="rounded-lg bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-500 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                        >
+                            {deleteWallet.status === 'pending' ? 'Deleting...' : 'Delete'}
+                        </button>
+                    </div>
+                </Modal>
+            )}
 
         </div>
     );
