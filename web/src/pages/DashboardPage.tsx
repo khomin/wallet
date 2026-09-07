@@ -155,9 +155,6 @@ export default function DashboardPage() {
                     Balance
                   </th>
                   <th className="pb-3 text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    24h
-                  </th>
-                  <th className="pb-3 text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Label
                   </th>
                 </tr>
@@ -203,17 +200,6 @@ export default function DashboardPage() {
                       )}
                     </td>
 
-                    <td className="py-3">
-                      <span
-                        className={
-                          (wallet.price?.priceChangePercentage24h ?? 0) >= 0
-                            ? 'text-green-400'
-                            : 'text-red-400'
-                        }
-                      >
-                        {fmtPct(wallet.price?.priceChangePercentage24h ?? 0)}
-                      </span>
-                    </td>
                     <td className="py-3 pr-4">
                       <div className="flex flex-col">
                         <span className="font-medium text-white">

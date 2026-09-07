@@ -187,7 +187,6 @@ export default function WalletsPage() {
                   <th className="pb-3 text-xs font-medium text-gray-500 uppercase tracking-wider">Token</th>
                   <th className="pb-3 text-xs font-medium text-gray-500 uppercase tracking-wider">USD Value</th>
                   <th className="pb-3 text-xs font-medium text-gray-500 uppercase tracking-wider">Balance</th>
-                  <th className="pb-3 text-xs font-medium text-gray-500 uppercase tracking-wider">24h</th>
                   <th className="pb-3 text-xs font-medium text-gray-500 uppercase tracking-wider">Chain</th>
                   <th className="pb-3 text-xs font-medium text-gray-500 uppercase tracking-wider">Label</th>
                   <th className="pb-3 text-xs font-medium text-gray-500 uppercase tracking-wider"></th>
@@ -228,12 +227,6 @@ export default function WalletsPage() {
                       ) : (
                         <span className="text-gray-200">{fmtCrypto(wallet.balanceCrypto)}</span>
                       )}
-                    </td>
-
-                    <td className="py-3 pr-4">
-                      <span className={(wallet.price?.priceChangePercentage24h ?? 0) >= 0 ? 'text-green-400' : 'text-red-400'}>
-                        {fmtPct(wallet.price?.priceChangePercentage24h ?? 0)}
-                      </span>
                     </td>
 
                     <td className="py-3 pr-4">
