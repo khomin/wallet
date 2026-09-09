@@ -100,7 +100,7 @@ func main() {
 	if err != nil {
 		logrus.Fatalf("failed to init alert consumer: %v", err)
 	}
-	notificationService := core.NewNotificationService(alertRepo, userRepo, priceCache, func(cmd domain.NotificationCommand) error {
+	notificationService := core.NewNotificationService(alertRepo, userRepo, priceCache, walletRepo, func(cmd domain.NotificationCommand) error {
 		bytes, err := json.Marshal(cmd)
 		if err != nil {
 			return fmt.Errorf("marshal notification cmd: %w", err)

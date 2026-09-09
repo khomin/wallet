@@ -77,13 +77,13 @@ func (h *EmailWorker) Start(ctx context.Context) {
 						log.WithError(err).Error("failed to unmarshal event")
 						return
 					}
-					subject := SubjectBalance(event.WalletName, event.Current)
+					subject := SubjectBalance(event.Name, event.Current)
 					formattedDelta := fmt.Sprintf("%+.4f", event.Delta)
 					formattedBalance := fmt.Sprintf("%.4f", event.Current)
 
 					htmlBody, err := RenderBalanceEmail(BalanceTemplateData{
 						UserName:         cmd.UserName,
-						WalletName:       event.WalletName,
+						WalletName:       event.Name,
 						CoinSymbol:       event.CoinSymbol,
 						FormattedBalance: formattedBalance,
 						FormattedDelta:   formattedDelta,

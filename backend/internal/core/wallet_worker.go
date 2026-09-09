@@ -113,7 +113,7 @@ func (w *WalletWorker) synchronizeWallets(ctx context.Context) error {
 			var failedCount int
 
 			for _, wallet := range wallets {
-				result, err := w.updateBalance(ctx, wallet)
+				result, err := w.synchronizeBalance(ctx, wallet)
 				if err != nil {
 					failedCount++
 					log.Errorf("failed to sync wallet balance: %s %s", wallet.Chain, wallet.ID)
@@ -121,22 +121,39 @@ func (w *WalletWorker) synchronizeWallets(ctx context.Context) error {
 				}
 				log.Debugf("wallet balance updated: %s %s", wallet.Chain, wallet.ID)
 
-				streams, ok := w.streamSubscribers[wallet.UserID]
-				if ok {
-					for _, v := range streams {
-						v <- &walletv1.WalletUpdate{
-							Wallet: result.newBalance.ToGrpc(),
+				id, err := uuid.Parse(wallet.ID)
+				if err != nil {
+					log.Errorf("failed to parse wallet id: %s", wallet.ID)
+					continue
+				}
+				users, err := w.walletRepo.ListUsersByWallet(ctx, id)
+				if err != nil {
+					log.Errorf("failed to list users for the wallet id: %s", wallet.ID)
+					continue
+				}
+				for _, userWallet := range users {
+					streams, ok := w.streamSubscribers[userWallet.UserID]
+					if ok {
+						for _, v := range streams {
+							v <- &walletv1.WalletUpdate{
+								Wallet: (&domain.UserWalletBalance{
+									UserWallet: userWallet,
+									Balance:    result.newBalance.Balance,
+									BalanceUSD: result.newBalance.BalanceUSD,
+									UpdatedAt:  result.newBalance.Time,
+								}).ToGrpc(),
+							}
 						}
 					}
-				}
-				if result.changed {
-					w.onBalanceChanged(ctx, domain.WalletBalanceChange{
-						Wallet:            wallet,
-						CurrentBalance:    result.newBalance.Balance,
-						CurrentBalanceUSD: result.newBalance.BalanceUSD,
-						OldBalance:        result.oldBalance.Balance,
-						OldBalanceUSD:     result.oldBalance.BalanceUSD,
-					})
+					if result.changed {
+						w.onBalanceChanged(ctx, domain.WalletBalanceChange{
+							Wallet:            wallet,
+							CurrentBalance:    result.newBalance.Balance,
+							CurrentBalanceUSD: result.newBalance.BalanceUSD,
+							OldBalance:        result.oldBalance.Balance,
+							OldBalanceUSD:     result.oldBalance.BalanceUSD,
+						})
+					}
 				}
 			}
 			if failedCount > 0 {
@@ -152,7 +169,7 @@ func (w *WalletWorker) synchronizeWallets(ctx context.Context) error {
 	return nil
 }
 
-func (w *WalletWorker) updateBalance(ctx context.Context, wallet domain.Wallet) (*updateBalanceResult, error) {
+func (w *WalletWorker) synchronizeBalance(ctx context.Context, wallet domain.Wallet) (*updateBalanceResult, error) {
 	uuid, err := uuid.Parse(wallet.ID)
 	if err != nil {
 		return nil, err
@@ -167,8 +184,13 @@ func (w *WalletWorker) updateBalance(ctx context.Context, wallet domain.Wallet) 
 		}
 		return nil, err
 	}
-	oldBalance, _ := w.walletRepo.Get(ctx, wallet.UserID, uuid)
-	err = w.walletRepo.UpdateBalanceSnapshot(ctx, wallet.UserID, uuid, BalanceSnapshot{
+	oldBalance, err := w.walletRepo.GetBalanceSnapshot(ctx, uuid)
+	if err != nil {
+		if !errors.Is(err, domain.ErrorNotFound) {
+			return nil, err
+		}
+	}
+	err = w.walletRepo.UpdateBalanceSnapshot(ctx, uuid, BalanceSnapshot{
 		Crypto: newBalance.Balance,
 		USD:    newBalance.BalanceUSD,
 		Time:   time.Now(),
@@ -176,7 +198,7 @@ func (w *WalletWorker) updateBalance(ctx context.Context, wallet domain.Wallet) 
 	if err != nil {
 		return nil, err
 	}
-	if oldBalance != nil && !oldBalance.UpdatedAt.IsZero() {
+	if oldBalance != nil && !oldBalance.Time.IsZero() {
 		delta := newBalance.Balance - oldBalance.Balance
 		if math.Abs(delta) >= 0.000001 {
 			return &updateBalanceResult{
@@ -193,7 +215,7 @@ func (w *WalletWorker) updateBalance(ctx context.Context, wallet domain.Wallet) 
 }
 
 type updateBalanceResult struct {
-	newBalance *domain.WalletBalance
-	oldBalance *domain.WalletBalance
+	newBalance *domain.WalletBalanceSnapshot
+	oldBalance *domain.WalletBalanceSnapshot
 	changed    bool
 }

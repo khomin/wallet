@@ -9,15 +9,18 @@ import (
 )
 
 type WalletRepository interface {
-	List(ctx context.Context, userID string) ([]domain.WalletBalance, error)
-	Get(ctx context.Context, userID string, id uuid.UUID) (*domain.WalletBalance, error)
-	Create(ctx context.Context, userID string, chain string, address string, symbol string, label string) (*domain.Wallet, error)
-	Update(ctx context.Context, userID string, id uuid.UUID, req UpdateWallet) (*domain.Wallet, error)
-	Delete(ctx context.Context, userID string, id uuid.UUID) error
-	ListForSync(ctx context.Context, updatedAt time.Time, limit int) ([]domain.Wallet, error)
+	ListUsersByWallet(ctx context.Context, id uuid.UUID) ([]domain.UserWallet, error)
+	GetWalletByUser(ctx context.Context, userID string, id uuid.UUID) (*domain.UserWalletBalance, error)
+	ListWalletsByUser(ctx context.Context, userID string) ([]domain.UserWalletBalance, error)
 
-	UpdateBalanceSnapshot(ctx context.Context, userID string, id uuid.UUID, snapshot BalanceSnapshot) error
-	GetBalanceSnapshot(ctx context.Context, userID string, id uuid.UUID, filter BalanceSnapshotFilter) ([]domain.WalletBalanceSnapshot, error)
+	Create(ctx context.Context, userID string, chain string, address string, symbol string, label string) (*domain.UserWallet, error)
+	Update(ctx context.Context, userID string, id uuid.UUID, req UpdateWallet) (*domain.UserWallet, error)
+	Delete(ctx context.Context, userID string, id uuid.UUID) error
+
+	UpdateBalanceSnapshot(ctx context.Context, id uuid.UUID, snapshot BalanceSnapshot) error
+	ListBalanceSnapshots(ctx context.Context, id uuid.UUID, filter BalanceSnapshotFilter) ([]domain.WalletBalanceSnapshot, error)
+	GetBalanceSnapshot(ctx context.Context, id uuid.UUID) (*domain.WalletBalanceSnapshot, error)
+	ListForSync(ctx context.Context, updatedAt time.Time, limit int) ([]domain.Wallet, error)
 }
 
 type BalanceSnapshot struct {

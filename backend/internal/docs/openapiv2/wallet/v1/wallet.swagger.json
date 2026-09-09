@@ -378,57 +378,6 @@
         }
       }
     },
-    "v1Price": {
-      "type": "object",
-      "properties": {
-        "symbol": {
-          "type": "string"
-        },
-        "name": {
-          "type": "string"
-        },
-        "priceUsd": {
-          "type": "number",
-          "format": "double"
-        },
-        "marketCap": {
-          "type": "number",
-          "format": "double"
-        },
-        "totalVolume": {
-          "type": "number",
-          "format": "double"
-        },
-        "high24h": {
-          "type": "number",
-          "format": "double"
-        },
-        "low24h": {
-          "type": "number",
-          "format": "double"
-        },
-        "priceChange24h": {
-          "type": "number",
-          "format": "double"
-        },
-        "priceChangePercentage24h": {
-          "type": "number",
-          "format": "double"
-        },
-        "marketCapChange24h": {
-          "type": "number",
-          "format": "double"
-        },
-        "marketCapChangePercentage24h": {
-          "type": "number",
-          "format": "double"
-        },
-        "updatedAt": {
-          "type": "string",
-          "format": "date-time"
-        }
-      }
-    },
     "v1UpdateWalletResponse": {
       "type": "object",
       "properties": {
@@ -477,9 +426,6 @@
         },
         "notify": {
           "type": "boolean"
-        },
-        "price": {
-          "$ref": "#/definitions/v1Price"
         }
       }
     },

@@ -13,7 +13,7 @@ import (
 	timestamppb "google.golang.org/protobuf/types/known/timestamppb"
 	reflect "reflect"
 	sync "sync"
-	v1 "tracker/gen/price/v1"
+	_ "tracker/gen/price/v1"
 	unsafe "unsafe"
 )
 
@@ -780,7 +780,6 @@ type Wallet struct {
 	HasError      bool                   `protobuf:"varint,8,opt,name=has_error,json=hasError,proto3" json:"has_error,omitempty"`
 	ErrorMsg      string                 `protobuf:"bytes,9,opt,name=error_msg,json=errorMsg,proto3" json:"error_msg,omitempty"`
 	Notify        bool                   `protobuf:"varint,10,opt,name=notify,proto3" json:"notify,omitempty"`
-	Price         *v1.Price              `protobuf:"bytes,11,opt,name=price,proto3" json:"price,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -885,13 +884,6 @@ func (x *Wallet) GetNotify() bool {
 	return false
 }
 
-func (x *Wallet) GetPrice() *v1.Price {
-	if x != nil {
-		return x.Price
-	}
-	return nil
-}
-
 type WalletBalance struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	BalanceCrypto float64                `protobuf:"fixed64,1,opt,name=balance_crypto,json=balanceCrypto,proto3" json:"balance_crypto,omitempty"`
@@ -993,7 +985,7 @@ const file_wallet_v1_wallet_proto_rawDesc = "" +
 	"\x13StreamWalletRequest\x12\x18\n" +
 	"\asymbols\x18\x01 \x03(\tR\asymbols\"9\n" +
 	"\fWalletUpdate\x12)\n" +
-	"\x06wallet\x18\x01 \x01(\v2\x11.wallet.v1.WalletR\x06wallet\"\xc2\x02\n" +
+	"\x06wallet\x18\x01 \x01(\v2\x11.wallet.v1.WalletR\x06wallet\"\x9b\x02\n" +
 	"\x06Wallet\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12\x18\n" +
 	"\aaddress\x18\x02 \x01(\tR\aaddress\x12\x14\n" +
@@ -1006,8 +998,7 @@ const file_wallet_v1_wallet_proto_rawDesc = "" +
 	"\thas_error\x18\b \x01(\bR\bhasError\x12\x1b\n" +
 	"\terror_msg\x18\t \x01(\tR\berrorMsg\x12\x16\n" +
 	"\x06notify\x18\n" +
-	" \x01(\bR\x06notify\x12%\n" +
-	"\x05price\x18\v \x01(\v2\x0f.price.v1.PriceR\x05price\"\x87\x01\n" +
+	" \x01(\bR\x06notify\"\x87\x01\n" +
 	"\rWalletBalance\x12%\n" +
 	"\x0ebalance_crypto\x18\x01 \x01(\x01R\rbalanceCrypto\x12\x1f\n" +
 	"\vbalance_usd\x18\x02 \x01(\x01R\n" +
@@ -1063,8 +1054,7 @@ var file_wallet_v1_wallet_proto_goTypes = []any{
 	(*WalletUpdate)(nil),               // 14: wallet.v1.WalletUpdate
 	(*Wallet)(nil),                     // 15: wallet.v1.Wallet
 	(*WalletBalance)(nil),              // 16: wallet.v1.WalletBalance
-	(*v1.Price)(nil),                   // 17: price.v1.Price
-	(*timestamppb.Timestamp)(nil),      // 18: google.protobuf.Timestamp
+	(*timestamppb.Timestamp)(nil),      // 17: google.protobuf.Timestamp
 }
 var file_wallet_v1_wallet_proto_depIdxs = []int32{
 	15, // 0: wallet.v1.ListWalletsResponse.wallet:type_name -> wallet.v1.Wallet
@@ -1072,27 +1062,26 @@ var file_wallet_v1_wallet_proto_depIdxs = []int32{
 	0,  // 2: wallet.v1.ListWalletBalancesRequest.period:type_name -> wallet.v1.BalancePeriod
 	16, // 3: wallet.v1.ListWalletBalancesResponse.balance:type_name -> wallet.v1.WalletBalance
 	15, // 4: wallet.v1.WalletUpdate.wallet:type_name -> wallet.v1.Wallet
-	17, // 5: wallet.v1.Wallet.price:type_name -> price.v1.Price
-	18, // 6: wallet.v1.WalletBalance.time:type_name -> google.protobuf.Timestamp
-	1,  // 7: wallet.v1.WalletService.ListWallets:input_type -> wallet.v1.ListWalletsRequest
-	3,  // 8: wallet.v1.WalletService.GetWallet:input_type -> wallet.v1.GetWalletRequest
-	5,  // 9: wallet.v1.WalletService.UpdateWallet:input_type -> wallet.v1.UpdateWalletRequest
-	7,  // 10: wallet.v1.WalletService.DeleteWallet:input_type -> wallet.v1.DeleteWalletRequest
-	9,  // 11: wallet.v1.WalletService.CreateWallet:input_type -> wallet.v1.CreateWalletRequest
-	11, // 12: wallet.v1.WalletService.ListWalletBalances:input_type -> wallet.v1.ListWalletBalancesRequest
-	13, // 13: wallet.v1.WalletService.StreamWallet:input_type -> wallet.v1.StreamWalletRequest
-	2,  // 14: wallet.v1.WalletService.ListWallets:output_type -> wallet.v1.ListWalletsResponse
-	4,  // 15: wallet.v1.WalletService.GetWallet:output_type -> wallet.v1.GetWalletResponse
-	6,  // 16: wallet.v1.WalletService.UpdateWallet:output_type -> wallet.v1.UpdateWalletResponse
-	8,  // 17: wallet.v1.WalletService.DeleteWallet:output_type -> wallet.v1.DeleteWalletResponse
-	10, // 18: wallet.v1.WalletService.CreateWallet:output_type -> wallet.v1.CreateWalletResponse
-	12, // 19: wallet.v1.WalletService.ListWalletBalances:output_type -> wallet.v1.ListWalletBalancesResponse
-	14, // 20: wallet.v1.WalletService.StreamWallet:output_type -> wallet.v1.WalletUpdate
-	14, // [14:21] is the sub-list for method output_type
-	7,  // [7:14] is the sub-list for method input_type
-	7,  // [7:7] is the sub-list for extension type_name
-	7,  // [7:7] is the sub-list for extension extendee
-	0,  // [0:7] is the sub-list for field type_name
+	17, // 5: wallet.v1.WalletBalance.time:type_name -> google.protobuf.Timestamp
+	1,  // 6: wallet.v1.WalletService.ListWallets:input_type -> wallet.v1.ListWalletsRequest
+	3,  // 7: wallet.v1.WalletService.GetWallet:input_type -> wallet.v1.GetWalletRequest
+	5,  // 8: wallet.v1.WalletService.UpdateWallet:input_type -> wallet.v1.UpdateWalletRequest
+	7,  // 9: wallet.v1.WalletService.DeleteWallet:input_type -> wallet.v1.DeleteWalletRequest
+	9,  // 10: wallet.v1.WalletService.CreateWallet:input_type -> wallet.v1.CreateWalletRequest
+	11, // 11: wallet.v1.WalletService.ListWalletBalances:input_type -> wallet.v1.ListWalletBalancesRequest
+	13, // 12: wallet.v1.WalletService.StreamWallet:input_type -> wallet.v1.StreamWalletRequest
+	2,  // 13: wallet.v1.WalletService.ListWallets:output_type -> wallet.v1.ListWalletsResponse
+	4,  // 14: wallet.v1.WalletService.GetWallet:output_type -> wallet.v1.GetWalletResponse
+	6,  // 15: wallet.v1.WalletService.UpdateWallet:output_type -> wallet.v1.UpdateWalletResponse
+	8,  // 16: wallet.v1.WalletService.DeleteWallet:output_type -> wallet.v1.DeleteWalletResponse
+	10, // 17: wallet.v1.WalletService.CreateWallet:output_type -> wallet.v1.CreateWalletResponse
+	12, // 18: wallet.v1.WalletService.ListWalletBalances:output_type -> wallet.v1.ListWalletBalancesResponse
+	14, // 19: wallet.v1.WalletService.StreamWallet:output_type -> wallet.v1.WalletUpdate
+	13, // [13:20] is the sub-list for method output_type
+	6,  // [6:13] is the sub-list for method input_type
+	6,  // [6:6] is the sub-list for extension type_name
+	6,  // [6:6] is the sub-list for extension extendee
+	0,  // [0:6] is the sub-list for field type_name
 }
 
 func init() { file_wallet_v1_wallet_proto_init() }

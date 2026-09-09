@@ -25,7 +25,7 @@ type PriceAlertNotification struct {
 }
 
 type BalanceAlertNotification struct {
-	WalletName string  `json:"wallet_name"`
+	Name       string  `json:"name"`
 	CoinSymbol string  `json:"coin_symbol"`
 	Previous   float64 `json:"previous"`
 	Current    float64 `json:"current"`

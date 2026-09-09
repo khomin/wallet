@@ -123,7 +123,6 @@ message Wallet {
   bool           has_error      = 8;
   string         error_msg      = 9;
   bool           notify         = 10;
-  price.v1.Price price          = 11;
 }
 
 message WalletBalance {

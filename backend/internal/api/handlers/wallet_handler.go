@@ -41,19 +41,7 @@ func (s *WalletGrpcHandler) ListWallets(ctx context.Context, req *walletv1.ListW
 	}
 	out := make([]*walletv1.Wallet, 0, len(wallets))
 	for _, i := range wallets {
-		out = append(out, &walletv1.Wallet{
-			Id:            i.Wallet.ID,
-			Address:       i.Wallet.Address,
-			Chain:         i.Wallet.Chain,
-			TokenSymbol:   i.Wallet.Symbol,
-			Label:         i.Wallet.Label,
-			Notify:        i.Wallet.Notify,
-			BalanceCrypto: i.Balance,
-			BalanceUsd:    i.BalanceUSD,
-			HasError:      i.HasError,
-			ErrorMsg:      i.ErrorMsg,
-			Price:         i.Price.ToGrpc(),
-		})
+		out = append(out, i.ToGrpc())
 	}
 	return &walletv1.ListWalletsResponse{
 		Total:  int32(len(wallets)),
@@ -91,7 +79,7 @@ func (s *WalletGrpcHandler) CreateWallet(ctx context.Context, req *walletv1.Crea
 	if err != nil {
 		if errors.Is(err, domain.ErrorNotFound) {
 			return nil, status.Error(codes.NotFound, "wallet not found")
-		} else if errors.Is(err, domain.ErrorWWalletAlreadyExists) {
+		} else if errors.Is(err, domain.ErrorWalletAlreadyExists) {
 			return nil, status.Error(codes.AlreadyExists, "wallet already exists")
 		}
 		return nil, status.Error(codes.Internal, err.Error())
@@ -108,7 +96,7 @@ func (s *WalletGrpcHandler) UpdateWallet(ctx context.Context, req *walletv1.Upda
 	if err != nil {
 		return nil, status.Error(codes.InvalidArgument, "id parameter is required")
 	}
-	wallet, err := s.walletService.UpdateWallet(ctx, user, uuid, core.UpdateWallet{
+	userWallet, err := s.walletService.UpdateWallet(ctx, user, uuid, core.UpdateWallet{
 		Label:  req.Label,
 		Notify: req.Notify,
 	})
@@ -119,9 +107,9 @@ func (s *WalletGrpcHandler) UpdateWallet(ctx context.Context, req *walletv1.Upda
 		return nil, status.Error(codes.Internal, err.Error())
 	}
 	return &walletv1.UpdateWalletResponse{
-		Id:     wallet.ID,
-		Label:  wallet.Label,
-		Notify: wallet.Notify,
+		Id:     userWallet.ID,
+		Label:  userWallet.Label,
+		Notify: userWallet.Notify,
 	}, nil
 }
 
@@ -166,7 +154,7 @@ func (s *WalletGrpcHandler) ListWalletBalances(ctx context.Context, req *walletv
 	if err != nil {
 		return nil, status.Error(codes.InvalidArgument, "invalid period")
 	}
-	snapshots, err := s.walletService.GetBalanceSnapshot(
+	snapshots, err := s.walletService.ListBalanceSnapshots(
 		ctx,
 		user,
 		uuid,

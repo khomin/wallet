@@ -8,11 +8,11 @@ import (
 )
 
 type DemoWallets struct {
-	Wallets map[string]domain.WalletBalance
+	Wallets map[string]domain.UserWalletBalance
 }
 
 func NewDemoWallets() *DemoWallets {
-	var wallets = make(map[string]domain.WalletBalance)
+	var wallets = make(map[string]domain.UserWalletBalance)
 	for _, i := range walletList {
 		wallets[i.ID] = i
 	}
@@ -21,11 +21,11 @@ func NewDemoWallets() *DemoWallets {
 	}
 }
 
-func (d *DemoWallets) GetWallets() []domain.WalletBalance {
+func (d *DemoWallets) GetWallets() []domain.UserWalletBalance {
 	return walletList
 }
 
-func (d *DemoWallets) GetWallet(id uuid.UUID) (*domain.WalletBalance, error) {
+func (d *DemoWallets) GetWallet(id uuid.UUID) (*domain.UserWalletBalance, error) {
 	v, found := d.Wallets[id.String()]
 	if !found {
 		return nil, domain.ErrorNotFound
@@ -33,43 +33,43 @@ func (d *DemoWallets) GetWallet(id uuid.UUID) (*domain.WalletBalance, error) {
 	return &v, nil
 }
 
-var walletList = []domain.WalletBalance{
-	{
-		Wallet: domain.Wallet{
-			ID:      "4e4e27d5-b47c-4584-bac9-a998e3d87980",
-			Address: "0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045", // Vitalik's address
-			Chain:   "ETH",
-			Symbol:  "ETH",
-			Label:   "Main Treasury (Demo)",
-		},
-		Balance:    124.55,
-		BalanceUSD: 398560.20,
-		HasError:   false,
-	},
-	{
-		Wallet: domain.Wallet{
-			ID:      "4e4e27d5-b47c-4584-bac9-a998e3d87981",
-			Address: "1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa", // Satoshi's genesis address
-			Chain:   "BTC",
-			Symbol:  "BTC",
-			Label:   "Cold Storage (Demo)",
-		},
-		Balance:    12.4,
-		BalanceUSD: 793600.00,
-		HasError:   false,
-	},
-	{
-		Wallet: domain.Wallet{
-			ID:      "4e4e27d5-b47c-4584-bac9-a998e3d87982",
-			Address: "7xKXtg2CW87d97TXJSDpbD5jBkheTqA83TZRuJosgAsU",
-			Chain:   "SOL",
-			Symbol:  "SOL",
-			Label:   "DeFi Staking (Demo)",
-		},
-		Balance:    450.00,
-		BalanceUSD: 67500.00,
-		HasError:   false,
-	},
+var walletList = []domain.UserWalletBalance{
+	// {
+	// 	UserWallet: domain.UserWallet{
+	// 		ID:      "4e4e27d5-b47c-4584-bac9-a998e3d87980",
+	// 		Address: "0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045", // Vitalik's address
+	// 		Chain:   "ETH",
+	// 		Symbol:  "ETH",
+	// 		Label:   "Main Treasury (Demo)",
+	// 	},
+	// 	Balance:    124.55,
+	// 	BalanceUSD: 398560.20,
+	// 	HasError:   false,
+	// },
+	// {
+	// 	Wallet: domain.Wallet{
+	// 		ID:      "4e4e27d5-b47c-4584-bac9-a998e3d87981",
+	// 		Address: "1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa", // Satoshi's genesis address
+	// 		Chain:   "BTC",
+	// 		Symbol:  "BTC",
+	// 		Label:   "Cold Storage (Demo)",
+	// 	},
+	// 	Balance:    12.4,
+	// 	BalanceUSD: 793600.00,
+	// 	HasError:   false,
+	// },
+	// {
+	// 	Wallet: domain.Wallet{
+	// 		ID:      "4e4e27d5-b47c-4584-bac9-a998e3d87982",
+	// 		Address: "7xKXtg2CW87d97TXJSDpbD5jBkheTqA83TZRuJosgAsU",
+	// 		Chain:   "SOL",
+	// 		Symbol:  "SOL",
+	// 		Label:   "DeFi Staking (Demo)",
+	// 	},
+	// 	Balance:    450.00,
+	// 	BalanceUSD: 67500.00,
+	// 	HasError:   false,
+	// },
 }
 
 func (d *DemoWallets) GetWalletBalanceSnapshot(

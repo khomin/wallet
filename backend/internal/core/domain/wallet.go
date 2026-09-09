@@ -9,10 +9,7 @@ type Wallet struct {
 	ID      string `json:"id"`
 	Address string `json:"address" `
 	Chain   string `json:"chain" `
-	Label   string `json:"label"`
-	Notify  bool   `json:"notify"`
 	Symbol  string `json:"symbol"`
-	UserID  string `json:"user_id"`
 }
 
 type WalletBalance struct {
@@ -23,6 +20,22 @@ type WalletBalance struct {
 	HasError   bool
 	ErrorMsg   string
 	Price      TokenPrice
+}
+
+type UserWallet struct {
+	Wallet
+	UserID string `json:"user_id"`
+	Label  string `json:"label"`
+	Notify bool   `json:"notify"`
+}
+
+type UserWalletBalance struct {
+	UserWallet
+	Balance    float64
+	BalanceUSD float64
+	UpdatedAt  time.Time
+	HasError   bool
+	ErrorMsg   string
 }
 
 type WalletBalanceSnapshot struct {
@@ -39,18 +52,17 @@ type WalletBalanceChange struct {
 	OldBalanceUSD     float64
 }
 
-func (w *WalletBalance) ToGrpc() *walletv1.Wallet {
+func (w *UserWalletBalance) ToGrpc() *walletv1.Wallet {
 	return &walletv1.Wallet{
-		Id:            w.Wallet.ID,
-		Address:       w.Wallet.Address,
-		Chain:         w.Wallet.Chain,
-		TokenSymbol:   w.Wallet.Symbol,
-		Label:         w.Wallet.Label,
-		Notify:        w.Wallet.Notify,
+		Id:            w.UserWallet.ID,
+		Address:       w.UserWallet.Address,
+		Chain:         w.UserWallet.Chain,
+		TokenSymbol:   w.UserWallet.Symbol,
+		Label:         w.UserWallet.Label,
+		Notify:        w.UserWallet.Notify,
 		BalanceCrypto: w.Balance,
 		BalanceUsd:    w.BalanceUSD,
 		HasError:      w.HasError,
 		ErrorMsg:      w.ErrorMsg,
-		Price:         w.Price.ToGrpc(),
 	}
 }

@@ -3,6 +3,7 @@ package core
 import (
 	"context"
 	"fmt"
+	"time"
 
 	"tracker/internal/core/demo"
 	"tracker/internal/core/domain"
@@ -40,28 +41,28 @@ func NewWalletService(deps WalletDeps) *WalletService {
 	}
 }
 
-func (s *WalletService) GetWallet(ctx context.Context, user *domain.User, id uuid.UUID) (*domain.WalletBalance, error) {
+func (s *WalletService) GetWallet(ctx context.Context, user *domain.User, id uuid.UUID) (*domain.UserWalletBalance, error) {
 	if user.IsDemo {
 		return s.walletDemo.GetWallet(id)
 	}
 	if err := s.userRepo.EnsureExists(ctx, user); err != nil {
 		return nil, err
 	}
-	wallet, err := s.walletRepo.Get(ctx, user.ID, id)
+	wallet, err := s.walletRepo.GetWalletByUser(ctx, user.ID, id)
 	if err != nil {
 		return nil, err
 	}
 	return wallet, nil
 }
 
-func (s *WalletService) ListWallets(ctx context.Context, user *domain.User) ([]domain.WalletBalance, error) {
+func (s *WalletService) ListWallets(ctx context.Context, user *domain.User) ([]domain.UserWalletBalance, error) {
 	if user.IsDemo {
 		return s.walletDemo.GetWallets(), nil
 	}
 	if err := s.userRepo.EnsureExists(ctx, user); err != nil {
 		return nil, err
 	}
-	wallets, err := s.walletRepo.List(ctx, user.ID)
+	wallets, err := s.walletRepo.ListWalletsByUser(ctx, user.ID)
 	if err != nil {
 		return nil, err
 	}
@@ -89,7 +90,7 @@ func (s *WalletService) CreateWallet(ctx context.Context, user *domain.User, cha
 	return nil
 }
 
-func (s *WalletService) UpdateWallet(ctx context.Context, user *domain.User, id uuid.UUID, req UpdateWallet) (*domain.Wallet, error) {
+func (s *WalletService) UpdateWallet(ctx context.Context, user *domain.User, id uuid.UUID, req UpdateWallet) (*domain.UserWallet, error) {
 	if user.IsDemo {
 		return nil, domain.ErrNotAllowedInDemoMode
 	}
@@ -113,7 +114,7 @@ func (s *WalletService) DeleteWallet(ctx context.Context, user *domain.User, id 
 	return s.walletRepo.Delete(ctx, user.ID, id)
 }
 
-func (s *WalletService) FetchBalance(ctx context.Context, wallet domain.Wallet) (*domain.WalletBalance, error) {
+func (s *WalletService) FetchBalance(ctx context.Context, wallet domain.Wallet) (*domain.WalletBalanceSnapshot, error) {
 	priceSymbol := wallet.Symbol
 	if wallet.Chain == wallet.Symbol {
 		priceSymbol = wallet.Chain
@@ -131,23 +132,21 @@ func (s *WalletService) FetchBalance(ctx context.Context, wallet domain.Wallet) 
 		logrus.Warnf("failed to pull balance for %s on %s: %v", wallet.Address, wallet.Chain, err)
 		return nil, err
 	}
-	return &domain.WalletBalance{
-		Wallet:     wallet,
-		Price:      *price,
+	return &domain.WalletBalanceSnapshot{
+		Time:       time.Now(),
 		Balance:    balance.Balance,
 		BalanceUSD: balance.Balance * price.CurrentPrice,
-		HasError:   false,
 	}, nil
 }
 
-func (s *WalletService) GetBalanceSnapshot(ctx context.Context, user *domain.User, id uuid.UUID, filter BalanceSnapshotFilter) ([]domain.WalletBalanceSnapshot, error) {
+func (s *WalletService) ListBalanceSnapshots(ctx context.Context, user *domain.User, id uuid.UUID, filter BalanceSnapshotFilter) ([]domain.WalletBalanceSnapshot, error) {
 	if user.IsDemo {
 		return s.walletDemo.GetWalletBalanceSnapshot(id, filter.From, filter.To)
 	}
 	if err := s.userRepo.EnsureExists(ctx, user); err != nil {
 		return nil, err
 	}
-	wallet, err := s.walletRepo.GetBalanceSnapshot(ctx, user.ID, id, filter)
+	wallet, err := s.walletRepo.ListBalanceSnapshots(ctx, id, filter)
 	if err != nil {
 		return nil, err
 	}

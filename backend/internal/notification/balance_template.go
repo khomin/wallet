@@ -76,7 +76,7 @@ var balanceEmailTmpl = template.Must(template.New("balanceEmail").Parse(`
 `))
 
 func SubjectBalance(name string, balance float64) string {
-	return fmt.Sprintf("%s Balance changed (%v)", name, balance)
+	return fmt.Sprintf("Balance changed (%v) %s", balance, name)
 }
 
 func RenderBalanceEmail(data BalanceTemplateData) (string, error) {

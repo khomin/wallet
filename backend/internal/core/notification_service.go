@@ -5,12 +5,14 @@ import (
 	"encoding/json"
 	"tracker/internal/core/domain"
 
+	"github.com/google/uuid"
 	"github.com/sirupsen/logrus"
 )
 
 type NotificationService struct {
 	alertRepo      AlertRepository
 	userRepo       UserRepo
+	walletRepo     WalletRepository
 	priceCache     PriceCache
 	onNotification func(cmd domain.NotificationCommand) error
 	log            *logrus.Entry
@@ -20,12 +22,14 @@ func NewNotificationService(
 	alertRepo AlertRepository,
 	userRepo UserRepo,
 	priceCache PriceCache,
+	walletRepo WalletRepository,
 	onNotification func(cmd domain.NotificationCommand) error,
 ) *NotificationService {
 	return &NotificationService{
 		alertRepo:      alertRepo,
 		userRepo:       userRepo,
 		priceCache:     priceCache,
+		walletRepo:     walletRepo,
 		onNotification: onNotification,
 		log:            logrus.WithField("component", "AlertService"),
 	}
@@ -43,13 +47,25 @@ func (s *NotificationService) ProcessAlerts(ctx context.Context) {
 }
 
 func (s *NotificationService) WalletBalanceChanged(ctx context.Context, balance domain.WalletBalanceChange) {
-	user, err := s.userRepo.GetByID(ctx, balance.Wallet.UserID)
+	id, err := uuid.Parse(balance.ID)
 	if err != nil {
-		s.log.WithError(err).Error("failed to fetch user")
+		s.log.WithError(err).Error("invalid wallet id", id)
 		return
 	}
-	if balance.Wallet.Notify {
-		s.triggerBalanceAlert(ctx, user, balance)
+	userWallets, err := s.walletRepo.ListUsersByWallet(ctx, id)
+	if err != nil {
+		s.log.WithError(err).Error("failed list users")
+		return
+	}
+	for _, wallet := range userWallets {
+		if wallet.Notify {
+			user, err := s.userRepo.GetByID(ctx, wallet.UserID)
+			if err != nil {
+				s.log.WithError(err).Error("failed to get user", wallet.UserID)
+				return
+			}
+			s.triggerBalanceAlert(ctx, user, balance)
+		}
 	}
 }
 
@@ -128,7 +144,7 @@ func (s *NotificationService) triggerBalanceAlert(_ context.Context, user *domai
 
 	if s.onNotification != nil {
 		alert := domain.BalanceAlertNotification{
-			WalletName: balance.Label,
+			Name:       balance.Address,
 			CoinSymbol: balance.Symbol,
 			Current:    balance.CurrentBalance,
 			Previous:   balance.OldBalance,

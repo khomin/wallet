@@ -30,7 +30,7 @@ func TestWalletRepo(t *testing.T) {
 	//
 	// delete from previous tests
 	//
-	resultList, err := repo.List(ctx, expectedUser.ID)
+	resultList, err := repo.ListWalletsByUser(ctx, expectedUser.ID)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -73,7 +73,7 @@ func TestWalletRepo(t *testing.T) {
 	balanceUSD := 456.0
 	balanceTime := time.Now().Add(-time.Hour * 24)
 	for i := 0; i < 100; i++ {
-		err = repo.UpdateBalanceSnapshot(ctx, expectedUser.ID, id, core.BalanceSnapshot{
+		err = repo.UpdateBalanceSnapshot(ctx, id, core.BalanceSnapshot{
 			Crypto: balanceCrypto,
 			USD:    balanceUSD,
 			Time:   balanceTime,
@@ -89,7 +89,7 @@ func TestWalletRepo(t *testing.T) {
 	//
 	// get snapshot
 	//
-	resultSnapshot, err := repo.GetBalanceSnapshot(ctx, expectedUser.ID, id, core.BalanceSnapshotFilter{
+	resultSnapshots, err := repo.ListBalanceSnapshots(ctx, id, core.BalanceSnapshotFilter{
 		From:  time.Now().Add(-time.Hour * 24),
 		To:    time.Now(),
 		Limit: 10,
@@ -97,14 +97,14 @@ func TestWalletRepo(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if len(resultSnapshot) == 0 {
+	if len(resultSnapshots) == 0 {
 		t.Fatal("expected > 1")
 	}
 
 	//
-	// get
+	// get by user
 	//
-	resultGet, err := repo.Get(ctx, expectedUser.ID, id)
+	resultGet, err := repo.GetWalletByUser(ctx, expectedUser.ID, id)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -115,12 +115,34 @@ func TestWalletRepo(t *testing.T) {
 	//
 	// list
 	//
-	resultList, err = repo.List(ctx, expectedUser.ID)
+	resultList, err = repo.ListWalletsByUser(ctx, expectedUser.ID)
 	if err != nil {
 		t.Fatal(err)
 	}
 	if len(resultList) == 0 {
 		t.Fatal("expected >= 1")
+	}
+
+	//
+	// get users using this wallet
+	//
+	resultUserWallets, err := repo.ListUsersByWallet(ctx, id)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(resultUserWallets) == 0 {
+		t.Fatal("expected >= 1")
+	}
+
+	//
+	// one
+	//
+	resultSnapshot, err := repo.GetBalanceSnapshot(ctx, id)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if resultSnapshot.Time.IsZero() {
+		t.Fatal("expected correct time")
 	}
 
 	//
