@@ -1,12 +1,29 @@
-CREATE TABLE IF NOT EXISTS wallets (
+-- CREATE TABLE IF NOT EXISTS wallets (
+--     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+--     user_id TEXT REFERENCES users(id) ON DELETE CASCADE,
+--     address TEXT NOT NULL,
+--     chain TEXT NOT NULL,
+--     coin_id TEXT NOT NULL REFERENCES coins(id) ON DELETE CASCADE,
+--     label TEXT,
+--     notify BOOLEAN DEFAULT TRUE,
+--     updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+-- );
+
+CREATE TABLE wallets (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    user_id TEXT REFERENCES users(id) ON DELETE CASCADE,
     address TEXT NOT NULL,
     chain TEXT NOT NULL,
     coin_id TEXT NOT NULL REFERENCES coins(id) ON DELETE CASCADE,
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    UNIQUE (chain, address)
+);
+
+CREATE TABLE user_wallets (
+    user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    wallet_id UUID NOT NULL REFERENCES wallets(id) ON DELETE CASCADE,
     label TEXT,
-    notify BOOLEAN DEFAULT TRUE,
-    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    notify BOOLEAN NOT NULL DEFAULT TRUE,
+    PRIMARY KEY (user_id, wallet_id)
 );
 
 CREATE TABLE IF NOT EXISTS wallet_balances (

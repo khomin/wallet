@@ -26,7 +26,14 @@ func NewWalletRepository(db *db.DataBase) core.WalletRepository {
 func (r *walletRepository) List(ctx context.Context, userID string) ([]domain.WalletBalance, error) {
 	query := `
 		SELECT
-			w.id, w.user_id,  w.address, w.chain, coin.symbol, w.label, w.notify, w.updated_at,
+			w.id,
+			w.address,
+			w.chain,
+			coin.symbol,
+			uw.label,
+			uw.notify,
+			uw.user_id, 
+			w.updated_at,
 			balance.value_crypto,
 			balance.value_usd,
 			balance.updated_at,
@@ -42,10 +49,11 @@ func (r *walletRepository) List(ctx context.Context, userID string) ([]domain.Wa
 			price.market_cap_change_percent_24h,
 			price.updated_at
 		FROM wallets w
+		LEFT JOIN user_wallets uw on uw.wallet_id = w.id
 		LEFT JOIN coins coin ON coin.id = w.coin_id
 		LEFT JOIN coin_prices price ON price.id = w.coin_id
 		LEFT JOIN wallet_balances balance ON balance.id = w.id
-		WHERE w.user_id = $1
+		WHERE uw.user_id = $1
 		ORDER BY w.updated_at ASC
 	`
 	rows, err := r.db.Pool.Query(ctx, query, userID)
@@ -71,7 +79,14 @@ func (r *walletRepository) List(ctx context.Context, userID string) ([]domain.Wa
 func (r *walletRepository) Get(ctx context.Context, userID string, id uuid.UUID) (*domain.WalletBalance, error) {
 	query := `
 		SELECT
-			w.id, w.user_id,  w.address, w.chain, coin.symbol, w.label, w.notify, w.updated_at,
+			w.id, 
+			w.address, 
+			w.chain, 
+			coin.symbol, 
+			uw.label, 
+			uw.notify, 
+			uw.user_id,  
+			w.updated_at,
 			balance.value_crypto, balance.value_usd, balance.updated_at,
 			coin.id, coin.symbol, coin.coin_name,
 			price.price_usd,
@@ -86,7 +101,9 @@ func (r *walletRepository) Get(ctx context.Context, userID string, id uuid.UUID)
 		LEFT JOIN coins coin ON coin.id = w.coin_id
 		LEFT JOIN coin_prices price ON price.id = w.coin_id
 		LEFT JOIN wallet_balances balance ON balance.id = w.id
-		WHERE w.user_id = $1 AND w.id = $2
+		JOIN user_wallets uw ON uw.wallet_id = w.id
+		WHERE uw.user_id = $1
+		AND w.id = $2
 	`
 	rows, err := r.db.Pool.Query(ctx, query,
 		userID,
@@ -110,14 +127,34 @@ func (r *walletRepository) Get(ctx context.Context, userID string, id uuid.UUID)
 
 func (r *walletRepository) Create(ctx context.Context, userID string, chain string, address string, symbol string, label string) (*domain.Wallet, error) {
 	query := `
-		INSERT INTO wallets (address, chain, coin_id, label, user_id)
-		VALUES (
-			$1, 
-			$2,
-			(SELECT id FROM coins WHERE symbol = $3), 
-			$4, $5
+		WITH wallet_result AS (
+			INSERT INTO wallets (address, chain, coin_id)
+			VALUES (
+				$1, 
+				$2,
+				(SELECT id FROM coins WHERE symbol = $3)
+			)
+			ON CONFLICT (chain, address) DO UPDATE
+			SET
+				chain = EXCLUDED.chain,
+				address = EXCLUDED.address
+			RETURNING id, address, chain, (SELECT symbol FROM coins WHERE symbol = $3), updated_at
+		),
+		uw_result AS (
+			INSERT INTO user_wallets (user_id, wallet_id, label, notify)
+			SELECT $5, wallet_result.id, $4, TRUE 
+			FROM wallet_result
+			ON CONFLICT (user_id, wallet_id)
+			DO UPDATE SET
+				user_id = EXCLUDED.user_id,
+				wallet_id = EXCLUDED.wallet_id,
+				label = EXCLUDED.label,
+				notify = EXCLUDED.notify
+			RETURNING user_id, wallet_id, label, notify
 		)
-		RETURNING id, user_id, address, chain, (SELECT symbol FROM coins WHERE symbol = $3), label, updated_at
+		SELECT id, user_id, address, chain, (SELECT symbol FROM coins WHERE symbol = $3), label, notify, updated_at from wallet_result wr
+		LEFT JOIN uw_result uw ON uw.wallet_id = wr.id
+		ORDER BY wr.updated_at ASC
 	`
 	row := r.db.Pool.QueryRow(ctx, query,
 		address,
@@ -127,15 +164,17 @@ func (r *walletRepository) Create(ctx context.Context, userID string, chain stri
 		userID,
 	)
 	var wallet models.Wallet
-	if err := row.Scan(
+	err := row.Scan(
 		&wallet.ID,
 		&wallet.UserID,
 		&wallet.Address,
 		&wallet.Chain,
 		&wallet.Symbol,
 		&wallet.Label,
+		&wallet.Notify,
 		&wallet.UpdatedAt,
-	); err != nil {
+	)
+	if err != nil {
 		var pgErr *pgconn.PgError
 		if errors.As(err, &pgErr) && pgErr.Code == "23505" {
 			return nil, domain.ErrorWWalletAlreadyExists
@@ -147,16 +186,37 @@ func (r *walletRepository) Create(ctx context.Context, userID string, chain stri
 }
 
 func (r *walletRepository) Update(ctx context.Context, userID string, id uuid.UUID, req core.UpdateWallet) (*domain.Wallet, error) {
+	// query := `
+	// 	UPDATE wallets
+	// 	SET
+	// 		label = $3,
+	// 		notify = $4
+	// 		WHERE id = $1 AND user_id = $2
+	// 	RETURNING
+	// 		id, user_id, address, chain,
+	// 		(SELECT coins.symbol FROM coins WHERE coins.id = wallets.coin_id),
+	// 		label, notify, updated_at
+	// `
 	query := `
-		UPDATE wallets
-		SET 
-			label = $3,
-			notify = $4
-			WHERE id = $1 AND user_id = $2
-		RETURNING 
-			id, user_id, address, chain, 
-			(SELECT coins.symbol FROM coins WHERE coins.id = wallets.coin_id),
-			label, notify, updated_at
+		WITH wallet_update AS (
+			UPDATE user_wallets
+			SET 
+				label = $3,
+				notify = $4
+				WHERE wallet_id = $1 AND user_id = $2
+			RETURNING *
+		)
+		SELECT
+			uw.wallet_id,
+			uw.user_id,
+			w.address,
+			w.chain,
+			(SELECT coins.symbol FROM coins WHERE coins.id = w.coin_id),
+			uw.label, 
+			uw.notify, 
+			updated_at
+		FROM wallet_update uw
+		JOIN wallets w ON w.id = uw.wallet_id
 	`
 	row := r.db.Pool.QueryRow(ctx, query,
 		id,
@@ -253,8 +313,9 @@ func (r *walletRepository) GetBalanceSnapshot(ctx context.Context, userID string
 			wb.created_at
 		FROM wallet_balance_snapshots wb
 		JOIN wallets w ON w.id = wb.wallet_id
+		JOIN user_wallets uw ON uw.wallet_id = w.id
 		WHERE wb.wallet_id = $1
-		AND w.user_id = $2
+		AND uw.user_id = $2
 		AND wb.created_at >= $3
 		AND wb.created_at <= $4
 	`
@@ -263,7 +324,6 @@ func (r *walletRepository) GetBalanceSnapshot(ctx context.Context, userID string
 		userID,
 		filter.From,
 		filter.To,
-		// filter.Limit,
 	)
 	if err != nil {
 		return nil, err
@@ -339,12 +399,12 @@ func scanWalletBalance(rows pgx.Rows) (*models.WalletBalance, error) {
 	var i models.WalletBalance
 	err := rows.Scan(
 		&i.Wallet.ID,
-		&i.Wallet.UserID,
 		&i.Wallet.Address,
 		&i.Wallet.Chain,
 		&i.Wallet.Symbol,
 		&i.Wallet.Label,
 		&i.Wallet.Notify,
+		&i.Wallet.UserID,
 		&i.Wallet.UpdatedAt,
 		//
 		&i.Balance,

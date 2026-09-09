@@ -105,14 +105,14 @@ func (w *WalletWorker) synchronizeWallets(ctx context.Context) error {
 		groupsByChain[wallet.Chain] = append(groupsByChain[wallet.Chain], wallet)
 	}
 
-	for chain, group := range groupsByChain {
+	for chain, wallets := range groupsByChain {
 		chain := chain
-		group := group
+		wallets := wallets
 
 		g.Go(func() error {
 			var failedCount int
 
-			for _, wallet := range group {
+			for _, wallet := range wallets {
 				result, err := w.updateBalance(ctx, wallet)
 				if err != nil {
 					failedCount++
@@ -140,7 +140,7 @@ func (w *WalletWorker) synchronizeWallets(ctx context.Context) error {
 				}
 			}
 			if failedCount > 0 {
-				log.Warnf("chain synchronization finished with errors: %s %d, %d", chain, len(group), failedCount)
+				log.Warnf("chain synchronization finished with errors: %s %d, %d", chain, len(wallets), failedCount)
 			}
 			return nil
 		})
