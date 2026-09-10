@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
+	"log/slog"
 	"net"
 	"strings"
 	"tracker/bootstrap"
@@ -35,7 +36,11 @@ import (
 	"net/http"
 	_ "net/http/pprof"
 
+	grpc_prometheus "github.com/grpc-ecosystem/go-grpc-prometheus"
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
+	"github.com/jackc/pgx/v5/pgxpool"
+	"github.com/prometheus/client_golang/prometheus"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/sirupsen/logrus"
 	"golang.org/x/sync/errgroup"
 	"google.golang.org/grpc"
@@ -213,8 +218,14 @@ func main() {
 	grpcAddr := fmt.Sprintf(":%d", app.Cfg.Server.PortGRPC)
 
 	grpcServer := grpc.NewServer(
-		grpc.UnaryInterceptor(middleware.UnaryAuthInterceptor(verifierDemo)),
-		grpc.StreamInterceptor(middleware.StreamAuthInterceptor(verifierDemo)),
+		grpc.ChainUnaryInterceptor(
+			grpc_prometheus.UnaryServerInterceptor,
+			middleware.UnaryAuthInterceptor(verifierDemo),
+		),
+		grpc.ChainStreamInterceptor(
+			grpc_prometheus.StreamServerInterceptor,
+			middleware.StreamAuthInterceptor(verifierDemo),
+		),
 	)
 	opts := []grpc.DialOption{grpc.WithTransportCredentials(insecure.NewCredentials())}
 	reflection.Register(grpcServer)
@@ -250,6 +261,7 @@ func main() {
 
 	runHttp(g, "http", httpAddr, httpHandler)
 	runGrpc(g, "grpc", grpcAddr, grpcServer)
+	setupMetrics(grpcServer, db.Pool)
 
 	if strings.Contains(app.Cfg.Server.Environment, "dev") {
 		go func() {
@@ -317,4 +329,33 @@ func corsMiddleware(h http.Handler) http.Handler {
 		}
 		h.ServeHTTP(w, r)
 	})
+}
+
+func setupMetrics(grpcServer *grpc.Server, dbPool *pgxpool.Pool) {
+	grpc_prometheus.EnableHandlingTimeHistogram()
+	grpc_prometheus.Register(grpcServer)
+	if dbPool != nil {
+		prometheus.MustRegister(prometheus.NewGaugeFunc(
+			prometheus.GaugeOpts{
+				Name: "pgx_pool_total_conns",
+				Help: "Total connections in PostgreSQL pool",
+			},
+			func() float64 { return float64(dbPool.Stat().TotalConns()) },
+		))
+		prometheus.MustRegister(prometheus.NewGaugeFunc(
+			prometheus.GaugeOpts{
+				Name: "pgx_pool_acquired_conns",
+				Help: "Currently acquired/in-use DB connections",
+			},
+			func() float64 { return float64(dbPool.Stat().AcquiredConns()) },
+		))
+	}
+	go func() {
+		mux := http.NewServeMux()
+		mux.Handle("/metrics", promhttp.Handler())
+		slog.Info("Metrics HTTP exporter listening", "port", 9092)
+		if err := http.ListenAndServe(":9092", mux); err != nil {
+			slog.Error("Metrics HTTP server failed", "error", err)
+		}
+	}()
 }

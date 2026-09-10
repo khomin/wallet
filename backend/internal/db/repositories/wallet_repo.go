@@ -174,22 +174,12 @@ func (r *walletRepository) Create(ctx context.Context, userID string, chain stri
 				$2,
 				(SELECT id FROM coins WHERE symbol = $3)
 			)
-			ON CONFLICT (chain, address) DO UPDATE
-			SET
-				chain = EXCLUDED.chain,
-				address = EXCLUDED.address
 			RETURNING id, address, chain, (SELECT symbol FROM coins WHERE symbol = $3), updated_at
 		),
 		uw_result AS (
 			INSERT INTO user_wallets (user_id, wallet_id, label, notify)
 			SELECT $5, wallet_result.id, $4, TRUE 
 			FROM wallet_result
-			ON CONFLICT (user_id, wallet_id)
-			DO UPDATE SET
-				user_id = EXCLUDED.user_id,
-				wallet_id = EXCLUDED.wallet_id,
-				label = EXCLUDED.label,
-				notify = EXCLUDED.notify
 			RETURNING user_id, wallet_id, label, notify
 		)
 		SELECT id, user_id, address, chain, (SELECT symbol FROM coins WHERE symbol = $3), label, notify, updated_at from wallet_result wr

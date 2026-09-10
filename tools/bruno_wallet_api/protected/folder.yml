@@ -7,8 +7,8 @@ request:
   auth:
     type: oauth2
     flow: authorization_code
-    authorizationUrl: http://localhost:9090/realms/whale-tracker/protocol/openid-connect/auth
-    accessTokenUrl: http://localhost:9090/realms/whale-tracker/protocol/openid-connect/token
+    authorizationUrl: http://localhost:8081/realms/whale-tracker/protocol/openid-connect/auth
+    accessTokenUrl: http://localhost:8081/realms/whale-tracker/protocol/openid-connect/token
     callbackUrl: http://localhost:5173/callback
     credentials:
       clientId: "{{client-id}}"
