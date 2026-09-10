@@ -1,11 +1,11 @@
 server:
   port_http: 8080
-  port_grpc: 50051
+  port_grpc: 9090
   environment: "development"
   log_path: "/var/log/tracker/app.log"
 
 authorization:
-  issuer_url: "http://localhost:9090/realms/whale-tracker"
+  issuer_url: "http://localhost:8081/realms/whale-tracker"
   client_id: "whale-tracker-app"
 
 database:
