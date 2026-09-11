@@ -1,6 +1,10 @@
 {
   "id": "1234b019-1d06-4ddb-a412-f79242dec1c2",
   "realm": "whale-tracker",
+  "loginTheme": "fintech",
+  "accountTheme": "keycloak",
+  "adminTheme": "keycloak",
+  "emailTheme": "keycloak",
   "notBefore": 0,
   "defaultSignatureAlgorithm": "RS256",
   "revokeRefreshToken": false,

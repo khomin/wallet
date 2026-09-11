@@ -48,6 +48,7 @@ services:
       keycloak-db:
         condition: service_healthy
     volumes:
+      - ./deploy/keycloak/themes/fintech:/opt/keycloak/themes/fintech:ro
       - ./deploy/keycloak/realm-export.json:/opt/keycloak/data/import/realm-export.json:ro
 
   prometheus:
