@@ -47,14 +47,14 @@ func TestGenerateWallets(t *testing.T) {
 	coingeckoClient := coingecko.NewCoinGeckoClient(app.Cfg.CoinGecko.APIKey)
 	alchemyClient := alchemy.NewAlchemyClient(app.Cfg.Alchemy.APIKey)
 
-	ethMainnetClient := client.NewRateLimiterProvider(&app.Cfg.Blockchain.RateLimitConfig, ethereum.NewEthereumClient(ethereum.EthConfig{RpcURL: app.Cfg.Blockchain.EthereumMainnet, Decimal: 18}))
-	ethArbitrumClient := client.NewRateLimiterProvider(&app.Cfg.Blockchain.RateLimitConfig, ethereum.NewEthereumClient(ethereum.EthConfig{RpcURL: app.Cfg.Blockchain.EthereumArbitrum, Decimal: 18}))
-	ethBaseClient := client.NewRateLimiterProvider(&app.Cfg.Blockchain.RateLimitConfig, ethereum.NewEthereumClient(ethereum.EthConfig{RpcURL: app.Cfg.Blockchain.EthereumBase, Decimal: 18}))
-	polygonMainnetClient := client.NewRateLimiterProvider(&app.Cfg.Blockchain.RateLimitConfig, ethereum.NewEthereumClient(ethereum.EthConfig{RpcURL: app.Cfg.Blockchain.PolygonMainnet, Decimal: 18}))
-	bnbClient := client.NewRateLimiterProvider(&app.Cfg.Blockchain.RateLimitConfig, ethereum.NewEthereumClient(ethereum.EthConfig{RpcURL: app.Cfg.Blockchain.Bnb, Decimal: 18}))
-	solanaClient := client.NewRateLimiterProvider(&app.Cfg.Blockchain.RateLimitConfig, solana.NewSolanaClient(app.Cfg.Blockchain.SolanaRPC))
-	bitcoinClient := client.NewRateLimiterProvider(&app.Cfg.Blockchain.RateLimitConfig, bitcoin.NewBitcoinClient(app.Cfg.Blockchain.Bitcoin.Host, app.Cfg.Blockchain.Bitcoin.User, app.Cfg.Blockchain.Bitcoin.Pass))
-	tronClient := client.NewRateLimiterProvider(&app.Cfg.Blockchain.RateLimitConfig, tron.NewTronClient(app.Cfg.Blockchain.TronGRPC, app.Cfg.Blockchain.TronAPIKey))
+	ethMainnetClient := client.NewRateLimiterProvider(&app.Cfg.Blockchain.RateLimitConfig, ethereum.NewEthereumClient(ethereum.EthConfig{RpcURL: app.Cfg.Blockchain.EthereumMainnet, Decimal: 18}), "ETH-mainnet")
+	ethArbitrumClient := client.NewRateLimiterProvider(&app.Cfg.Blockchain.RateLimitConfig, ethereum.NewEthereumClient(ethereum.EthConfig{RpcURL: app.Cfg.Blockchain.EthereumArbitrum, Decimal: 18}), "ETH-arb")
+	ethBaseClient := client.NewRateLimiterProvider(&app.Cfg.Blockchain.RateLimitConfig, ethereum.NewEthereumClient(ethereum.EthConfig{RpcURL: app.Cfg.Blockchain.EthereumBase, Decimal: 18}), "ETH-base")
+	polygonMainnetClient := client.NewRateLimiterProvider(&app.Cfg.Blockchain.RateLimitConfig, ethereum.NewEthereumClient(ethereum.EthConfig{RpcURL: app.Cfg.Blockchain.PolygonMainnet, Decimal: 18}), "Polygon-mainnet")
+	bnbClient := client.NewRateLimiterProvider(&app.Cfg.Blockchain.RateLimitConfig, ethereum.NewEthereumClient(ethereum.EthConfig{RpcURL: app.Cfg.Blockchain.Bnb, Decimal: 18}), "BNB")
+	solanaClient := client.NewRateLimiterProvider(&app.Cfg.Blockchain.RateLimitConfig, solana.NewSolanaClient(app.Cfg.Blockchain.SolanaRPC), "SOL")
+	bitcoinClient := client.NewRateLimiterProvider(&app.Cfg.Blockchain.RateLimitConfig, bitcoin.NewBitcoinClient(app.Cfg.Blockchain.Bitcoin.Host, app.Cfg.Blockchain.Bitcoin.User, app.Cfg.Blockchain.Bitcoin.Pass), "BTC")
+	tronClient := client.NewRateLimiterProvider(&app.Cfg.Blockchain.RateLimitConfig, tron.NewTronClient(app.Cfg.Blockchain.TronGRPC, app.Cfg.Blockchain.TronAPIKey), "TRX")
 
 	// Create a context that can be cancelled for graceful shutdown
 	ctx, cancel := context.WithCancel(context.Background())

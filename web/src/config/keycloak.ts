@@ -9,7 +9,7 @@ const getBaseUrl = () => {
 
   // Option B: If Nginx handles Keycloak under /auth on the same domain
   if (window.location.origin.includes("localhost")) {
-    return 'http://localhost:9090';
+    return 'http://localhost:8081';
   }
   return window.location.origin;
 };

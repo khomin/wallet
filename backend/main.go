@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
-	"log/slog"
 	"net"
 	"strings"
 	"tracker/bootstrap"
@@ -31,6 +30,7 @@ import (
 	"tracker/internal/db/repositories"
 	"tracker/internal/docs"
 	"tracker/internal/messaging"
+	"tracker/internal/metrics"
 	"tracker/internal/notification"
 
 	"net/http"
@@ -38,9 +38,6 @@ import (
 
 	grpc_prometheus "github.com/grpc-ecosystem/go-grpc-prometheus"
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
-	"github.com/jackc/pgx/v5/pgxpool"
-	"github.com/prometheus/client_golang/prometheus"
-	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/sirupsen/logrus"
 	"golang.org/x/sync/errgroup"
 	"google.golang.org/grpc"
@@ -84,15 +81,15 @@ func main() {
 	coingeckoClient := coingecko.NewCoinGeckoClient(app.Cfg.CoinGecko.APIKey)
 	alchemyClient := alchemy.NewAlchemyClient(app.Cfg.Alchemy.APIKey)
 
-	ethMainnetClient := client.NewRateLimiterProvider(&app.Cfg.Blockchain.RateLimitConfig, ethereum.NewEthereumClient(ethereum.EthConfig{RpcURL: app.Cfg.Blockchain.EthereumMainnet, Decimal: 18}))
-	ethArbitrumClient := client.NewRateLimiterProvider(&app.Cfg.Blockchain.RateLimitConfig, ethereum.NewEthereumClient(ethereum.EthConfig{RpcURL: app.Cfg.Blockchain.EthereumArbitrum, Decimal: 18}))
-	ethBaseClient := client.NewRateLimiterProvider(&app.Cfg.Blockchain.RateLimitConfig, ethereum.NewEthereumClient(ethereum.EthConfig{RpcURL: app.Cfg.Blockchain.EthereumBase, Decimal: 18}))
-	polygonMainnetClient := client.NewRateLimiterProvider(&app.Cfg.Blockchain.RateLimitConfig, ethereum.NewEthereumClient(ethereum.EthConfig{RpcURL: app.Cfg.Blockchain.PolygonMainnet, Decimal: 18}))
-	bnbClient := client.NewRateLimiterProvider(&app.Cfg.Blockchain.RateLimitConfig, ethereum.NewEthereumClient(ethereum.EthConfig{RpcURL: app.Cfg.Blockchain.Bnb, Decimal: 18}))
-	solanaClient := client.NewRateLimiterProvider(&app.Cfg.Blockchain.RateLimitConfig, solana.NewSolanaClient(app.Cfg.Blockchain.SolanaRPC))
-	bitcoinClient := client.NewRateLimiterProvider(&app.Cfg.Blockchain.RateLimitConfig, bitcoin.NewBitcoinClient(app.Cfg.Blockchain.Bitcoin.Host, app.Cfg.Blockchain.Bitcoin.User, app.Cfg.Blockchain.Bitcoin.Pass))
-	tronClient := client.NewRateLimiterProvider(&app.Cfg.Blockchain.RateLimitConfig, tron.NewTronClient(app.Cfg.Blockchain.TronGRPC, app.Cfg.Blockchain.TronAPIKey))
-	rippleClient := client.NewRateLimiterProvider(&app.Cfg.Blockchain.RateLimitConfig, ripple.NewRippleClient(app.Cfg.Blockchain.RippleMainnet))
+	ethMainnetClient := client.NewRateLimiterProvider(&app.Cfg.Blockchain.RateLimitConfig, ethereum.NewEthereumClient(ethereum.EthConfig{RpcURL: app.Cfg.Blockchain.EthereumMainnet, Decimal: 18}), "ETH-mainnet")
+	ethArbitrumClient := client.NewRateLimiterProvider(&app.Cfg.Blockchain.RateLimitConfig, ethereum.NewEthereumClient(ethereum.EthConfig{RpcURL: app.Cfg.Blockchain.EthereumArbitrum, Decimal: 18}), "ETH-arb")
+	ethBaseClient := client.NewRateLimiterProvider(&app.Cfg.Blockchain.RateLimitConfig, ethereum.NewEthereumClient(ethereum.EthConfig{RpcURL: app.Cfg.Blockchain.EthereumBase, Decimal: 18}), "ETH-base")
+	polygonMainnetClient := client.NewRateLimiterProvider(&app.Cfg.Blockchain.RateLimitConfig, ethereum.NewEthereumClient(ethereum.EthConfig{RpcURL: app.Cfg.Blockchain.PolygonMainnet, Decimal: 18}), "Polygon-mainnet")
+	bnbClient := client.NewRateLimiterProvider(&app.Cfg.Blockchain.RateLimitConfig, ethereum.NewEthereumClient(ethereum.EthConfig{RpcURL: app.Cfg.Blockchain.Bnb, Decimal: 18}), "BNB")
+	solanaClient := client.NewRateLimiterProvider(&app.Cfg.Blockchain.RateLimitConfig, solana.NewSolanaClient(app.Cfg.Blockchain.SolanaRPC), "SOL")
+	bitcoinClient := client.NewRateLimiterProvider(&app.Cfg.Blockchain.RateLimitConfig, bitcoin.NewBitcoinClient(app.Cfg.Blockchain.Bitcoin.Host, app.Cfg.Blockchain.Bitcoin.User, app.Cfg.Blockchain.Bitcoin.Pass), "BTC")
+	tronClient := client.NewRateLimiterProvider(&app.Cfg.Blockchain.RateLimitConfig, tron.NewTronClient(app.Cfg.Blockchain.TronGRPC, app.Cfg.Blockchain.TronAPIKey), "TX")
+	rippleClient := client.NewRateLimiterProvider(&app.Cfg.Blockchain.RateLimitConfig, ripple.NewRippleClient(app.Cfg.Blockchain.RippleMainnet), "XRC")
 
 	//
 	// alert / email
@@ -261,7 +258,7 @@ func main() {
 
 	runHttp(g, "http", httpAddr, httpHandler)
 	runGrpc(g, "grpc", grpcAddr, grpcServer)
-	setupMetrics(grpcServer, db.Pool)
+	metrics.Register(grpcServer, db.Pool)
 
 	if strings.Contains(app.Cfg.Server.Environment, "dev") {
 		go func() {
@@ -329,33 +326,4 @@ func corsMiddleware(h http.Handler) http.Handler {
 		}
 		h.ServeHTTP(w, r)
 	})
-}
-
-func setupMetrics(grpcServer *grpc.Server, dbPool *pgxpool.Pool) {
-	grpc_prometheus.EnableHandlingTimeHistogram()
-	grpc_prometheus.Register(grpcServer)
-	if dbPool != nil {
-		prometheus.MustRegister(prometheus.NewGaugeFunc(
-			prometheus.GaugeOpts{
-				Name: "pgx_pool_total_conns",
-				Help: "Total connections in PostgreSQL pool",
-			},
-			func() float64 { return float64(dbPool.Stat().TotalConns()) },
-		))
-		prometheus.MustRegister(prometheus.NewGaugeFunc(
-			prometheus.GaugeOpts{
-				Name: "pgx_pool_acquired_conns",
-				Help: "Currently acquired/in-use DB connections",
-			},
-			func() float64 { return float64(dbPool.Stat().AcquiredConns()) },
-		))
-	}
-	go func() {
-		mux := http.NewServeMux()
-		mux.Handle("/metrics", promhttp.Handler())
-		slog.Info("Metrics HTTP exporter listening", "port", 9092)
-		if err := http.ListenAndServe(":9092", mux); err != nil {
-			slog.Error("Metrics HTTP server failed", "error", err)
-		}
-	}()
 }
