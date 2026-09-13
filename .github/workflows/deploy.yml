@@ -57,6 +57,6 @@ jobs:
           username: ${{ secrets.NUC_USER }}
           key: ${{ secrets.NUC_SSH_KEY }}
           script: |
-            kubectl apply -f https://raw.githubusercontent.com/${{ github.repository }}/main/k8s/backend.yaml
+            kubectl apply -f https://raw.githubusercontent.com/${{ github.repository }}/main/backend/k8s/backend.yaml
             kubectl rollout restart deployment/whale-backend -n whale-tracker-prod
             kubectl rollout status deployment/whale-backend -n whale-tracker-prod
