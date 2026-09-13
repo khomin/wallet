@@ -34,42 +34,57 @@ func (d *DemoWallets) GetWallet(id uuid.UUID) (*domain.UserWalletBalance, error)
 }
 
 var walletList = []domain.UserWalletBalance{
-	// {
-	// 	UserWallet: domain.UserWallet{
-	// 		ID:      "4e4e27d5-b47c-4584-bac9-a998e3d87980",
-	// 		Address: "0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045", // Vitalik's address
-	// 		Chain:   "ETH",
-	// 		Symbol:  "ETH",
-	// 		Label:   "Main Treasury (Demo)",
-	// 	},
-	// 	Balance:    124.55,
-	// 	BalanceUSD: 398560.20,
-	// 	HasError:   false,
-	// },
-	// {
-	// 	Wallet: domain.Wallet{
-	// 		ID:      "4e4e27d5-b47c-4584-bac9-a998e3d87981",
-	// 		Address: "1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa", // Satoshi's genesis address
-	// 		Chain:   "BTC",
-	// 		Symbol:  "BTC",
-	// 		Label:   "Cold Storage (Demo)",
-	// 	},
-	// 	Balance:    12.4,
-	// 	BalanceUSD: 793600.00,
-	// 	HasError:   false,
-	// },
-	// {
-	// 	Wallet: domain.Wallet{
-	// 		ID:      "4e4e27d5-b47c-4584-bac9-a998e3d87982",
-	// 		Address: "7xKXtg2CW87d97TXJSDpbD5jBkheTqA83TZRuJosgAsU",
-	// 		Chain:   "SOL",
-	// 		Symbol:  "SOL",
-	// 		Label:   "DeFi Staking (Demo)",
-	// 	},
-	// 	Balance:    450.00,
-	// 	BalanceUSD: 67500.00,
-	// 	HasError:   false,
-	// },
+	{
+		// Vitalik's address
+		UserWallet: domain.UserWallet{
+			Label:  "Main Treasury (Demo)",
+			UserID: "demo",
+			Notify: false,
+			Wallet: domain.Wallet{
+				ID:      "4e4e27d5-b47c-4584-bac9-a998e3d87980",
+				Address: "0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045",
+				Chain:   "ETH",
+				Symbol:  "ETH",
+			},
+		},
+		Balance:    124.55,
+		BalanceUSD: 398560.20,
+		HasError:   false,
+	},
+	{
+		// Satoshi's genesis address
+		UserWallet: domain.UserWallet{
+			Label:  "Cold Storage (Demo)",
+			UserID: "demo",
+			Notify: false,
+			Wallet: domain.Wallet{
+				ID:      "4e4e27d5-b47c-4584-bac9-a998e3d87981",
+				Address: "1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa",
+				Chain:   "BTC",
+				Symbol:  "BTC",
+			},
+		},
+		Balance:    12.4,
+		BalanceUSD: 793600.00,
+		HasError:   false,
+	},
+	{
+		// defi
+		UserWallet: domain.UserWallet{
+			Label:  "DeFi Staking (Demo)",
+			UserID: "demo",
+			Notify: false,
+			Wallet: domain.Wallet{
+				ID:      "4e4e27d5-b47c-4584-bac9-a998e3d87982",
+				Address: "7xKXtg2CW87d97TXJSDpbD5jBkheTqA83TZRuJosgAsU",
+				Chain:   "SOL",
+				Symbol:  "SOL",
+			},
+		},
+		Balance:    450.00,
+		BalanceUSD: 67500.00,
+		HasError:   false,
+	},
 }
 
 func (d *DemoWallets) GetWalletBalanceSnapshot(

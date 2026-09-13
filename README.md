@@ -220,3 +220,18 @@ migrate -path $PWD/backend/internal/db/migrations \
 - improve alerting pipelines and notifications
 - strengthen multi-chain coverage and token metadata accuracy
 - continue hardening the API and operational workflows around Redis, RabbitMQ, and Postgres
+
+
+### Deploy
+```bash
+kubectl create namespace whale-tracker-prod
+kubectl apply -f postgres-pvc.yaml
+kubectl apply -f databases.yaml
+kubectl get pods -n whale-tracker-prod
+
+kubectl create secret generic postgres-secret \
+  --namespace=whale-tracker-prod \
+  --from-literal=POSTGRES_USER=tracker_admin \
+  --from-literal=POSTGRES_PASSWORD=super_secure_password \
+  --from-literal=POSTGRES_DB=whale_tracker
+```

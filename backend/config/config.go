@@ -114,12 +114,6 @@ type TokenRegistry struct {
 
 func NewConfig() *Config {
 	config := Config{}
-	// Safe local defaults for the mail-relay service exposed by docker-compose.
-	// Every value can be overridden in config.yaml or with TRACKER_EMAIL_* env vars.
-	viper.SetDefault("email.smtp_host", "localhost")
-	viper.SetDefault("email.smtp_port", 25)
-	viper.SetDefault("email.from", "alerts@localhost")
-	viper.SetEnvPrefix("TRACKER")
 	viper.SetEnvKeyReplacer(strings.NewReplacer(".", "_"))
 	viper.AutomaticEnv()
 	viper.SetConfigName("config")

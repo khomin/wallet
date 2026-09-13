@@ -18,10 +18,6 @@ const fmtUSD = (n: number) =>
 const fmtCrypto = (n: number) =>
   new Intl.NumberFormat('en-US', { maximumFractionDigits: 6 }).format(n);
 
-const fmtPct = (n: number) => {
-  const prefix = n >= 0 ? '+' : '';
-  return `${prefix}${n.toFixed(2)}%`;
-};
 
 // ─── Component ────────────────────────────────────────────────────────────
 

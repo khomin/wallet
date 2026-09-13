@@ -25,6 +25,12 @@
   text-align: center;
 }
 
+@media (max-width: 640px) {
+  #root {
+    padding: 0.75rem;
+  }
+}
+
 .hero {
   position: relative;
 

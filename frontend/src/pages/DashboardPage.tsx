@@ -67,17 +67,6 @@ export default function DashboardPage() {
   const walletCount = walletsData?.total ?? 0;
   const prices = pricesData?.price ?? [];
 
-  const weightedChange24h =
-    wallets.length > 0 && totalBalance > 0
-      ? wallets.reduce(
-        (acc, w) =>
-          acc +
-          (w.price?.priceChangePercentage24h ?? 0) *
-          (w.balanceUsd / totalBalance),
-        0,
-      )
-      : 0;
-
   const topWallets = [...wallets]
     .sort((a, b) => b.balanceUsd - a.balanceUsd)
     .slice(0, 5);
@@ -95,12 +84,6 @@ export default function DashboardPage() {
           label="Total Balance"
           value={walletsLoading ? '$—' : fmtUSD(totalBalance)}
           sub="Across all wallets"
-        />
-        <StatCard
-          label="24h Change"
-          value={walletsLoading ? '—' : fmtPct(weightedChange24h)}
-          sub="Weighted portfolio change"
-          highlight={weightedChange24h >= 0 ? 'positive' : 'negative'}
         />
         <StatCard
           label="Tracked Wallets"

@@ -1,0 +1,53 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: whale-backend
+  namespace: whale-tracker-prod
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: whale-backend
+  template:
+    metadata:
+      labels:
+        app: whale-backend
+    spec:
+      containers:
+        - name: backend
+          # Temporary standard image until we hook up GitHub Actions CI/CD to build yours
+          image: ghcr.io/khomin/whale-tracker-backend:latest
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 8080
+          env:
+            - name: DB_HOST
+              value: "postgres"
+            - name: DB_PORT
+              value: "5432"
+            - name: REDIS_HOST
+              value: "redis"
+            - name: REDIS_PORT
+              value: "6379"
+          envFrom:
+            - secretRef:
+                name: postgres-secret
+          resources:
+            requests:
+              cpu: 100m
+              memory: 128Mi
+            limits:
+              cpu: 500m
+              memory: 512Mi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: whale-backend
+  namespace: whale-tracker-prod
+spec:
+  ports:
+    - port: 8080
+      targetPort: 8080
+  selector:
+    app: whale-backend

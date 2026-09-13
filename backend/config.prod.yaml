@@ -5,23 +5,23 @@ server:
   log_path: "/var/log/tracker/app.log"
 
 authorization:
-  issuer_url: "http://localhost:8081/realms/whale-tracker"
+  issuer_url: "http://keycloak_server:8080/realms/whale-tracker"
   client_id: "whale-tracker-app"
 
 database:
-  host: "localhost"
+  host: "whale_tracker_db"
   port: 5432
   user: "tracker_admin"
   password: "super_secure_password"
   name: "whale_tracker"
 
 redis:
-  addr: "localhost:6379"
+  addr: "whale_tracker_cache:6379"
   password: ""
   db: 0
 
 rabbit:
-  url: 	"amqp://admin:supersecretpassword@localhost:5672"
+  url: 	"amqp://admin:supersecretpassword@rabbitmq:5672"
 
 email:
   api_key: ""
