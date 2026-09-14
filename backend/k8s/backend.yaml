@@ -55,6 +55,14 @@ spec:
                   name: app-secrets
                   key: RABBITMQ_PASSWORD
 
+            - name: REDIS_HOST
+              value: "redis"
+            - name: REDIS_PORT
+              value: "6379"
+
+            - name: AUTHORIZATION_ISSUER_URL
+              value: "http://keycloak:8080/realms/whale-tracker"
+
           envFrom:
             - secretRef:
                 name: app-secrets

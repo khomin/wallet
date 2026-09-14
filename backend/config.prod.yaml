@@ -5,7 +5,7 @@ server:
   log_path: "/var/log/tracker/app.log"
 
 authorization:
-  issuer_url: "http://keycloak_server:8080/realms/whale-tracker"
+  issuer_url: ""
   client_id: "whale-tracker-app"
 
 database:
