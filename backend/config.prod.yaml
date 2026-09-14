@@ -10,22 +10,22 @@ authorization:
 
 database:
   host: "whale_tracker_db"
-  port: 5432
-  user: "tracker_admin"
-  password: "super_secure_password"
-  name: "whale_tracker"
+  port: 0
+  user: ""
+  password: ""
+  name: ""
 
 redis:
-  addr: "whale_tracker_cache:6379"
+  addr: ""
   password: ""
   db: 0
 
 rabbit:
-  url: 	"amqp://admin:supersecretpassword@rabbitmq:5672"
+  url: 	""
 
 email:
   api_key: ""
-  from: "onboarding@resend.dev"
+  from: ""
 
 alchemy:
   api_key: ""
@@ -44,7 +44,7 @@ blockchain:
   polygon_mainnet: "https://polygon.gateway.tenderly.co"
   bnb: "https://bsc-mainnet.public.blastapi.io"
   solana_rpc: "https://api.mainnet-beta.solana.com"
-  tron_grpc: "grpc.trongrid.io:50051"
+  tron_grpc: ""
   tron_api_key: ""
   riplle_mainnet_rpc: "https://s1.ripple.com:51234"
   bitcoin:

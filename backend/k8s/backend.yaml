@@ -15,23 +15,49 @@ spec:
     spec:
       containers:
         - name: backend
-          # Temporary standard image until we hook up GitHub Actions CI/CD to build yours
           image: ghcr.io/khomin/wallet:latest
           imagePullPolicy: Always
           ports:
             - containerPort: 8080
           env:
-            - name: DB_HOST
+            - name: DATABASE_HOST
               value: "postgres"
-            - name: DB_PORT
+            - name: DATABASE_PORT
               value: "5432"
-            - name: REDIS_HOST
-              value: "redis"
-            - name: REDIS_PORT
-              value: "6379"
+            - name: DATABASE_USER
+              valueFrom:
+                secretKeyRef:
+                  name: app-secrets
+                  key: POSTGRES_USER
+            - name: DATABASE_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: app-secrets
+                  key: POSTGRES_PASSWORD
+            - name: DATABASE_NAME
+              valueFrom:
+                secretKeyRef:
+                  name: app-secrets
+                  key: POSTGRES_DB
+
+            - name: RABBIT_HOST
+              value: "rabbitmq"
+            - name: RABBIT_PORT
+              value: "5672"
+            - name: RABBIT_USER
+              valueFrom:
+                secretKeyRef:
+                  name: app-secrets
+                  key: RABBITMQ_USER
+            - name: RABBIT_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: app-secrets
+                  key: RABBITMQ_PASSWORD
+
           envFrom:
             - secretRef:
-                name: postgres-secret
+                name: app-secrets
           resources:
             requests:
               cpu: 100m

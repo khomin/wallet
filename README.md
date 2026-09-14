@@ -229,9 +229,8 @@ kubectl apply -f postgres-pvc.yaml
 kubectl apply -f databases.yaml
 kubectl get pods -n whale-tracker-prod
 
-kubectl create secret generic postgres-secret \
-  --namespace=whale-tracker-prod \
-  --from-literal=POSTGRES_USER=tracker_admin \
-  --from-literal=POSTGRES_PASSWORD=super_secure_password \
-  --from-literal=POSTGRES_DB=whale_tracker
+kubectl create secret generic app-secrets \
+  --from-env-file=backend/.env \
+  -n whale-tracker-prod \
+  --dry-run=client -o yaml | kubectl apply -f -
 ```
