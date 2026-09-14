@@ -44,7 +44,7 @@ blockchain:
   polygon_mainnet: "https://polygon.gateway.tenderly.co"
   bnb: "https://bsc-mainnet.public.blastapi.io"
   solana_rpc: "https://api.mainnet-beta.solana.com"
-  tron_grpc: ""
+  tron_grpc: "grpc.trongrid.io:50051"
   tron_api_key: ""
   riplle_mainnet_rpc: "https://s1.ripple.com:51234"
   bitcoin:
