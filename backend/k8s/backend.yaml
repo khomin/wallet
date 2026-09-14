@@ -16,7 +16,7 @@ spec:
       containers:
         - name: backend
           # Temporary standard image until we hook up GitHub Actions CI/CD to build yours
-          image: ghcr.io/khomin/whale-tracker-backend:latest
+          image: ghcr.io/khomin/wallet:latest
           imagePullPolicy: Always
           ports:
             - containerPort: 8080
