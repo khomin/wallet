@@ -4,13 +4,21 @@ metadata:
   name: whale-tracker-ingress
   namespace: whale-tracker-prod
 spec:
+  ingressClassName: traefik
   rules:
     - http:
         paths:
-          - path: /
+          - path: /api
             pathType: Prefix
             backend:
               service:
                 name: whale-backend
                 port:
                   number: 8080
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: whale-web
+                port:
+                  number: 80

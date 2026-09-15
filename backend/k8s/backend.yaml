@@ -80,8 +80,10 @@ metadata:
   name: whale-backend
   namespace: whale-tracker-prod
 spec:
+  type: NodePort
+  selector:
+    app: whale-backend
   ports:
     - port: 8080
       targetPort: 8080
-  selector:
-    app: whale-backend
+      nodePort:

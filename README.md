@@ -233,4 +233,9 @@ kubectl create secret generic app-secrets \
   --from-env-file=backend/.env \
   -n whale-tracker-prod \
   --dry-run=client -o yaml | kubectl apply -f -
+
+kubectl create configmap keycloak-realm-import \
+  --from-file=realm-export.json=./backend/deploy/keycloak/realm-export.json \
+  -n whale-tracker-prod
+configmap/keycloak-realm-import created
 ```

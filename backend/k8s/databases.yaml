@@ -91,3 +91,38 @@ spec:
       targetPort: 5432
   selector:
     app: postgres
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: keycloak-db
+  namespace: whale-tracker-prod
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: keycloak-db
+  template:
+    metadata:
+      labels:
+        app: keycloak-db
+    spec:
+      containers:
+        - name: keycloak-db
+          image: postgres:16-alpine
+          env:
+            - name: POSTGRES_DB
+              value: "keycloak"
+            - name: POSTGRES_USER
+              valueFrom:
+                secretKeyRef:
+                  name: app-secrets
+                  key: KEYCLOAK_DB_USER
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: app-secrets
+                  key: KEYCLOAK_DB_PASSWORD
+          ports:
+            - containerPort: 5432
