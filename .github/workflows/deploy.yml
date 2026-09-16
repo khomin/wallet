@@ -34,7 +34,7 @@ jobs:
         id: meta-backend
         uses: docker/metadata-action@v5
         with:
-          images: ${{ env.REGISTRY }}/whale-backend
+          images: ${{ env.REGISTRY }}/${{ github.repository_owner }}/whale-backend
           tags: |
             type=raw,value=latest
             type=sha,format=short
@@ -57,7 +57,7 @@ jobs:
         id: meta-frontend
         uses: docker/metadata-action@v5
         with:
-          images: ${{ env.REGISTRY }}/whale-frontend
+          images: ${{ env.REGISTRY }}/${{ github.repository_owner }}/whale-frontend
           tags: |
             type=raw,value=latest
             type=sha,format=short
