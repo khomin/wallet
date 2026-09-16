@@ -15,7 +15,7 @@ spec:
     spec:
       containers:
         - name: whale-frontend
-          image: whale-frontend:latest
+          image: ghcr.io/khomin/whale-frontend:latest
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 80

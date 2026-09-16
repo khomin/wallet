@@ -15,7 +15,7 @@ spec:
     spec:
       containers:
         - name: backend
-          image: ghcr.io/khomin/wallet:latest
+          image: ghcr.io/khomin/whale-backend:latest
           imagePullPolicy: Always
           ports:
             - containerPort: 8080
