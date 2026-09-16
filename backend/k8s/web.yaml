@@ -1,21 +1,21 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: whale-web
+  name: whale-frontend
   namespace: whale-tracker-prod
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: whale-web
+      app: whale-frontend
   template:
     metadata:
       labels:
-        app: whale-web
+        app: whale-frontend
     spec:
       containers:
-        - name: whale-web
-          image: whale-web:latest
+        - name: whale-frontend
+          image: whale-frontend:latest
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 80
@@ -23,12 +23,12 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: whale-web
+  name: whale-frontend
   namespace: whale-tracker-prod
 spec:
   type: ClusterIP
   selector:
-    app: whale-web
+    app: whale-frontend
   ports:
     - port: 80
       targetPort: 80

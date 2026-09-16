@@ -19,6 +19,6 @@ spec:
             pathType: Prefix
             backend:
               service:
-                name: whale-web
+                name: whale-frontend
                 port:
                   number: 80
