@@ -73,16 +73,20 @@ jobs:
           cache-from: type=gha,scope=frontend
           cache-to: type=gha,mode=max,scope=frontend
 
-      - name: Deploy to k3s via SSH
-        uses: appleboy/ssh-action@v1.0.3
+      # ==========================================
+      # 3. Deploy to k3s via Kubernetes API
+      # ==========================================
+      - name: Set Kubernetes Context
+        uses: azure/k8s-set-context@v3
         with:
-          host: ${{ secrets.NUC_HOST }}
-          username: ${{ secrets.NUC_USER }}
-          key: ${{ secrets.NUC_SSH_KEY }}
-          script: |
-            kubectl apply -f https://raw.githubusercontent.com/${{ github.repository }}/main/backend/k8s
-            kubectl rollout restart deployment/whale-backend -n whale-tracker-prod
-            kubectl rollout restart deployment/whale-frontend -n whale-tracker-prod
+          method: kubeconfig
+          kubeconfig: ${{ secrets.KUBECONFIG }}
 
-            kubectl rollout status deployment/whale-backend -n whale-tracker-prod
-            kubectl rollout status deployment/whale-frontend -n whale-tracker-prod
+      - name: Deploy Manifests
+        run: |
+          kubectl apply -f backend/k8s/ -n whale-tracker-prod
+          kubectl rollout restart deployment/whale-backend -n whale-tracker-prod
+          kubectl rollout restart deployment/whale-frontend -n whale-tracker-prod
+
+          kubectl rollout status deployment/whale-backend -n whale-tracker-prod --timeout=60s
+          kubectl rollout status deployment/whale-frontend -n whale-tracker-prod --timeout=60s

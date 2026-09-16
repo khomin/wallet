@@ -224,6 +224,13 @@ migrate -path $PWD/backend/internal/db/migrations \
 
 ### Deploy
 ```bash
+
+kubectl create serviceaccount github-deployer -n whale-tracker-prod
+kubectl create rolebinding github-deployer-binding \
+  --clusterrole=admin \
+  --serviceaccount=whale-tracker-prod:github-deployer \
+  -n whale-tracker-prod
+
 kubectl create namespace whale-tracker-prod
 kubectl apply -f postgres-pvc.yaml
 kubectl apply -f databases.yaml
@@ -237,5 +244,4 @@ kubectl create secret generic app-secrets \
 kubectl create configmap keycloak-realm-import \
   --from-file=realm-export.json=./backend/deploy/keycloak/realm-export.json \
   -n whale-tracker-prod
-configmap/keycloak-realm-import created
 ```
