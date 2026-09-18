@@ -21,10 +21,17 @@ spec:
           ports:
             - containerPort: 8080
           env:
-            - name: KC_PROXY_HEADERS
-              value: "xforwarded"
+            - name: KC_HOSTNAME
+              valueFrom:
+                secretKeyRef:
+                  name: app-secrets
+                  key: HOSTNAME
+            - name: KC_PROXY
+              value: "edge"
             - name: KC_HTTP_ENABLED
               value: "true"
+            - name: KC_PROXY_HEADERS
+              value: "xforwarded"
             - name: KC_HOSTNAME_STRICT
               value: "false"
             - name: KC_HOSTNAME_STRICT_HTTPS
@@ -57,10 +64,16 @@ spec:
             - name: realm-import
               mountPath: /opt/keycloak/data/import/realm-export.json
               subPath: realm-export.json
+            - name: theme-jar
+              mountPath: /opt/keycloak/providers/fintech-theme.jar
+              subPath: fintech-theme.jar
       volumes:
         - name: realm-import
           configMap:
             name: keycloak-realm-import
+        - name: theme-jar
+          configMap:
+            name: keycloak-theme-jar
 
 ---
 apiVersion: v1

@@ -61,7 +61,10 @@ spec:
               value: "6379"
 
             - name: AUTHORIZATION_ISSUER_URL
-              value: "http://keycloak:8080/realms/whale-tracker"
+              valueFrom:
+                secretKeyRef:
+                  name: app-secrets
+                  key: AUTHORIZATION_ISSUER_URL
 
           envFrom:
             - secretRef:

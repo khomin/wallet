@@ -236,6 +236,8 @@ kubectl apply -f postgres-pvc.yaml
 kubectl apply -f databases.yaml
 kubectl get pods -n whale-tracker-prod
 
+kubectl apply -f https://github.com/cert-manager/cert-manager/releases/download/v1.14.4/cert-manager.yaml
+
 kubectl create secret generic app-secrets \
   --from-env-file=backend/.env \
   -n whale-tracker-prod \
@@ -244,4 +246,23 @@ kubectl create secret generic app-secrets \
 kubectl create configmap keycloak-realm-import \
   --from-file=realm-export.json=./backend/deploy/keycloak/realm-export.json \
   -n whale-tracker-prod
+
+kubectl create configmap keycloak-theme-fintech \
+  --from-file=./backend/deploy/keycloak/themes/fintech \
+  -n whale-tracker-prod
+
+kubectl create configmap keycloak-theme-jar \
+  --from-file=./backend/deploy/keycloak/fintech-theme-build/fintech-theme.jar \
+  -n whale-tracker-prod
+```
+
+
+### Force certificate
+```bash
+# delete the stuck certificate state
+kubectl delete certificate kernel-panic-tls -n whale-tracker-prod
+kubectl delete secret kernel-panic-tls -n whale-tracker-prod
+
+# re-trigger by applying your ingress
+kubectl apply -f backend/k8s/ingress.yaml -n whale-tracker-prod
 ```
