@@ -762,7 +762,7 @@
       "clientAuthenticatorType": "client-secret",
       "redirectUris": [
         "http://localhost:*",
-        "https://kernel-panic.mooo.com/*"
+        "https://${env.KC_HOSTNAME}/*"
       ],
       "webOrigins": [
         "*"
@@ -782,7 +782,7 @@
         "oauth2.jwt.authorization.grant.enabled": "false",
         "standard.token.exchange.enabled": "false",
         "frontchannel.logout.session.required": "true",
-        "post.logout.redirect.uris": "http://localhost:*##https://kernel-panic.mooo.com/*",
+        "post.logout.redirect.uris": "http://localhost:*##https://${env.KC_HOSTNAME}/*",
         "oauth2.device.authorization.grant.enabled": "false",
         "backchannel.logout.revoke.offline.tokens": "false",
         "realm_client": "false",
