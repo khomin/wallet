@@ -2,3 +2,5 @@
 __debug_*
 backend/cmd/wallets/
 backend/.env
+backend/k8s/copy/.env
+backend/k8s/copy/realm-export.json
