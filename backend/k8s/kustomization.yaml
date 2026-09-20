@@ -17,10 +17,10 @@ resources:
 configMapGenerator:
   - name: domain-config
     envs:
-      - ./copy/.env
+      - ./env-context/.env
   - name: keycloak-realm-import
     files:
-      - realm-export.json=./copy/realm-export.json
+      - realm-export.json=./env-context/realm-export.json
 
 replacements:
   - source:

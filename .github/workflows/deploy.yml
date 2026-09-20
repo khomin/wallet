@@ -85,13 +85,13 @@ jobs:
       - name: Prepare Kustomize Context Files
         run: |
           # create the local copy folder for Kustomize
-          mkdir -p backend/k8s/copy
+          mkdir -p backend/k8s/env-context
 
           # copy realm-export.json into the kustomize directory
-          cp backend/deploy/keycloak/realm-export.json backend/k8s/copy/realm-export.json
+          cp backend/deploy/keycloak/realm-export.json backend/k8s/env-context/realm-export.json
 
           # Write runtime .env from GitHub Secrets
-          cat << 'EOF' > backend/k8s/copy/.env
+          cat << 'EOF' > backend/k8s/env-context/.env
           ${{ secrets.ENV_FILE }}
           EOF
 
@@ -99,7 +99,7 @@ jobs:
         run: |
           # create app-secrets from runtime .env
           kubectl create secret generic app-secrets \
-            --from-env-file=backend/k8s/copy/.env \
+            --from-env-file=backend/k8s/env-context/.env \
             -n whale-tracker-prod \
             --dry-run=client -o yaml | kubectl apply -f -
 
