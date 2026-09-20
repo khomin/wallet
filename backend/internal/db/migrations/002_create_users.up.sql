@@ -4,6 +4,3 @@ CREATE TABLE IF NOT EXISTS users (
     email TEXT,
     image_url TEXT
 );
-
-CREATE UNIQUE INDEX IF NOT EXISTS idx_users_name 
-    ON users(name);  

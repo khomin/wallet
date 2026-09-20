@@ -1,15 +1,31 @@
 apiVersion: rbac.authorization.k8s.io/v1
-kind: Role
+kind: ClusterRole
 metadata:
-  name: github-deployer-role
-  namespace: whale-tracker-prod
+  name: github-deployer-traefik
 rules:
-  # Standard core & app resources
-  - apiGroups: ["", "apps", "networking.k8s.io"]
-    resources: ["*"]
-    verbs: ["*"]
-
-  # Traefik Custom Resources permission
-  - apiGroups: ["traefik.io", "traefik.containo.us"]
-    resources: ["middlewares", "ingressroutes", "traefikservices"]
-    verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+  - apiGroups:
+      - traefik.io
+    resources:
+      - middlewares
+    verbs:
+      - get
+      - list
+      - watch
+      - create
+      - update
+      - patch
+      - delete
+      
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: github-deployer-traefik
+subjects:
+  - kind: ServiceAccount
+    name: github-deployer
+    namespace: whale-tracker-prod
+roleRef:
+  kind: ClusterRole
+  name: github-deployer-traefik
+  apiGroup: rbac.authorization.k8s.io
