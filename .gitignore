@@ -4,3 +4,4 @@ backend/cmd/wallets/
 backend/.env
 backend/k8s/env-context/.env
 backend/k8s/env-context/realm-export.json
+backend/kubeconfig

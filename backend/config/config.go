@@ -5,6 +5,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/joho/godotenv"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
 )
@@ -114,6 +115,9 @@ type TokenRegistry struct {
 
 func NewConfig() *Config {
 	config := Config{}
+	if err := godotenv.Load(); err != nil {
+		logrus.Infof(".env not found, using environment variables")
+	}
 	viper.SetEnvKeyReplacer(strings.NewReplacer(".", "_"))
 	viper.AutomaticEnv()
 	viper.SetConfigName("config")
@@ -121,11 +125,10 @@ func NewConfig() *Config {
 	viper.AddConfigPath(".")
 	viper.AddConfigPath("..")
 
-	err := viper.ReadInConfig()
-	if err != nil {
+	if err := viper.ReadInConfig(); err != nil {
 		logrus.Fatalf("can't find the file: %s", err.Error())
 	}
-	err = viper.Unmarshal(&config)
+	err := viper.Unmarshal(&config)
 	if err != nil {
 		logrus.Fatalf("environment can't be loaded: %s", err.Error())
 	}

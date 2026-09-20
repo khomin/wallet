@@ -245,15 +245,15 @@ kubectl create secret generic app-secrets \
 
 kubectl create configmap keycloak-realm-import \
   --from-file=realm-export.json=./backend/deploy/keycloak/realm-export.json \
-  -n whale-tracker-prod
-
-kubectl create configmap keycloak-theme-fintech \
-  --from-file=./backend/deploy/keycloak/themes/fintech \
-  -n whale-tracker-prod
+  -n whale-tracker-prod \
+  --dry-run=client -o yaml
 
 kubectl create configmap keycloak-theme-jar \
   --from-file=./backend/deploy/keycloak/fintech-theme-build/fintech-theme.jar \
-  -n whale-tracker-prod
+  -n whale-tracker-prod \
+  --dry-run=client -o yaml
+
+kubectl apply -k ./backend/k8s
 ```
 
 
@@ -266,3 +266,7 @@ kubectl delete secret kernel-panic-tls -n whale-tracker-prod
 # re-trigger by applying your ingress
 kubectl apply -f backend/k8s/ingress.yaml -n whale-tracker-prod
 ```
+
+TODO:
+create ENV_FILE and add .env into it
+note that to deploy via github actions you need to add KUBECONFIG in github secrets

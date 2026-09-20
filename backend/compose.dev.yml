@@ -5,9 +5,9 @@ services:
     image: postgres:16-alpine
     container_name: whale_tracker_db
     environment:
-      POSTGRES_USER: tracker_admin
-      POSTGRES_PASSWORD: super_secure_password
-      POSTGRES_DB: whale_tracker
+      POSTGRES_USER: ${DATABASE_USER}
+      POSTGRES_PASSWORD: ${DATABASE_PASSWORD}
+      POSTGRES_DB: ${DATABASE_NAME}
     ports:
       - "5432:5432"
     volumes:
@@ -75,9 +75,9 @@ services:
     image: postgres:16-alpine
     container_name: keycloak_db
     environment:
-      POSTGRES_DB: keycloak
-      POSTGRES_USER: keycloak
-      POSTGRES_PASSWORD: password123
+      POSTGRES_DB: ${DATABASE_NAME}
+      POSTGRES_USER: ${KEYCLOAK_DB_USER}
+      POSTGRES_PASSWORD: ${KEYCLOAK_DB_PASSWORD}
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
@@ -94,8 +94,8 @@ services:
       - "5672:5672"
       - "15672:15672"
     environment:
-      - RABBITMQ_DEFAULT_USER=admin
-      - RABBITMQ_DEFAULT_PASS=supersecretpassword
+      - RABBITMQ_DEFAULT_USER=${RABBITMQ_USER}
+      - RABBITMQ_DEFAULT_PASS=${super_secure_rabbit_password}
     volumes:
       - rabbitmq_data:/var/lib/rabbitmq
 
