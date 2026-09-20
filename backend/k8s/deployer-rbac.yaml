@@ -1,0 +1,15 @@
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: github-deployer-role
+  namespace: whale-tracker-prod
+rules:
+  # Standard core & app resources
+  - apiGroups: ["", "apps", "networking.k8s.io"]
+    resources: ["*"]
+    verbs: ["*"]
+
+  # Traefik Custom Resources permission
+  - apiGroups: ["traefik.io", "traefik.containo.us"]
+    resources: ["middlewares", "ingressroutes", "traefikservices"]
+    verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]

@@ -12,10 +12,10 @@ spec:
   ingressClassName: traefik
   tls:
     - hosts:
-        - DOMAIN_PLACEHOLDER
+        - placeholder.example.com
       secretName: kernel-panic-tls
   rules:
-    - host: DOMAIN_PLACEHOLDER
+    - host: placeholder.example.com
     - http:
         paths:
           - path: /api
