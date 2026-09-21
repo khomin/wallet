@@ -1,5 +1,5 @@
 kernel-panic.mooo.com {
-    # 1. Keycloak Auth & Static Resources
+    # keycloak
     handle /realms/* {
         reverse_proxy keycloak_server:8080
     }
@@ -7,7 +7,7 @@ kernel-panic.mooo.com {
         reverse_proxy keycloak_server:8080
     }
 
-    # 2. Go API & Streaming (SSE / WebSockets)
+    # api
     handle /api/* {
         uri strip_prefix /api
         reverse_proxy host.docker.internal:8080 {
@@ -16,9 +16,5 @@ kernel-panic.mooo.com {
         }
     }
 
-    handle {
-        root * /srv
-        try_files {path} /index.html
-        file_server
-    }
+    #reverse_proxy whale-frontend:80
 }
