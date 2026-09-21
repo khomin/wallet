@@ -2,8 +2,8 @@ name: Build and Deploy to NUC
 
 on:
   push:
-    branches:
-      - main
+    tags:
+      - '**'
 
 env:
   REGISTRY: ghcr.io

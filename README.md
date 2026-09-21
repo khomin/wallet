@@ -182,14 +182,13 @@ Before using Tron support, ensure you have a valid TronGrid API key configured i
 
 The project generates Go, gRPC, gateway, OpenAPI, and TypeScript artifacts from the `.proto` definitions.
 
+#### Install Buf
 ```bash
-# Install Buf
 # macOS
 brew install bufbuild/buf/buf
 
-# Linux / WSL
-# or
-# go install github.com/bufbuild/buf/cmd/buf@latest
+# Linux
+go install github.com/bufbuild/buf/cmd/buf@latest
 
 buf dep update
 buf generate
@@ -205,20 +204,6 @@ go install -tags 'postgres' github.com/golang-migrate/migrate/v4/cmd/migrate@lat
 migrate -path $PWD/backend/internal/db/migrations \
   -database "postgres://tracker_admin:super_secure_password@localhost:5432/whale_tracker?sslmode=disable" up
 ```
-
-## Notes
-
-- This project has grown beyond the initial single-service wallet tracker and now includes a full protocol-driven API surface.
-- The actual runtime is a combined gRPC + gateway service, not a plain HTTP API layer.
-- The gRPC gateway is the main REST-compatible entrypoint for frontend and external clients.
-
-## Roadmap
-
-- expand wallet analytics and tracking jobs
-- improve alerting pipelines and notifications
-- strengthen multi-chain coverage and token metadata accuracy
-- continue hardening the API and operational workflows around Redis, RabbitMQ, and Postgres
-
 
 ### Deploy
 ```bash
