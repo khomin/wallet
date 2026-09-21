@@ -16,5 +16,5 @@ kernel-panic.mooo.com {
         }
     }
 
-    #reverse_proxy whale-frontend:80
+    reverse_proxy whale-frontend:80
 }

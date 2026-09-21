@@ -20,7 +20,7 @@ services:
     environment:
       KC_PROXY_HEADERS: xforwarded
       KC_HTTP_ENABLED: 'true'
-      KC_HOSTNAME: ${DATABASE_HOST}
+      KC_HOSTNAME: ${KEYCLOAK_HOST}
       KC_HOSTNAME_STRICT: 'false'
       KC_HOSTNAME_STRICT_HTTPS: 'false'
       KC_HOSTNAME_STRICT_BACKCHANNEL: 'false'
@@ -35,12 +35,33 @@ services:
       KC_HTTPS_PORT: 8443
     ports:
       - "8081:8080"
+    healthcheck:
+      test: [ "CMD-SHELL", "exec 3<>/dev/tcp/127.0.0.1/8080 && echo -e 'GET /realms/master/.well-known/openid-configuration HTTP/1.1\\r\\nHost: localhost\\r\\nConnection: close\\r\\n\\r\\n' >&3 && cat <&3 | grep -q '200 OK'" ]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
     depends_on:
       keycloak-db:
         condition: service_healthy
     volumes:
       - ./deploy/keycloak/fintech-theme-build/theme/fintech:/opt/keycloak/themes/fintech:ro
       - ./deploy/keycloak/realm-export.json:/opt/keycloak/data/import/realm-export.json:ro
+
+  keycloak-db:
+    image: postgres:16-alpine
+    container_name: keycloak_db
+    environment:
+      POSTGRES_USER: ${KEYCLOAK_DB_USER}
+      POSTGRES_PASSWORD: ${KEYCLOAK_DB_PASSWORD}
+      POSTGRES_DB: ${KEYCLOAK_DB_NAME}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U ${KEYCLOAK_DB_USER} -d ${KEYCLOAK_DB_NAME}" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   prometheus:
     image: prom/prometheus:latest
@@ -72,21 +93,6 @@ services:
     container_name: whale_tracker_cache
     ports:
       - "6379:6379"
-
-  keycloak-db:
-    image: postgres:16-alpine
-    container_name: keycloak_db
-    environment:
-      POSTGRES_DB: ${KEYCLOAK_DB_NAME}
-      POSTGRES_USER: ${KEYCLOAK_DB_USER}
-      POSTGRES_PASSWORD: ${KEYCLOAK_DB_PASSWORD}
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
-    healthcheck:
-      test: [ "CMD-SHELL", "pg_isready -U keycloak" ]
-      interval: 10s
-      timeout: 5s
-      retries: 5
 
   rabbitmq:
     image: rabbitmq:4-management-alpine
