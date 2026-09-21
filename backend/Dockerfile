@@ -29,7 +29,7 @@ WORKDIR /app
 COPY --from=builder /app/server .
 
 # Copy your configuration file
-COPY config.prod.yaml ./config.yaml
+COPY config.yaml ./config.yaml
 
 # Copy migration
 COPY ./internal/db/migrations ./internal/db/migrations

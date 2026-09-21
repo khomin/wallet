@@ -4,13 +4,11 @@ A crypto wallet and market intelligence platform built with Go, gRPC, grpc-gatew
 
 ## What this project does
 
-- Track wallet balances across multiple blockchains and token deployments
-- Aggregate live price data from providers such as CoinGecko and chain-specific RPCs
-- Keep token metadata in a config-driven registry for native assets and contracts
-- Publish price and wallet events through RabbitMQ
-- Cache price and wallet state in Redis
-- Trigger alert workflows and email notifications
-- Expose a REST API through grpc-gateway alongside the gRPC server
+- **Track & Store Wallet Balances:** Fetch native balances and contract token holdings directly via chain-specific RPC nodes, persisting wallet states and historical balance data in PostgreSQL.
+- **Config-Driven Token Registry:** Define supported tokens, contract addresses, and network parameters declaratively via configuration files.
+- **CoinGecko Price Feed Integration:** Fetch live market prices and coin metadata using the CoinGecko API, caching active price data in Redis.
+- **Event-Driven Architecture:** Broadcast real-time balance updates and price changes through RabbitMQ messaging.
+- **Automated Alerts:** Trigger custom alert workflows and email notifications on price shifts or balance changes.
 
 ## Current architecture
 
