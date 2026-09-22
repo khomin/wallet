@@ -82,15 +82,21 @@ export default function Layout() {
         aria-label="Main navigation"
       >
         {/* Logo */}
-        <div className="flex h-[82px] items-center gap-3 border-b border-white/[0.07] px-6">
+        <NavLink
+          to="/dashboard"
+          draggable={false}
+          onClick={handleNavClick}
+          aria-label="Go to dashboard"
+          className="group flex h-[82px] items-center gap-3 border-b border-white/[0.07] px-6 cursor-pointer"
+        >
           <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-violet-500 to-indigo-600 shadow-lg shadow-violet-950/40">
             <span className="text-lg font-black tracking-tight">W</span>
           </div>
           <div className="min-w-0">
-            <div className="text-[15px] font-semibold tracking-tight text-white truncate">WhaleTracker</div>
+            <div className="text-[15px] font-semibold tracking-tight text-white truncate group-hover:text-violet-200 transition-colors">WhaleTracker</div>
             <div className="mt-0.5 text-[11px] font-medium text-slate-400 truncate">{displayName}</div>
           </div>
-        </div>
+        </NavLink>
 
         {/* Demo mode banner */}
         {isDemo && (
