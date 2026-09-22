@@ -174,6 +174,8 @@ func (r *walletRepository) Create(ctx context.Context, userID string, chain stri
 				$2,
 				(SELECT id FROM coins WHERE symbol = $3)
 			)
+			ON CONFLICT (address, chain)
+			DO UPDATE SET updated_at = wallets.updated_at
 			RETURNING id, address, chain, (SELECT symbol FROM coins WHERE symbol = $3), updated_at
 		),
 		uw_result AS (

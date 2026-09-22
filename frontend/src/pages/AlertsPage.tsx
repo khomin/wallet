@@ -140,7 +140,7 @@ export default function AlertsPage() {
       <div className="mb-6 flex items-center justify-between">
         <div>
           <h1 className="text-xl font-semibold">Price alerts</h1>
-          <p className="mt-1 text-xs text-gray-500">Get notified when an asset reaches your target price.</p>
+          <p className="mt-1 text-xs text-gray-500">Get notified</p>
         </div>
         <button onClick={() => setShowCreateModal(true)} className="rounded-lg bg-purple-600 px-3 py-1.5 text-xs font-medium transition-colors hover:bg-purple-500">
           + New alert
