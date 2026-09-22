@@ -13,6 +13,9 @@ resources:
   - infra-services.yaml
   - strip-api-prefix.yaml
   - ingress.yaml
+  - deployer-rbac.yaml
+  - monitoring-k3s.yaml
+  - grafana-configmap.yaml
 
 configMapGenerator:
   - name: domain-config

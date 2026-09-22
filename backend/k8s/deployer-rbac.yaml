@@ -15,7 +15,6 @@ rules:
       - update
       - patch
       - delete
-      
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
@@ -28,4 +27,34 @@ subjects:
 roleRef:
   kind: ClusterRole
   name: github-deployer-traefik
+  apiGroup: rbac.authorization.k8s.io
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: grafana-serviceaccount
+  namespace: whale-tracker-prod
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: grafana-configmap-watcher
+  namespace: whale-tracker-prod
+rules:
+  - apiGroups: [""]
+    resources: ["configmaps"]
+    verbs: ["get", "list", "watch"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: grafana-configmap-watcher-binding
+  namespace: whale-tracker-prod
+subjects:
+  - kind: ServiceAccount
+    name: grafana-serviceaccount
+    namespace: whale-tracker-prod
+roleRef:
+  kind: Role
+  name: grafana-configmap-watcher
   apiGroup: rbac.authorization.k8s.io
