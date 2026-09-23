@@ -19,7 +19,7 @@ wallet/
 ├── docs/               # System architecture, deployment guides, and tech notes
 ├── frontend/           # React + TypeScript + Vite web app
 ├── proto/              # Protocol buffer definitions (Buf)
-└── tools/              # Helper scripts and tooling
+└── tools/              # Bruno, scripts and tooling
 ```
 
 ## Tech Stack
@@ -27,6 +27,7 @@ wallet/
 - **Backend:** Go 1.22+, gRPC, `grpc-gateway` v2, Protocol Buffers / Buf
 - **Database & Messaging:** PostgreSQL, Redis, RabbitMQ
 - **Authentication & Ops:** Keycloak (OIDC), Caddy, Docker Compose, Kubernetes
+- **Observability:** Prometheus, Grafana
 - **Frontend:** React, TypeScript, Vite
 
 ## Quick Start
@@ -65,6 +66,7 @@ cd frontend
 npm install
 npm run dev
 ```
+![1](/docs/assets/demo.png)
 
 ## Protocol Buffer Generation
 
