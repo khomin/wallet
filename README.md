@@ -6,7 +6,7 @@ A crypto wallet tracker built with Go, gRPC and React.
 
 - **Multi-Chain Node Indexing:**  BTC, ETH, Solana, Tron, Polygon, Arbitrum, Base, BSC, and XRP via dedicated gRPC, JSON-RPC, and REST clients.
 - **RPC Rate-Limiting & Throttling:** Built-in token-bucket rate limiters (`rps: 2`, burst control) to manage RPC throughput safely across public and private node infrastructure.
-- **Config-Driven Asset Registry:** Declarative, hot-reloadable multi-chain token and contract tracking configured via `config.yaml`.
+- **Config-Driven Asset Registry:** Multi-chain token and contract tracking configured via `config.yaml`.
 - **Market Data Engine:** CoinGecko integration coupled with a dual-layer Redis cache for real-time asset pricing, metadata enrichment, and low-latency lookups.
 - **Event-Driven Microservices:** Asynchronous RabbitMQ message bus distributing real-time balance movements, price changes, and system alerts to downstream consumers.
 - **Custom Alert Engine:** User-configurable rule processor evaluating real-time wallet balance thresholds and sudden market volatility spikes.
