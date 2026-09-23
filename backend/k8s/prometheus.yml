@@ -9,4 +9,4 @@ scrape_configs:
   - job_name: 'grpc_backend'
     metrics_path: '/metrics'
     static_configs:
-      - targets: ['backend:9092']
+      - targets: ['whale-backend:9092']

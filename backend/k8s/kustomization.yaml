@@ -13,9 +13,9 @@ resources:
   - infra-services.yaml
   - strip-api-prefix.yaml
   - ingress.yaml
-  - deployer-rbac.yaml
-  - monitoring-k3s.yaml
   - grafana-configmap.yaml
+  - monitoring-k3s.yaml
+  - deployer-rbac.yaml
 
 configMapGenerator:
   - name: domain-config
@@ -24,6 +24,9 @@ configMapGenerator:
   - name: keycloak-realm-import
     files:
       - realm-export.json=./env-context/realm-export.json
+  - name: prometheus-config
+    files:
+      - prometheus.yml
 
 replacements:
   - source:

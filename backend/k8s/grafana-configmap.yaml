@@ -69,7 +69,8 @@ data:
                           "group": "prometheus",
                           "version": "v0",
                           "datasource": {
-                            "name": "efz1wb99nva4ga"
+                            "type": "prometheus",
+                            "uid": "prometheus"
                           },
                           "spec": {
                             "expr": "process_resident_memory_bytes{namespace=~\"^($namespace)$\",pod=~\"^($pod)$\"}",
@@ -92,7 +93,8 @@ data:
                           "group": "prometheus",
                           "version": "v0",
                           "datasource": {
-                            "name": "efz1wb99nva4ga"
+                            "type": "prometheus",
+                            "uid": "prometheus"
                           },
                           "spec": {
                             "expr": "process_virtual_memory_bytes{namespace=~\"^($namespace)$\",pod=~\"^($pod)$\"}",
@@ -212,7 +214,8 @@ data:
                           "group": "prometheus",
                           "version": "v0",
                           "datasource": {
-                            "name": "efz1wb99nva4ga"
+                            "type": "prometheus",
+                            "uid": "prometheus"
                           },
                           "spec": {
                             "expr": "go_memstats_alloc_bytes{namespace=~\"^($namespace)$\",pod=~\"^($pod)$\"}",
@@ -235,7 +238,8 @@ data:
                           "group": "prometheus",
                           "version": "v0",
                           "datasource": {
-                            "name": "efz1wb99nva4ga"
+                            "type": "prometheus",
+                            "uid": "prometheus"
                           },
                           "spec": {
                             "expr": "rate(go_memstats_alloc_bytes_total{namespace=~\"^($namespace)$\",pod=~\"^($pod)$\"}[30s])",
@@ -258,7 +262,8 @@ data:
                           "group": "prometheus",
                           "version": "v0",
                           "datasource": {
-                            "name": "efz1wb99nva4ga"
+                            "type": "prometheus",
+                            "uid": "prometheus"
                           },
                           "spec": {
                             "expr": "go_memstats_stack_inuse_bytes{namespace=~\"^($namespace)$\",pod=~\"^($pod)$\"}",
@@ -281,7 +286,8 @@ data:
                           "group": "prometheus",
                           "version": "v0",
                           "datasource": {
-                            "name": "efz1wb99nva4ga"
+                            "type": "prometheus",
+                            "uid": "prometheus"
                           },
                           "spec": {
                             "expr": "go_memstats_heap_inuse_bytes{namespace=~\"^($namespace)$\",pod=~\"^($pod)$\"}",
@@ -400,7 +406,8 @@ data:
                           "group": "prometheus",
                           "version": "v0",
                           "datasource": {
-                            "name": "efz1wb99nva4ga"
+                            "type": "prometheus",
+                            "uid": "prometheus"
                           },
                           "spec": {
                             "expr": "process_open_fds{namespace=~\"^($namespace)$\",pod=~\"^($pod)$\"}",
@@ -514,7 +521,8 @@ data:
                           "group": "prometheus",
                           "version": "v0",
                           "datasource": {
-                            "name": "efz1wb99nva4ga"
+                            "type": "prometheus",
+                            "uid": "prometheus"
                           },
                           "spec": {
                             "expr": "rate(process_resident_memory_bytes{namespace=~\"^($namespace)$\",pod=~\"^($pod)$\"}[$interval])",
@@ -537,7 +545,8 @@ data:
                           "group": "prometheus",
                           "version": "v0",
                           "datasource": {
-                            "name": "efz1wb99nva4ga"
+                            "type": "prometheus",
+                            "uid": "prometheus"
                           },
                           "spec": {
                             "expr": "deriv(process_virtual_memory_bytes{namespace=~\"^($namespace)$\",pod=~\"^($pod)$\"}[$interval])",
@@ -656,7 +665,8 @@ data:
                           "group": "prometheus",
                           "version": "v0",
                           "datasource": {
-                            "name": "efz1wb99nva4ga"
+                            "type": "prometheus",
+                            "uid": "prometheus"
                           },
                           "spec": {
                             "expr": "deriv(go_memstats_alloc_bytes{namespace=~\"^($namespace)$\",pod=~\"^($pod)$\"}[$interval])",
@@ -679,7 +689,8 @@ data:
                           "group": "prometheus",
                           "version": "v0",
                           "datasource": {
-                            "name": "efz1wb99nva4ga"
+                            "type": "prometheus",
+                            "uid": "prometheus"
                           },
                           "spec": {
                             "expr": "rate(go_memstats_alloc_bytes_total{namespace=~\"^($namespace)$\",pod=~\"^($pod)$\"}[$interval])",
@@ -702,7 +713,8 @@ data:
                           "group": "prometheus",
                           "version": "v0",
                           "datasource": {
-                            "name": "efz1wb99nva4ga"
+                            "type": "prometheus",
+                            "uid": "prometheus"
                           },
                           "spec": {
                             "expr": "deriv(go_memstats_stack_inuse_bytes{namespace=~\"^($namespace)$\",pod=~\"^($pod)$\"}[$interval])",
@@ -725,7 +737,8 @@ data:
                           "group": "prometheus",
                           "version": "v0",
                           "datasource": {
-                            "name": "efz1wb99nva4ga"
+                            "type": "prometheus",
+                            "uid": "prometheus"
                           },
                           "spec": {
                             "expr": "deriv(go_memstats_heap_inuse_bytes{namespace=~\"^($namespace)$\",pod=~\"^($pod)$\"}[$interval])",
@@ -844,7 +857,8 @@ data:
                           "group": "prometheus",
                           "version": "v0",
                           "datasource": {
-                            "name": "efz1wb99nva4ga"
+                            "type": "prometheus",
+                            "uid": "prometheus"
                           },
                           "spec": {
                             "expr": "deriv(process_open_fds{namespace=~\"^($namespace)$\",pod=~\"^($pod)$\"}[$interval])",
@@ -958,7 +972,8 @@ data:
                           "group": "prometheus",
                           "version": "v0",
                           "datasource": {
-                            "name": "efz1wb99nva4ga"
+                            "type": "prometheus",
+                            "uid": "prometheus"
                           },
                           "spec": {
                             "expr": "go_goroutines{namespace=~\"^($namespace)$\",pod=~\"^($pod)$\"}",
@@ -1072,7 +1087,8 @@ data:
                           "group": "prometheus",
                           "version": "v0",
                           "datasource": {
-                            "name": "efz1wb99nva4ga"
+                            "type": "prometheus",
+                            "uid": "prometheus"
                           },
                           "spec": {
                             "expr": "go_gc_duration_seconds{namespace=~\"^($namespace)$\",pod=~\"^($pod)$\"}",
@@ -1322,7 +1338,8 @@ data:
                 "group": "prometheus",
                 "version": "v0",
                 "datasource": {
-                  "name": "efz1wb99nva4ga"
+                  "type": "prometheus",
+                  "uid": "prometheus"
                 },
                 "spec": {
                   "__legacyStringValue": "label_values(go_memstats_alloc_bytes, namespace)"
@@ -1353,7 +1370,8 @@ data:
                 "group": "prometheus",
                 "version": "v0",
                 "datasource": {
-                  "name": "efz1wb99nva4ga"
+                  "type": "prometheus",
+                  "uid": "prometheus"
                 },
                 "spec": {
                   "__legacyStringValue": "label_values(process_resident_memory_bytes, pod)"
@@ -1480,7 +1498,8 @@ data:
                           "group": "prometheus",
                           "version": "v0",
                           "datasource": {
-                            "name": "${DS_PROMETHEUS}"
+                            "type": "prometheus",
+                            "uid": "prometheus"
                           },
                           "spec": {
                             "expr": "sum by (chain) (rate(blockchain_requests_total[$__rate_interval]))",
@@ -1530,7 +1549,8 @@ data:
                           "group": "prometheus",
                           "version": "v0",
                           "datasource": {
-                            "name": "${DS_PROMETHEUS}"
+                            "type": "prometheus",
+                            "uid": "prometheus"
                           },
                           "spec": {
                             "expr": "sum by (chain) (rate(blockchain_requests_total{status!=\"success\"}[$__rate_interval])) / sum by (chain) (rate(blockchain_requests_total[$__rate_interval]))",
@@ -1580,7 +1600,8 @@ data:
                           "group": "prometheus",
                           "version": "v0",
                           "datasource": {
-                            "name": "${DS_PROMETHEUS}"
+                            "type": "prometheus",
+                            "uid": "prometheus"
                           },
                           "spec": {
                             "expr": "histogram_quantile(0.50, sum by (le, chain, method) (rate(blockchain_request_duration_seconds_bucket[$__rate_interval])))",
@@ -1599,7 +1620,8 @@ data:
                           "group": "prometheus",
                           "version": "v0",
                           "datasource": {
-                            "name": "${DS_PROMETHEUS}"
+                            "type": "prometheus",
+                            "uid": "prometheus"
                           },
                           "spec": {
                             "expr": "histogram_quantile(0.95, sum by (le, chain, method) (rate(blockchain_request_duration_seconds_bucket[$__rate_interval])))",
@@ -1618,7 +1640,8 @@ data:
                           "group": "prometheus",
                           "version": "v0",
                           "datasource": {
-                            "name": "${DS_PROMETHEUS}"
+                            "type": "prometheus",
+                            "uid": "prometheus"
                           },
                           "spec": {
                             "expr": "histogram_quantile(0.99, sum by (le, chain, method) (rate(blockchain_request_duration_seconds_bucket[$__rate_interval])))",
@@ -1668,7 +1691,8 @@ data:
                           "group": "prometheus",
                           "version": "v0",
                           "datasource": {
-                            "name": "${DS_PROMETHEUS}"
+                            "type": "prometheus",
+                            "uid": "prometheus"
                           },
                           "spec": {
                             "expr": "pgx_pool_total_conns",
@@ -1687,7 +1711,8 @@ data:
                           "group": "prometheus",
                           "version": "v0",
                           "datasource": {
-                            "name": "${DS_PROMETHEUS}"
+                            "type": "prometheus",
+                            "uid": "prometheus"
                           },
                           "spec": {
                             "expr": "pgx_pool_acquired_conns",
@@ -1737,7 +1762,8 @@ data:
                           "group": "prometheus",
                           "version": "v0",
                           "datasource": {
-                            "name": "${DS_PROMETHEUS}"
+                            "type": "prometheus",
+                            "uid": "prometheus"
                           },
                           "spec": {
                             "expr": "pgx_pool_acquired_conns / pgx_pool_total_conns",
@@ -1806,7 +1832,8 @@ data:
                           "group": "prometheus",
                           "version": "v0",
                           "datasource": {
-                            "name": "${DS_PROMETHEUS}"
+                            "type": "prometheus",
+                            "uid": "prometheus"
                           },
                           "spec": {
                             "expr": "sum by (grpc_method) (rate(grpc_server_handled_total[$__rate_interval]))",
@@ -1856,7 +1883,8 @@ data:
                           "group": "prometheus",
                           "version": "v0",
                           "datasource": {
-                            "name": "${DS_PROMETHEUS}"
+                            "type": "prometheus",
+                            "uid": "prometheus"
                           },
                           "spec": {
                             "expr": "histogram_quantile(0.95, sum by (le, grpc_method) (rate(grpc_server_handling_seconds_bucket[$__rate_interval])))",
@@ -2013,27 +2041,6 @@ data:
           "hideTimepicker": false,
           "fiscalYearStartMonth": 0
         },
-        "title": "API",
-        "variables": [
-          {
-            "kind": "DatasourceVariable",
-            "spec": {
-              "name": "DS_PROMETHEUS",
-              "pluginId": "prometheus",
-              "refresh": "never",
-              "regex": "",
-              "current": {
-                "text": "",
-                "value": ""
-              },
-              "options": [],
-              "multi": false,
-              "includeAll": false,
-              "hide": "dontHide",
-              "skipUrlSync": false,
-              "allowCustomValue": true
-            }
-          }
-        ]
+        "title": "API"
       }
     }
