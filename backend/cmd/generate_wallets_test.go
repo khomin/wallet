@@ -104,7 +104,7 @@ func TestGenerateWallets(t *testing.T) {
 	})
 
 	// import known wallets
-	file, err := os.ReadFile("../../tools/known_wallets.json")
+	file, err := os.ReadFile("../generate_wallets/data.json")
 	if err != nil {
 		logrus.Fatal(err)
 	}
