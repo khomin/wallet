@@ -68,7 +68,7 @@ services:
     container_name: prometheus
     restart: unless-stopped
     volumes:
-      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+      - ./k8s/prometheus.yml:/etc/prometheus/prometheus.yml
       - prometheus_data:/prometheus
     ports:
       - "9091:9090"
@@ -81,6 +81,9 @@ services:
       - GF_SECURITY_ADMIN_PASSWORD=admin
     volumes:
       - grafana_data:/var/lib/grafana
+      - ./k8s/grafana/datasources.yaml:/etc/grafana/provisioning/datasources/datasources.yaml
+      - ./k8s/grafana/dashboards-provider.yaml:/etc/grafana/provisioning/dashboards/dashboards.yaml
+      - ./k8s/grafana/dashboards:/etc/grafana/provisioning/dashboards/json
     ports:
       - "3000:3000"
     depends_on:

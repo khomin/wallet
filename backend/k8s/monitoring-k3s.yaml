@@ -11,24 +11,6 @@ spec:
     requests:
       storage: 2Gi
 ---
-apiVersion: v1
-kind: ConfigMap
-metadata:
-  name: grafana-provider-config
-  namespace: whale-tracker-prod
-data:
-  dashboards.yaml: |
-    apiVersion: 1
-    providers:
-      - name: 'k8s-sidecar-dashboards'
-        orgId: 1
-        folder: ''
-        type: file
-        disableDeletion: false
-        editable: true
-        options:
-          path: /tmp/dashboards
----
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -55,36 +37,25 @@ spec:
           volumeMounts:
             - name: grafana-storage
               mountPath: /var/lib/grafana
-            - name: sc-dashboard-volume
-              mountPath: /tmp/dashboards
-            - name: provider-config-volume
-              mountPath: /etc/grafana/provisioning/dashboards
             - name: datasource-config-volume
               mountPath: /etc/grafana/provisioning/datasources
-        - name: grafana-sc-dashboard
-          image: kiwigrid/k8s-sidecar:1.25.2
-          env:
-            - name: LABEL
-              value: "grafana_dashboard"
-            - name: FOLDER
-              value: "/tmp/dashboards"
-            - name: RESOURCE
-              value: "configmap"
-          volumeMounts:
-            - name: sc-dashboard-volume
-              mountPath: /tmp/dashboards
+            - name: provider-config-volume
+              mountPath: /etc/grafana/provisioning/dashboards
+            - name: dashboard-json-volume
+              mountPath: /etc/grafana/provisioning/dashboards/json
       volumes:
         - name: grafana-storage
           persistentVolumeClaim:
             claimName: grafana-pvc
-        - name: sc-dashboard-volume
-          emptyDir: {}
-        - name: provider-config-volume
-          configMap:
-            name: grafana-provider-config
         - name: datasource-config-volume
           configMap:
-            name: grafana-datasources-config
+            name: grafana-datasources
+        - name: provider-config-volume
+          configMap:
+            name: grafana-dashboards-provider
+        - name: dashboard-json-volume
+          configMap:
+            name: grafana-dashboards-custom
 ---
 apiVersion: v1
 kind: Service
@@ -97,23 +68,6 @@ spec:
       targetPort: 3000
   selector:
     app: grafana
----
-apiVersion: v1
-kind: ConfigMap
-metadata:
-  name: grafana-datasources-config
-  namespace: whale-tracker-prod
-data:
-  datasources.yaml: |
-    apiVersion: 1
-    datasources:
-      - name: Prometheus
-        type: prometheus
-        uid: prometheus
-        access: proxy
-        url: http://prometheus:9090
-        isDefault: true
-        editable: true
 ---
 apiVersion: apps/v1
 kind: Deployment

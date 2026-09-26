@@ -1,0 +1,125 @@
+
+syntax = "proto3";
+
+package price.v1;
+import "google/protobuf/empty.proto";
+import "google/protobuf/timestamp.proto";
+
+option go_package = "tracker/gen/price/v1;pricev1";
+
+import "google/api/annotations.proto";
+
+service PriceService {
+  rpc ListCoins(ListCoinsRequest) returns (ListCoinsResponse) {
+    option (google.api.http) = {
+      get: "/v1/coins"
+    };
+  }
+  rpc GetCoin(GetCoinRequest) returns (GetCoinResponse) {
+    option (google.api.http) = {
+      get: "/v1/coins/{id}"
+    };
+  }
+  rpc SearchCoin(SearchCoinsRequest) returns (SearchCoinsResponse) {
+    option (google.api.http) = {
+      post: "/v1/coins/search",
+      body: "*"
+    };
+  }
+
+  rpc GetPrices(GetPricesRequest) returns (GetPricesResponse) {
+    option (google.api.http) = {
+      get: "/v1/prices"
+    };
+  }
+  rpc GetPrice(GetPriceRequest) returns (GetPriceResponse) {
+    option (google.api.http) = {
+      get: "/v1/prices/{symbol}"
+    };
+  }
+
+  rpc StreamPrices(StreamPricesRequest) returns (stream PriceUpdate) {
+    option (google.api.http) = {
+      get: "/v1/prices/stream"
+    };
+  }
+}
+
+message ListCoinsRequest {}
+
+message ListCoinsResponse {
+  int32          total = 1;
+  repeated Token token = 2;
+}
+
+message GetCoinRequest {
+  string id = 1;
+}
+
+message GetCoinResponse {
+  Token token = 1;
+}
+
+message GetPricesRequest {
+  repeated string symbols = 1;
+}
+
+message GetPricesResponse {
+  int32          total = 1;
+  repeated Price price = 2;
+}
+
+message GetPriceRequest {
+  string symbol = 1;
+}
+
+message GetPriceResponse {
+  Price price = 1;
+}
+
+message SearchCoinsRequest {
+  string text = 1;
+}
+
+message SearchCoinsResponse {
+  int32          total = 1;
+  repeated Token token = 2;
+}
+
+message StreamPricesRequest {
+  repeated string symbols = 1;
+}
+
+message PriceUpdate {
+  repeated Price price = 1;
+}
+
+message Price {
+  string                    symbol                           = 1;
+  string                    name                             = 2;
+  double                    price_usd                        = 3;
+  double                    market_cap                       = 4;
+  double                    total_volume                     = 5;
+  double                    high_24h                         = 6;
+  double                    low_24h                          = 7;
+  double                    price_change_24h                 = 8;
+  double                    price_change_percentage_24h      = 9;
+  double                    market_cap_change_24h            = 10;
+  double                    market_cap_change_percentage_24h = 11;
+  google.protobuf.Timestamp updated_at                       = 12;
+}
+
+message Token {
+  string          symbol    = 2;
+  string          name      = 3;
+  repeated Chain  chains    = 4;
+  repeated string addrs     = 5;
+  bool            is_native = 6;
+  string          image_url = 7;
+}
+
+message Chain {
+  string symbol    = 1;
+  string name      = 2;
+  string image_url = 3;
+}

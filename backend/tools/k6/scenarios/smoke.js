@@ -1,0 +1,17 @@
+import { check, sleep } from 'k6';
+import { listWalletsGrpc } from '../scripts/grpc/list_wallets.js';
+
+export const options = {
+    vus: 1,
+    duration: '2s',
+    thresholds: {
+        http_req_duration: ['p(95)<200'], // 95% of requests must complete below 200ms
+        grpc_req_duration: ['p(95)<100'],
+    },
+};
+
+export default function () {
+    // listWalletsHttp();
+    listWalletsGrpc('eyJhbGciOiJSUzI1NiIsInR5cCIgOiAiSldUIiwia2lkIiA6ICJqRUZ3c0EtRE5UeXlEX3hsUVEtY1ZHUWlOZktOLU5mT0NSR0t5bkxCMEs0In0.eyJleHAiOjE3OTA0NTQ1MjcsImlhdCI6MTc5MDQxODUyNywiYXV0aF90aW1lIjoxNzkwNDE4NTI3LCJqdGkiOiJvbnJ0YWM6MWQ1MTUwZGQtNzI4Ni02NjZiLTQzNGQtNDg1MzY4MGU1NzdkIiwiaXNzIjoiaHR0cDovL2xvY2FsaG9zdDo4MDgxL3JlYWxtcy93aGFsZS10cmFja2VyIiwiYXVkIjpbIndoYWxlLXRyYWNrZXItYXBwIiwiYWNjb3VudCJdLCJzdWIiOiJhMmNhMGQ4OS01MGVhLTQ5OWUtYmM3Ni05YzlmNzc3NDRkNjYiLCJ0eXAiOiJCZWFyZXIiLCJhenAiOiJ3aGFsZS10cmFja2VyLWFwcCIsInNpZCI6IkJwOUpvM013UWJ4Ry02YXJYMERkRHlwYiIsImFjciI6IjEiLCJhbGxvd2VkLW9yaWdpbnMiOlsiKiJdLCJyZWFsbV9hY2Nlc3MiOnsicm9sZXMiOlsib2ZmbGluZV9hY2Nlc3MiLCJ1bWFfYXV0aG9yaXphdGlvbiIsImRlZmF1bHQtcm9sZXMtd2hhbGUtdHJhY2tlciJdfSwicmVzb3VyY2VfYWNjZXNzIjp7ImFjY291bnQiOnsicm9sZXMiOlsibWFuYWdlLWFjY291bnQiLCJtYW5hZ2UtYWNjb3VudC1saW5rcyIsInZpZXctcHJvZmlsZSJdfX0sInNjb3BlIjoib3BlbmlkIHByb2ZpbGUgZW1haWwiLCJlbWFpbF92ZXJpZmllZCI6ZmFsc2UsIm5hbWUiOiJwYW5pYyBrZXJuZWwiLCJwcmVmZXJyZWRfdXNlcm5hbWUiOiJob21pbnZsYWRpbWlyQGdtYWlsLmNvbSIsImdpdmVuX25hbWUiOiJwYW5pYyIsImZhbWlseV9uYW1lIjoia2VybmVsIiwiZW1haWwiOiJob21pbnZsYWRpbWlyQGdtYWlsLmNvbSJ9.jynKIClWjncMQQEQlZ8RdHBGmz4orWB8TvHH2ZH5kG0XBFDhfUCZUhzYWVJLJGBX4mRZAtzJv_smMA80xCBHg0gs7jBJ0fIvjs1LVOH8eTpJlSMkLwMp03qTyakVLkRxUUj6MnW0lOi4UyCMIsIappv0gl8ISzlUlsC5WsiCSipvx_8CAi_GdIE2_srwx5iRuzeb_U0jHbmZAGQTULNGB4bqqPGgxAqI1NtlEqp-njdQjTgdzNYot1Krggtam165I_28F_nzsZSt1rG0UMRMrCOPcJsYWuT54__HnP-5mA1K_d2ROrKlzGXG_tnBBxdGL0bVlfAfwnJehMrcqJiJ3A');
+    sleep(1);
+}

@@ -1,6 +1,6 @@
 server:
   port_http: 8080
-  port_grpc: 9090
+  port_grpc: 50051
   environment: "development"
   log_path: "/var/log/tracker/app.log"
 

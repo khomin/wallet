@@ -13,23 +13,39 @@ resources:
   - infra-services.yaml
   - strip-api-prefix.yaml
   - ingress.yaml
-  - grafana-configmap.yaml
-  - monitoring-k3s.yaml
   - deployer-rbac.yaml
+  - monitoring-k3s.yaml
 
 configMapGenerator:
   - name: domain-config
     envs:
       - ./env-context/.env
+
   - name: keycloak-realm-import
     files:
       - realm-export.json=./env-context/realm-export.json
+      
   - name: keycloak-theme-jar
     files:
       - ./env-context/fintech-theme.jar
+
   - name: prometheus-config
     files:
       - prometheus.yml
+
+  - name: grafana-datasources
+    files:
+      - grafana/datasources.yaml
+
+  - name: grafana-dashboards-provider
+    files:
+      - grafana/dashboards-provider.yaml
+
+  - name: grafana-dashboards-custom
+    files:
+      - dashboard1.json=./grafana/dashboards/dashboard_api.json
+      - dashboard2.json=./grafana/dashboards/dashboard_go.json
+
 
 replacements:
   - source:
