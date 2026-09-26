@@ -4,3 +4,4 @@ backend/cmd/wallets/
 backend/.env
 backend/k8s/env-context/**
 backend/kubeconfig
+/backend/tools/k6/proto/**
