@@ -68,8 +68,8 @@ services:
     container_name: prometheus
     restart: unless-stopped
     volumes:
-      - ./k8s/prometheus.yml:/etc/prometheus/prometheus.yml
       - prometheus_data:/prometheus
+      - ./k8s/grafana/prometheus.dev.yml:/etc/prometheus/prometheus.yml
     ports:
       - "9091:9090"
 
